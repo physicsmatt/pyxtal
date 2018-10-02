@@ -10,22 +10,26 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import (
     FigureCanvasTkAgg, NavigationToolbar2Tk)
 
-
-#This class defines the main window.  It will read options (from file or command line) and allow changes.
-#Then user hits go, and image files are read and processed, each in a new window.
+#This class defines the main window.  It will read options (from file or 
+#command line) and allow changes. Then user hits go, and image files are 
+#read and processed, each in a new window.
 class pyxtal_app_main(tk.Tk):
     def __init__(self, master):
         self.master = master
         self.master.protocol("WM_DELETE_WINDOW", self._kill_main_window)
         self.ctrl_frame = tk.Frame(self.master)
-        self.lab1 = tk.Label(self.ctrl_frame,text="Hello again I am a Label").pack()
-        self.button1 = tk.Button(self.ctrl_frame, text = 'New Window', width = 25, command = self.go_button_hit)
+        self.lab1 = tk.Label(self.ctrl_frame,
+                             text="Hello again I am a Label").pack()
+        self.button1 = tk.Button(self.ctrl_frame, text = 'New Window', 
+                                 width = 25, command = self.go_button_hit)
         self.button1.pack()
         self.spheresize = 6
         self.ctrl_frame.pack()
 
-    #see http://effbot.org/tkinterbook/tkinter-events-and-bindings.htm .  This little bit turned out to be needed.
-    #Without it, window would close but process would still be going, not returning control to terminal.
+    #see http://effbot.org/tkinterbook/tkinter-events-and-bindings.htm .  
+    #This little bit turned out to be needed.
+    #Without it, window would close but process would still be going, 
+    #not returning control to terminal.
     def _kill_main_window(self):
         self.master.quit()
         self.master.destroy()
@@ -42,7 +46,7 @@ class pyxtal_app_main(tk.Tk):
 #        self.newWindow = tk.Toplevel(self.master)
 #        self.app = pyxtal_win(tk.Toplevel(self.master), self)
 
-
+#This class defines the window associated with each image file to process.
 class pyxtal_win(tk.Tk):
     def __init__(self, master, parent):
         self.master = master
@@ -52,29 +56,36 @@ class pyxtal_win(tk.Tk):
 
         #These lines demonstrate how to get data from parent window
         self.localspheresize = parent.spheresize
-        self.msg = tk.Message(self.ctrl_frame, text = "sphere size = "+str(self.localspheresize))
+        self.msg = tk.Message(self.ctrl_frame, 
+                              text = "sphere size = "+str(self.localspheresize))
         self.msg.pack()
 
         #These lines demonstrate how parent can control this child window
-        self.msgfromparent = tk.Message(self.ctrl_frame, text = "no message from parent yet")
+        self.msgfromparent = tk.Message(self.ctrl_frame, 
+                                        text = "no message from parent yet")
         self.msgfromparent.pack()
 
         #define variable used by radiobuttons
         self.animal = tk.IntVar(value = 1)
         self.catbut = tk.Radiobutton(self.ctrl_frame,text="cat",
-                                     command=self.update_img,variable=self.animal,value=1).pack()
+                                     command=self.update_img,
+                                     variable=self.animal,value=1).pack()
         self.dogbut = tk.Radiobutton(self.ctrl_frame,text="dog",
-                                     command=self.update_img,variable=self.animal,value=2).pack()
+                                     command=self.update_img,
+                                     variable=self.animal,value=2).pack()
 
 
         #define button to quit this window
-        self.quitButton = tk.Button(self.ctrl_frame, text = 'Quit', width = 25, command = self.close_windows)
+        self.quitButton = tk.Button(self.ctrl_frame, 
+                                    text = 'Quit', width = 25, 
+                                    command = self.close_windows)
         self.quitButton.pack()
         self.ctrl_frame.pack()
 
       #start of image area.
 
-        self.img_frame = tk.Frame(self.master, background='blue',padx=20,pady=10)
+        self.img_frame = tk.Frame(self.master, 
+                                  background='blue',padx=20,pady=10)
         self.msg2 = tk.Message(self.img_frame, text= "hopefully in img_frame")
         self.msg2.pack()
         self.imgcanv = tk.Canvas(self.img_frame)
@@ -82,7 +93,7 @@ class pyxtal_win(tk.Tk):
         fig,ax = plt.subplots()
         x = range(300)
         ax.plot(x, x, '--', linewidth=5, color='firebrick',zorder=1)
-        thecat = plt.imread("cat.jpg")
+        thecat = plt.imread("cat.tif")
         thedog = plt.imread("dog.jpg")
 
         self.catimg = ax.imshow(thecat, extent=[0, 400, 0, 300],zorder=0)
@@ -105,8 +116,10 @@ class pyxtal_win(tk.Tk):
 
       #Now set callbacks for mouse events (& eventually keyboard events.)
 
-        self.img_frame.canvas.get_tk_widget().bind("<Button-4>", self._on_mousewheel)
-        self.img_frame.canvas.get_tk_widget().bind("<Button-5>", self._on_mousewheel)
+        self.img_frame.canvas.get_tk_widget().bind("<Button-4>", 
+                                           self._on_mousewheel)
+        self.img_frame.canvas.get_tk_widget().bind("<Button-5>", 
+                                           self._on_mousewheel)
         self.master.bind("<Key>", self._on_keypress)
         #Not sure what the hell this is supposed to do:
         #self.canvas.mpl_connect("key_press_event", on_key_press)
