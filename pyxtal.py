@@ -90,10 +90,10 @@ class pyxtal_win(tk.Tk):
         self.msg2.pack()
         self.imgcanv = tk.Canvas(self.img_frame)
 
-        fig,ax = plt.subplots()
+        self.fig, ax = plt.subplots()
         x = range(300)
         ax.plot(x, x, '--', linewidth=5, color='firebrick',zorder=1)
-        thecat = plt.imread("cat.tif")
+        thecat = plt.imread("cat.jpg")
         thedog = plt.imread("dog.jpg")
 
         self.catimg = ax.imshow(thecat, extent=[0, 400, 0, 300],zorder=0)
@@ -105,11 +105,11 @@ class pyxtal_win(tk.Tk):
         blueplot.set_visible(1)
         #ax.axis([100,200,110,210])
         ax.axis('off')
-        fig.subplots_adjust(left=0.0, right=1.0, top=1.0, bottom=0.0)
+        self.fig.subplots_adjust(left=0.0, right=1.0, top=1.0, bottom=0.0)
         self.dogimg.set_visible(0)
 
         #Here's where we actually put the plot on the tk canvas:
-        self.img_frame.canvas = FigureCanvasTkAgg(fig, master=self.img_frame)
+        self.img_frame.canvas = FigureCanvasTkAgg(self.fig, master=self.img_frame)
         self.img_frame.canvas.draw()
         self.img_frame.canvas.get_tk_widget().pack()
         self.img_frame.pack()
@@ -152,6 +152,7 @@ class pyxtal_win(tk.Tk):
 
     def close_windows(self):
         #self.master.quit() #This line causes whole program to close, not just one window.
+        plt.close(self.fig) #keeps the plot from reappearing in the console.
         self.master.destroy()
 
 #print(mpl.__version__)
