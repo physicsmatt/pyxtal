@@ -21,33 +21,31 @@ except ImportError:
     py3 = True
 
 def set_Tk_var():
-    global whichImage
-    whichImage = StringVar()
-    global invertImage
-    invertImage = BooleanVar()
-    global showCircles
-    showCircles = BooleanVar()
-    global showTriang
-    showTriang = BooleanVar()
-    global showDefects
-    showDefects = BooleanVar()
-    global showOrientation
-    showOrientation = BooleanVar()
-    global showTraject
-    showTraject = BooleanVar()
-    global showStats
-    showStats = BooleanVar()
+    "hello"
+#    global whichImage
+#    whichImage = Stage
+#    invertImage = BooleanVar()
+#    global showCircles
+#    showCircles = BooleanVar()
+#    global showTriang
+#    showTriang = BooleanVar()
+#    global showDefects
+#    showDefects = BooleanVar()
+#    global showOrientation
+#    showOrientation = BooleanVar()
+#    global showTraject
+#    showTraject = BooleanVar()
+#    global showStats
+#    showStats = BooleanVar()
     
-def set_views_to_globals(pmw):
+def set_views_to_globals(gui, pmw):
     
-    whichImage.set(pmw.whichImage)
-    invertImage.set(pmw.invertImage)
-    showCircles.set(pmw.showCircles)
-    showTriang.set(pmw.showTriang)
-    showDefects.set(pmw.showDefects)
-    print(pmw.showDefects)
-    print(pmw.path)
-    showOrientation.set(pmw.showOrientation)
+    gui.whichImage.set(pmw.whichImage)
+    gui.invertImage.set(pmw.invertImage)
+    gui.showCircles.set(pmw.showCircles)
+    gui.showTriang.set(pmw.showTriang)
+    gui.showDefects.set(pmw.showDefects)
+    gui.showOrientation.set(pmw.showOrientation)
     
 
 def changeVisibleAnnotations():
@@ -76,21 +74,17 @@ def xxx(p1):
     sys.stdout.flush()
 
 def init(top, gui, *args, **kwargs):
-    global w, top_level, root
-    w = gui
-    top_level = top
-    root = top
+#    global w, top_level, root
+#    w = gui
+#    top_level = top
+#    root = top
     print("now doing init in pv support")
-    print(args[0].cat)
-    print(args[1])
-    print("before: whichimage is", whichImage.get())
-    set_views_to_globals(args[0])
-    print("after: whichimage is", whichImage.get())
-    whichImage.set('filtered')
-    showDefects.set(True)
-    top.title("Pyxtal Viewer: " + args[1] + " [" + str(args[2]) + "]")
+    pmw = args[0]
+    filename = args[1]
+    viewer_number = args[2]
+    set_views_to_globals(gui, pmw)
+    top.title("Pyxtal Viewer: " + filename + " [" + str(viewer_number) + "]")
     top.update()
-    top.update_idletasks()
     
 
 
