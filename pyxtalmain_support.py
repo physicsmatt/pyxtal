@@ -26,47 +26,33 @@ import tkinter.filedialog as fd
 import os.path
 
 def set_Tk_var():
-    global inFileType
+    global inFileType, darkSpheres, partTypeStr, fromFrame, toFrame, byFrame
+    global sphereSize, periodBound
+    global outCircles, outTriang, outAll, imageSize, outMpeg, outLog
+    global doOrientCorr, doTraject
+    global retainWin, lockViews, lockZoom
+
     inFileType = StringVar(value="image")
-    global darkSpheres
     darkSpheres = BooleanVar(value=False)
-    global partTypeStr
     partTypeStr = StringVar(value="B")
-    global fromFrame
     fromFrame=[0]
-    import globalVariableList
-    #global toFrame
     toFrame=[-1]
-    global byFrame
     byFrame=[1]
-    global sphereSize
     sphereSize=[7]
-    global periodBound
     periodBound = BooleanVar(value=False)
 
-    global outCircles
     outCircles = BooleanVar(value=True)
-    global outTriang
     outTriang = BooleanVar(value=True)
-    global outAll
     outAll = BooleanVar(value=True)
-    global imageSize
     imageSize=[-1]
-    global outMpeg
     outMpeg = BooleanVar(value=False)
-    global outLog
     outLog = BooleanVar(value=True)
 
-    global doOrientCorr
     doOrientCorr = BooleanVar(value=False)
-    global doTraject
     doTraject = BooleanVar(value=False)
 
-    global retainWin
     retainWin = BooleanVar(value=True)
-    global lockViews
     lockViews = BooleanVar(value=False)
-    global lockZoom
     lockZoom = BooleanVar(value=False)
 
     global fromFrameStr
@@ -82,42 +68,34 @@ def set_Tk_var():
 
 
 
-#    global whichImage
-#    whichImage = StringVar()
-    global invertimage
-    invertimage = StringVar()
-    global showCircles
-    showCircles = StringVar()
-    global showTriang
-    showTriang = StringVar()
-    global showDefects
-    showDefects = StringVar()
-    global showOrientation
-    showOrientation = StringVar()
-    global showTraject
-    showTraject = StringVar()
-    global showStats
-    showStats = StringVar()
+def set_widget_state(to_state, widgets):
+    #Input "to_state" is expected to be NORMAL or DISABLED.
+    #Input "widget" is a single widget or list of widgets.
+    #If widget is a list, or a frame, then 
+    if isinstance(widgets, (list, tuple)):
+        for item in widgets:
+            set_widget_state(to_state, item)
+    elif widgets.winfo_class() in ["frame", "Labelframe"]:
+        for child in widgets.winfo_children():
+            set_widget_state(to_state, child)
+    else:
+        widgets.configure(state=to_state)
+    
 
 def inFileTypeChange():
-    print('pyxtalmain_support.inFileTypeChange')
     inputtype = inFileType.get()
-    #see https://stackoverflow.com/questions/24942760/is-there-a-way-to-gray-out-disable-a-tkinter-frame
     sys.stdout.flush()
     if inputtype=='image':
-       pmw.darkSpheresCheck.configure(state=NORMAL)
-       pmw.SaveDefButton.configure(state=NORMAL)
-       print(inputtype)
+       set_widget_state(NORMAL, [pmw.darkSpheresCheck, pmw.SphereSizeLabel, pmw.sphereEntry])
+       set_widget_state(DISABLED, [pmw.framesframe, pmw.PartTypeLabel, pmw.partTypeEntry])
     if inputtype=='particles':
-       pmw.darkSpheresCheck.configure(state=DISABLED)
-       pmw.SaveDefButton.configure(state=DISABLED)
-       print(inputtype)
+       set_widget_state(NORMAL, [pmw.framesframe])
+       set_widget_state(DISABLED, [pmw.darkSpheresCheck, pmw.SphereSizeLabel, pmw.sphereEntry])
+       set_widget_state(DISABLED, [pmw.PartTypeLabel, pmw.partTypeEntry])
     if inputtype=='assemblies':
-       pmw.darkSpheresCheck.configure(state=DISABLED)
-       pmw.SaveDefButton.configure(state=DISABLED)
-       print(inputtype)
-       print(pmw.cat)
-    sys.stdout.flush()
+       set_widget_state(NORMAL, [pmw.framesframe, pmw.SphereSizeLabel, pmw.sphereEntry])
+       set_widget_state(NORMAL, [pmw.PartTypeLabel, pmw.partTypeEntry])
+       set_widget_state(DISABLED, [pmw.darkSpheresCheck])
 
 
 def validateInteger(p1, thestring, theinteger):
@@ -145,33 +123,93 @@ def validateInteger(p1, thestring, theinteger):
         thestring.set(str(theinteger[0]))
 
 def GoButtonCommand():
+    import time
     print('pyxtalmain_support.GoButtonCommand')
     sys.stdout.flush()
-    pmw.numFiles=2
-    for i in range(0,w.numFiles):
+    pmw.numFiles=3
+    pmw.viewers = list()
+    for i in range(0,pmw.numFiles):
         #pyxtalviewer.vp_start_gui()
         #self.app = pyxtal_win(tk.Toplevel(self.master), self)
-        pmw.arthur = pyxtalviewer.Pyxtal_Viewer(Toplevel(root))
+        #pmw.arthur = pyxtalviewer.Pyxtal_Viewer(Toplevel(root))
+        pmw.viewers.append(pyxtalviewer.create_Pyxtal_Viewer(
+                root, pmw, pmw.filelist[i], i))
+        time.sleep(3)
+#    pmw.arthur = pyxtalviewer.create_Pyxtal_Viewer(root, pmw, "cat", 22)
+#    print("hello")
+#    pmw.arthur2 = pyxtalviewer.create_Pyxtal_Viewer(root, pmw, "dog", 33)
+    #pmw.arthur[0].destroy()
+#    pmw.viewers[2][0].destroy()
+
 
 def addButtonCommand():
-    global pmw
-    print('pyxtalmain_support.AddButtonCommand')
-    sys.stdout.flush()
-    filenames = fd.askopenfilenames() # show an "Open" dialog box and return the path to the selected file
-    print(os.path.dirname(filenames[0]))
-    pmw.path = os.path.dirname(filenames[0])
+    #Adds files to the filelist (the variable and the scroll box)...
+    filenames = fd.askopenfilenames()
     for filename in filenames:
-        print(os.path.basename(filename))
         pmw.filelist.append(os.path.basename(filename))
         pmw.fileListbox.insert(END, os.path.basename(filename))
 
+    #...And updates the path to wherever the files came from.
+    pmw.path = os.path.dirname(filenames[0])
+    pmw.pathBox.delete(1.0, END)
+    #I don't know why the correct index above is 1.0
+    pmw.pathBox.insert(END, pmw.path)
+
+
 def clearButtonCommand():
+    pmw.filelist.clear()
+    pmw.fileListbox.delete(0, END)
+    #Note: I don't understand why the index for deleting is "0" here, but
+    #1.0 for clearing the pathBox.
+
+
+def saveButtonCommand():
     global pmw
-    print('pyxtalmain_support.ClearButtonCommand')
-    sys.stdout.flush()
-    print("path is:", pmw.path)
-    print("filelist is:")
-    print(pmw.filelist)
+    savefilename = pmw.path + "/pyxtalrc.py"  #(use os.path.join)
+    print(savefilename)
+    f = open(savefilename, 'w')
+    
+    f.write("#Global parameter file for Pyxtal\n")
+    f.write("#Generated automatically by Pyxtal\n")
+    #date and time stamp.   
+    global inFileType, darkSpheres, partTypeStr, fromFrame, toFrame, byFrame
+    global sphereSize, periodBound
+    global outCircles, outTriang, outAll, imageSize, outMpeg, outLog
+    global doOrientCorr, doTraject
+    global retainWin, lockViews, lockZoom
+
+    f.write('global inFileType, darkSpheres, partTypeStr, fromFrame, toFrame, byFrame\n')
+    f.write('global sphereSize, periodBound\n')
+    f.write('global outCircles, outTriang, outAll, imageSize, outMpeg, outLog\n')
+    f.write('global doOrientCorr, doTraject\n')
+    f.write('global retainWin, lockViews, lockZoom\n')
+
+
+    f.write("byFrame = " + str(byFrame) + "\n")
+
+    f.write('inFileType.set("' + inFileType.get() + '")\n')
+
+    f.write("retainWin.set(" + str(retainWin.get()) + ")\n")
+    f.close()
+            
+    
+
+def loadButtonCommand():
+    print("loading parameters.")
+    global pmw
+    loadfilename = pmw.path + "/pyxtalrc" #(use os.path.join)
+    
+    #global inFileType, darkSpheres, partTypeStr, fromFrame, toFrame, byFrame
+    #global sphereSize, periodBound
+    #global outCircles, outTriang, outAll, imageSize, outMpeg, outLog
+    #global doOrientCorr, doTraject
+    #global retainWin, lockViews, lockZoom
+    
+    import pyxtalrc
+    #see: https://stackoverflow.com/questions/67631/how-to-import-a-module-given-the-full-path
+
+
+    
 
 def init(top, gui, *args, **kwargs):
     global pmw, top_level, root
@@ -180,6 +218,22 @@ def init(top, gui, *args, **kwargs):
     root = top
     pmw.cat = [44,52]
     pmw.filelist = list()
+    import os
+    os.getcwd()
+    pmw.path = os.getcwd()
+    print(pmw.path)
+    pmw.pathBox.insert(END, pmw.path)
+    inFileTypeChange()
+
+    #set default views for viewers:
+    pmw.whichImage = "raw"
+    pmw.invertImage = False
+    pmw.showCircles = True
+    pmw.showTriang = False
+    pmw.showDefects = True
+    pmw.showOrientation = True
+    pmw.showTraject = False
+    pmw.showStats = False
 
 def destroy_window():
     # Function which closes the window.

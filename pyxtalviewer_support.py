@@ -6,6 +6,7 @@
 #    Oct 15, 2018 09:31:29 PM CEST  platform: Linux
 
 import sys
+import pyxtalmain_support
 
 try:
     from Tkinter import *
@@ -22,20 +23,32 @@ except ImportError:
 def set_Tk_var():
     global whichImage
     whichImage = StringVar()
-    global invertimage
-    invertimage = StringVar()
+    global invertImage
+    invertImage = BooleanVar()
     global showCircles
-    showCircles = StringVar()
+    showCircles = BooleanVar()
     global showTriang
-    showTriang = StringVar()
+    showTriang = BooleanVar()
     global showDefects
-    showDefects = StringVar()
+    showDefects = BooleanVar()
     global showOrientation
-    showOrientation = StringVar()
+    showOrientation = BooleanVar()
     global showTraject
-    showTraject = StringVar()
+    showTraject = BooleanVar()
     global showStats
-    showStats = StringVar()
+    showStats = BooleanVar()
+    
+def set_views_to_globals(pmw):
+    
+    whichImage.set(pmw.whichImage)
+    invertImage.set(pmw.invertImage)
+    showCircles.set(pmw.showCircles)
+    showTriang.set(pmw.showTriang)
+    showDefects.set(pmw.showDefects)
+    print(pmw.showDefects)
+    print(pmw.path)
+    showOrientation.set(pmw.showOrientation)
+    
 
 def changeVisibleAnnotations():
     print('pyxtalviewer_support.changeVisibleAnnotations')
@@ -67,6 +80,19 @@ def init(top, gui, *args, **kwargs):
     w = gui
     top_level = top
     root = top
+    print("now doing init in pv support")
+    print(args[0].cat)
+    print(args[1])
+    print("before: whichimage is", whichImage.get())
+    set_views_to_globals(args[0])
+    print("after: whichimage is", whichImage.get())
+    whichImage.set('filtered')
+    showDefects.set(True)
+    top.title("Pyxtal Viewer: " + args[1] + " [" + str(args[2]) + "]")
+    top.update()
+    top.update_idletasks()
+    
+
 
 def destroy_window():
     # Function which closes the window.
