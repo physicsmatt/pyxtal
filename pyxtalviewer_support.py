@@ -95,7 +95,8 @@ def destroy_window():
     top_level = None
 
 if __name__ == '__main__':
-    import pyxtalviewer
-    pyxtalviewer.vp_start_gui()
+    #import pyxtalviewer
+    #pyxtalviewer.vp_start_gui()
+    print("This file is not runnable as main.  Run Pyxtalmain.py instead.")
 
 
