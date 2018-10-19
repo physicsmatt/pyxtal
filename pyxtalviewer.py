@@ -20,7 +20,6 @@ except ImportError:
     py3 = True
 
 import pyxtalviewer_support
-#import pyxtalmain_support
 
 def vp_start_gui():
     '''Starting point when module is the main routine.'''
@@ -34,14 +33,8 @@ def vp_start_gui():
 w = None
 def create_Pyxtal_Viewer(root, *args, **kwargs):
     '''Starting point when module is imported by another program.'''
-#    global w, w_win, rt
-#    rt = root
-
-    #w = Toplevel(root)
     top = Toplevel(root)
-
     pyxtalviewer_support.set_Tk_var()
-
     w = Pyxtal_Viewer(top)
     pyxtalviewer_support.init(top, w, *args, **kwargs)
     return(top, w)
@@ -170,7 +163,6 @@ class Pyxtal_Viewer:
         self.orientationCheck.configure(command=pyxtalviewer_support.changeVisibleAnnotations)
         self.orientationCheck.configure(justify=LEFT)
         self.orientationCheck.configure(text='''angle''')
-        self.showOrientation = BooleanVar(value=True)
         self.orientationCheck.configure(variable=self.showOrientation)
 
         self.trajectCheck = Checkbutton(self.annotationsframe)
