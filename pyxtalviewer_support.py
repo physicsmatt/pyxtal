@@ -21,7 +21,7 @@ except ImportError:
     py3 = True
 
 def set_Tk_var():
-    "hello"
+    x=None
 #    global whichImage
 #    whichImage = Stage
 #    invertImage = BooleanVar()
@@ -38,22 +38,17 @@ def set_Tk_var():
 #    global showStats
 #    showStats = BooleanVar()
     
-def set_views_to_globals(gui, pmw):
-    
-    gui.whichImage.set(pmw.whichImage)
-    gui.invertImage.set(pmw.invertImage)
-    gui.showCircles.set(pmw.showCircles)
-    gui.showTriang.set(pmw.showTriang)
-    gui.showDefects.set(pmw.showDefects)
-    gui.showOrientation.set(pmw.showOrientation)
+def set_views_to_globals(viewer):
+    viewer.whichImage.set(viewer.pmw.whichImage)
+    viewer.invertImage.set(viewer.pmw.invertImage)
+    viewer.showCircles.set(viewer.pmw.showCircles)
+    viewer.showTriang.set(viewer.pmw.showTriang)
+    viewer.showDefects.set(viewer.pmw.showDefects)
+    viewer.showOrientation.set(viewer.pmw.showOrientation)
     
 
 def changeVisibleAnnotations():
     print('pyxtalviewer_support.changeVisibleAnnotations')
-    sys.stdout.flush()
-
-def defects_visiblechangeVisibleAnnotations():
-    print('pyxtalviewer_support.defects_visiblechangeVisibleAnnotations')
     sys.stdout.flush()
 
 def invertImageChange():
@@ -73,20 +68,19 @@ def xxx(p1):
     print('p1 = {0}'.format(p1))
     sys.stdout.flush()
 
-def init(top, gui, *args, **kwargs):
-#    global w, top_level, root
-#    w = gui
-#    top_level = top
-#    root = top
+def init(top, viewer, *args, **kwargs):
     print("now doing init in pv support")
-    pmw = args[0]
-    filename = args[1]
-    viewer_number = args[2]
-    set_views_to_globals(gui, pmw)
-    top.title("Pyxtal Viewer: " + filename + " [" + str(viewer_number) + "]")
-    top.update()
-    
+    viewer.top = top
+    viewer.pmw = args[0]
+    viewer.filename = args[1]
+    viewer.idx = args[2]
+    set_views_to_globals(viewer)
+    viewer.top.title("Pyxtal Viewer: "
+                     + viewer.filename 
+                     + " [" + str(viewer.idx) + "]")
+    viewer.top.update()    
 
+    #load_all_images(viewer)
 
 def destroy_window():
     # Function which closes the window.
