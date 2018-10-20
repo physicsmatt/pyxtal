@@ -26,45 +26,50 @@ import tkinter.filedialog as fd
 import os.path
 
 def set_Tk_var():
-    global inFileType, darkSpheres, partTypeStr, fromFrame, toFrame, byFrame
-    global sphereSize, periodBound
-    global outCircles, outTriang, outAll, imageSize, outMpeg, outLog
-    global doOrientCorr, doTraject
-    global retainWin, lockViews, lockZoom
-
-    inFileType = StringVar(value="image")
-    darkSpheres = BooleanVar(value=False)
-    partTypeStr = StringVar(value="B")
-    fromFrame=[0]
-    toFrame=[-1]
-    byFrame=[1]
-    sphereSize=[7]
-    periodBound = BooleanVar(value=False)
-
-    outCircles = BooleanVar(value=True)
-    outTriang = BooleanVar(value=True)
-    outAll = BooleanVar(value=True)
-    imageSize=[-1]
-    outMpeg = BooleanVar(value=False)
-    outLog = BooleanVar(value=True)
-
-    doOrientCorr = BooleanVar(value=False)
-    doTraject = BooleanVar(value=False)
-
-    retainWin = BooleanVar(value=True)
-    lockViews = BooleanVar(value=False)
-    lockZoom = BooleanVar(value=False)
-
-    global fromFrameStr
-    fromFrameStr=StringVar(value=str(fromFrame[0]))
-    global toFrameStr
-    toFrameStr=StringVar(value=str(toFrame[0]))
-    global byFrameStr
-    byFrameStr=StringVar(value=str(byFrame[0]))
-    global sphereSizeStr
-    sphereSizeStr=StringVar(value=str(sphereSize[0]))
-    global imageSizeStr
-    imageSizeStr=StringVar(value=str(imageSize[0]))
+    None
+#    global inFileType, darkSpheres, partTypeStr, fromFrame, toFrame, byFrame
+#    global sphereSize, periodBound
+#    global outCircles, outTriang, outAll, imageSize, outMpeg, outLog
+#    global doOrientCorr, doTraject
+#    global retainWin, lockViews, lockZoom
+#    
+#    global che67, che68
+#    che67 = BooleanVar(value=True)
+#    che68 = BooleanVar(value=True)
+#
+##    inFileType = StringVar(value="image")
+#    darkSpheres = BooleanVar(value=False)
+#    partTypeStr = StringVar(value="B")
+#    fromFrame=[0]
+#    toFrame=[-1]
+#    byFrame=[1]
+#    sphereSize=[7]
+##    periodBound = BooleanVar(value=False)
+#
+##    outCircles = BooleanVar(value=True)
+#    outTriang = BooleanVar(value=True)
+#    outAll = BooleanVar(value=True)
+#    imageSize=[-1]
+#    outMpeg = BooleanVar(value=False)
+#    outLog = BooleanVar(value=True)
+#
+#    doOrientCorr = BooleanVar(value=False)
+#    doTraject = BooleanVar(value=False)
+#
+#    retainWin = BooleanVar(value=True)
+#    lockViews = BooleanVar(value=False)
+#    lockZoom = BooleanVar(value=False)
+#
+#    global fromFrameStr
+#    fromFrameStr=StringVar(value=str(fromFrame[0]))
+#    global toFrameStr
+#    toFrameStr=StringVar(value=str(toFrame[0]))
+#    global byFrameStr
+#    byFrameStr=StringVar(value=str(byFrame[0]))
+#    global sphereSizeStr
+#    sphereSizeStr=StringVar(value=str(sphereSize[0]))
+#    global imageSizeStr
+#    imageSizeStr=StringVar(value=str(imageSize[0]))
 
 
 
@@ -83,8 +88,8 @@ def set_widget_state(to_state, widgets):
     
 
 def inFileTypeChange():
-    inputtype = inFileType.get()
-    sys.stdout.flush()
+    global pmw
+    inputtype = pmw.inFileType.get()
     if inputtype=='image':
        set_widget_state(NORMAL, [pmw.darkSpheresCheck, pmw.SphereSizeLabel, pmw.sphereEntry])
        set_widget_state(DISABLED, [pmw.framesframe, pmw.PartTypeLabel, pmw.partTypeEntry])
@@ -126,20 +131,11 @@ def GoButtonCommand():
     import time
     print('pyxtalmain_support.GoButtonCommand')
     sys.stdout.flush()
-    pmw.numFiles=3
+    pmw.numFiles=len(pmw.filelist)
     pmw.viewers = list()
     for i in range(0,pmw.numFiles):
-        #pyxtalviewer.vp_start_gui()
-        #self.app = pyxtal_win(tk.Toplevel(self.master), self)
-        #pmw.arthur = pyxtalviewer.Pyxtal_Viewer(Toplevel(root))
         pmw.viewers.append(pyxtalviewer.create_Pyxtal_Viewer(
                 root, pmw, pmw.filelist[i], i))
-        time.sleep(3)
-#    pmw.arthur = pyxtalviewer.create_Pyxtal_Viewer(root, pmw, "cat", 22)
-#    print("hello")
-#    pmw.arthur2 = pyxtalviewer.create_Pyxtal_Viewer(root, pmw, "dog", 33)
-    #pmw.arthur[0].destroy()
-#    pmw.viewers[2][0].destroy()
 
 
 def addButtonCommand():
@@ -218,13 +214,16 @@ def init(top, gui, *args, **kwargs):
     root = top
     pmw.cat = [44,52]
     pmw.filelist = list()
+
+    initialize_parameters(pmw)
+
     import os
     os.getcwd()
     pmw.path = os.getcwd()
-    print(pmw.path)
     pmw.pathBox.insert(END, pmw.path)
-    inFileTypeChange()
 
+
+def initialize_parameters(pmw):
     #set default views for viewers:
     pmw.whichImage = "raw"
     pmw.invertImage = False
@@ -234,6 +233,40 @@ def init(top, gui, *args, **kwargs):
     pmw.showOrientation = True
     pmw.showTraject = False
     pmw.showStats = False
+
+    #initialize all of the Tk variables declared during creation: 
+    pmw.inFileType.set("image") 
+    pmw.darkSpheres.set(False)
+    pmw.partTypeStr.set("")
+    pmw.periodBound.set(False)
+    pmw.outCircles.set(True)
+    pmw.outTriang.set(False)
+    pmw.outAll.set(True)
+    pmw.outMpeg.set(False)
+    pmw.outLog.set(True)
+    pmw.doOrientCorr.set(False)
+    pmw.doTraject.set(False)
+    pmw.retainWin.set(True)
+    pmw.lockViews.set(False)
+    pmw.lockZoom.set(False)
+
+    #These numeric values function as a way to save previous values
+    #if the associated strings are changed to non-integer values.
+    pmw.fromFrame = [0]
+    pmw.toFrame = [-1]
+    pmw.byFrame = [1]
+    pmw.sphereSize = [7]
+    pmw.imageSize = [-1]
+
+    #Set the string values to the corresponding integers, above
+    pmw.fromFrameStr.set (str(pmw.fromFrame[0]))
+    pmw.toFrameStr.set (str(pmw.toFrame[0]))
+    pmw.byFrameStr.set (str(pmw.byFrame[0]))
+    pmw.sphereSizeStr.set (str(pmw.sphereSize[0]))
+    pmw.imageSizeStr.set (str(pmw.imageSize[0]))
+
+    inFileTypeChange()
+
 
 def destroy_window():
     # Function which closes the window.

@@ -68,6 +68,19 @@ def xxx(p1):
     print('p1 = {0}'.format(p1))
     sys.stdout.flush()
 
+def load_images_and_locations(viewer):
+    #Based on the input file type, this function reads the file.
+    #If File is an image, it adds the location data.
+    #If File is location data, it adds a fake "image" of spheres.
+    #If File is assemblies, it calcultes both an image and location data.
+    if viewer.pmw.inFileType == "image":
+        #use code from colloid group.
+        None
+    elif viewer.pmw.inFileType == "particles":
+        #read gsd file.
+        None
+
+
 def init(top, viewer, *args, **kwargs):
     print("now doing init in pv support")
     viewer.top = top
@@ -80,7 +93,7 @@ def init(top, viewer, *args, **kwargs):
                      + " [" + str(viewer.idx) + "]")
     viewer.top.update()    
 
-    #load_all_images(viewer)
+    load_images_and_locations(viewer)
 
 def destroy_window():
     # Function which closes the window.
