@@ -37,11 +37,12 @@ def create_Pyxtal_Viewer(root, *args, **kwargs):
     pyxtalviewer_support.set_Tk_var()
     w = Pyxtal_Viewer(top)
     pyxtalviewer_support.init(top, w, *args, **kwargs)
-    return(top, w)
+    return(w)
 
 def destroy_Pyxtal_Viewer():
     global w
     w.destroy()
+    print("destroying pixal viewer")
     w = None
 
 
@@ -55,7 +56,7 @@ class Pyxtal_Viewer:
         _ana1color = '#d9d9d9' # X11 color: 'gray85' 
         _ana2color = '#d9d9d9' # X11 color: 'gray85' 
 
-        top.geometry("822x867+549+122")
+        top.geometry("822x867+1085+122")
         top.title("Pyxtal Viewer")
         top.configure(highlightcolor="black")
 

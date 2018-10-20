@@ -9,6 +9,7 @@
 
 import sys
 import pyxtalviewer
+import pyxtalviewer_support
 
 try:
     from Tkinter import *
@@ -27,50 +28,9 @@ import os.path
 
 def set_Tk_var():
     None
-#    global inFileType, darkSpheres, partTypeStr, fromFrame, toFrame, byFrame
-#    global sphereSize, periodBound
-#    global outCircles, outTriang, outAll, imageSize, outMpeg, outLog
-#    global doOrientCorr, doTraject
-#    global retainWin, lockViews, lockZoom
-#    
-#    global che67, che68
-#    che67 = BooleanVar(value=True)
-#    che68 = BooleanVar(value=True)
-#
-##    inFileType = StringVar(value="image")
-#    darkSpheres = BooleanVar(value=False)
-#    partTypeStr = StringVar(value="B")
-#    fromFrame=[0]
-#    toFrame=[-1]
-#    byFrame=[1]
-#    sphereSize=[7]
-##    periodBound = BooleanVar(value=False)
-#
-##    outCircles = BooleanVar(value=True)
-#    outTriang = BooleanVar(value=True)
-#    outAll = BooleanVar(value=True)
-#    imageSize=[-1]
-#    outMpeg = BooleanVar(value=False)
-#    outLog = BooleanVar(value=True)
-#
-#    doOrientCorr = BooleanVar(value=False)
-#    doTraject = BooleanVar(value=False)
-#
-#    retainWin = BooleanVar(value=True)
-#    lockViews = BooleanVar(value=False)
-#    lockZoom = BooleanVar(value=False)
-#
-#    global fromFrameStr
-#    fromFrameStr=StringVar(value=str(fromFrame[0]))
-#    global toFrameStr
-#    toFrameStr=StringVar(value=str(toFrame[0]))
-#    global byFrameStr
-#    byFrameStr=StringVar(value=str(byFrame[0]))
-#    global sphereSizeStr
-#    sphereSizeStr=StringVar(value=str(sphereSize[0]))
-#    global imageSizeStr
-#    imageSizeStr=StringVar(value=str(imageSize[0]))
-
+    #This function is a place holder, originally created by PAGE
+    #It defined a zillion global Tk variables that were used for all
+    #the widgets.  That functionality is now within the creation function.
 
 
 def set_widget_state(to_state, widgets):
@@ -137,6 +97,9 @@ def GoButtonCommand():
         pmw.viewers.append(pyxtalviewer.create_Pyxtal_Viewer(
                 root, pmw, pmw.filelist[i], i))
 
+def killAllButtonCommand():
+    for viewer in pmw.viewers.copy():
+        pyxtalviewer_support.destroy_viewer(viewer)
 
 def addButtonCommand():
     #Adds files to the filelist (the variable and the scroll box)...
@@ -212,9 +175,10 @@ def init(top, gui, *args, **kwargs):
     pmw = gui
     top_level = top
     root = top
-    pmw.cat = [44,52]
-    pmw.filelist = list()
+    pmw.top = top
+    top.protocol("WM_DELETE_WINDOW", lambda: destroy_pyxtalmain(pmw))
 
+    pmw.filelist = list()
     initialize_parameters(pmw)
 
     import os
@@ -268,10 +232,11 @@ def initialize_parameters(pmw):
     inFileTypeChange()
 
 
-def destroy_window():
+def destroy_pyxtalmain(pmw):
     # Function which closes the window.
-    global top_level
-    top_level.destroy()
+#    global top_level
+    killAllButtonCommand()    
+    pmw.top.destroy()
     top_level = None
 
 if __name__ == '__main__':

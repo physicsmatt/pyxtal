@@ -44,6 +44,8 @@ def create_Pyxtal_Main_Controls(root, *args, **kwargs):
 def destroy_Pyxtal_Main_Controls():
     global w
     w.destroy()
+    print("destroying pixal main")
+
     w = None
 
 
@@ -79,15 +81,10 @@ class Pyxtal_Main_Controls:
         self.inFileType = StringVar()
         self.darkSpheres = BooleanVar()
         self.partTypeStr = StringVar()
-#        self.fromFrame=[0]
-#        toFrame=[-1]
-#        byFrame=[1]
-#        sphereSize=[7]
         self.periodBound = BooleanVar()
         self.outCircles = BooleanVar()
         self.outTriang = BooleanVar()
         self.outAll = BooleanVar()
-#        imageSize=[-1]
         self.outMpeg = BooleanVar()
         self.outLog = BooleanVar()
         self.doOrientCorr = BooleanVar()
@@ -442,6 +439,7 @@ class Pyxtal_Main_Controls:
         self.KillAllButton = Button(self.windowFrame)
         self.KillAllButton.place(relx=0.538, rely=0.686, height=43, width=108
                 , bordermode='ignore')
+        self.KillAllButton.configure(command=pyxtalmain_support.killAllButtonCommand)
         self.KillAllButton.configure(activebackground="#d9d9d9")
         self.KillAllButton.configure(text='''Kill All 
 Image Windows''')
