@@ -92,7 +92,6 @@ def GoButtonCommand():
     print('pyxtalmain_support.GoButtonCommand')
     sys.stdout.flush()
     pmw.numFiles=len(pmw.filelist)
-    pmw.viewers = list()
     for i in range(0,pmw.numFiles):
         pmw.viewers.append(pyxtalviewer.create_Pyxtal_Viewer(
                 root, pmw, pmw.filelist[i], i))
@@ -179,6 +178,7 @@ def init(top, gui, *args, **kwargs):
     top.protocol("WM_DELETE_WINDOW", lambda: destroy_pyxtalmain(pmw))
 
     pmw.filelist = list()
+    pmw.viewers = list()
     initialize_parameters(pmw)
 
     import os

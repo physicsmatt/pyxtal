@@ -204,7 +204,8 @@ class Pyxtal_Viewer:
 
 if __name__ == '__main__':
     #vp_start_gui()
-    print("This file is not runnable as main.  Run Pyxtalmain.py instead.")
-
+    #print("This file is not runnable as main.  Run Pyxtalmain.py instead.")
+    import pyxtalmain
+    pyxtalmain.vp_start_gui()
 
 
