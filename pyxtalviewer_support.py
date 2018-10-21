@@ -5,6 +5,7 @@
 # In conjunction with Tcl version 8.6
 #    Oct 15, 2018 09:31:29 PM CEST  platform: Linux
 
+import numpy as np
 import sys
 import pyxtalmain_support
 import matplotlib as mpl
@@ -60,10 +61,10 @@ def showStatsWin():
     print('pyxtalviewer_support.showStatsWin')
     sys.stdout.flush()
 
-def xxx(p1):
-    print('pyxtalviewer_support.xxx')
-    print('p1 = {0}'.format(p1))
-    sys.stdout.flush()
+#def xxx(p1):
+#    print('pyxtalviewer_support.xxx')
+#    print('p1 = {0}'.format(p1))
+#    sys.stdout.flush()
 
 def load_images_and_locations(viewer):
     #Based on the input file type, this function reads the file.
@@ -72,12 +73,10 @@ def load_images_and_locations(viewer):
     #If File is assemblies, it calcultes both an image and location data.
     import matplotlib as mpl
     import matplotlib.pyplot as plt
-    import numpy as np
     import trackpy as tp
 
     if viewer.pmw.inFileType.get() == "image":
         #use code from colloid group.
-        print("finding particles")
         viewer.image = plt.imread(viewer.filename)
         viewer.imgshape = np.shape(viewer.image)
         
@@ -91,7 +90,12 @@ def load_images_and_locations(viewer):
         #read gsd file.
         None
 
-def convert_pixel_to_axis(xy, viewer):
+def dev_to_data(xy, viewer):
+    # This routine translates "device" coordinates (in pixels)
+    # to "data coordinates", which are whatever is on the x and y axes.
+    # Input xy can be either a tuple, list, or ndarray.
+    # Output type matches input type.
+    # It assumes value of pixel is same on both axes
     xpix = xy[0]
     ypix = xy[1]
     canv_xmin = viewer.canvWidget.winfo_x() 
@@ -102,11 +106,10 @@ def convert_pixel_to_axis(xy, viewer):
     xlims = viewer.ax.get_xlim()
     ylims = viewer.ax.get_ylim()
 
-    xratio = (xlims[1] - xlims[0]) / canv_w
-    yratio = (ylims[1] - ylims[0]) / canv_h
+    ratio = (xlims[1] - xlims[0]) / canv_w
     
-    xcoor = xpix * xratio + xlims[0]
-    ycoor = ylims[1] - ypix * xratio
+    xcoor = xpix * ratio + xlims[0]
+    ycoor = ylims[1] - ypix * ratio
     if isinstance(xy, tuple):
         return((xcoor, ycoor))
     if isinstance(xy, np.ndarray):
@@ -114,44 +117,8 @@ def convert_pixel_to_axis(xy, viewer):
     if isinstance(xy, list):
         return([xcoor, ycoor])
 
-def zoom_OLD(event, viewer):
-#    print('wheel event!')
-#    print('           event = {0}'.format(event))
-#    print("            ", viewer.filename)
-    sys.stdout.flush()
-    if str(event.type) == "ButtonPress": #Linux mouse wheel. Is there a better way?
-        if event.num == 4:
-            zoom_by = 1.25
-        elif event.num == 5:
-            zoom_by = 0.8
-        else:
-            print("error: zoom button not 4 or 5")
-    else:
-        print("error: probably a windows machine. Need to code mousewheel")
-        return()
-    mouse_xy = convert_pixel_to_axis((event.x, event.y), viewer)
-    mouse_x = mouse_xy[0]
-    mouse_y = mouse_xy[1]
-#    print("          mouse location in pixels", (event.x, event.y))
-#    print("          mouse location in axis coordinates", mouse_xy)
-
-    old_xlims = viewer.ax.get_xlim()
-    new_xmin = mouse_x - (mouse_x - old_xlims[0]) / zoom_by
-    new_xmax = mouse_x + (old_xlims[1] - mouse_x) / zoom_by
-    viewer.ax.set_xlim(new_xmin, new_xmax)
-
-    old_ylims = viewer.ax.get_ylim()
-    new_ymin = mouse_y - (mouse_y - old_ylims[0]) / zoom_by
-    new_ymax = mouse_y + (old_ylims[1] - mouse_y) / zoom_by
-    viewer.ax.set_ylim(new_ymin, new_ymax)
-
-    viewer.imgCanvas.draw()
 
 def zoom(event, viewer):
-#    print('wheel event!')
-#    print('           event = {0}'.format(event))
-#    print("            ", viewer.filename)
-    sys.stdout.flush()
     if str(event.type) == "ButtonPress": #Linux mouse wheel. Is there a better way?
         if event.num == 4:
             zoom_by = 1.25
@@ -162,41 +129,29 @@ def zoom(event, viewer):
     else:
         print("error: probably a windows machine. Need to code mousewheel")
         return()
-    mouse_xy = convert_pixel_to_axis((event.x, event.y), viewer)
-    mouse_x = mouse_xy[0]
-    mouse_y = mouse_xy[1]
-#    print("          mouse location in pixels", (event.x, event.y))
-#    print("          mouse location in axis coordinates", mouse_xy)
-
-    old_xlims = viewer.ax.get_xlim()
-    new_xmin = mouse_x - (mouse_x - old_xlims[0]) / zoom_by
-    new_xmax = mouse_x + (old_xlims[1] - mouse_x) / zoom_by
-    viewer.ax.set_xlim(new_xmin, new_xmax)
-
-    old_ylims = viewer.ax.get_ylim()
-    new_ymin = mouse_y - (mouse_y - old_ylims[0]) / zoom_by
-    new_ymax = mouse_y + (old_ylims[1] - mouse_y) / zoom_by
-    viewer.ax.set_ylim(new_ymin, new_ymax)
-
-    viewer.imgCanvas.draw()
+    mouse_xy = dev_to_data(np.array([event.x, event.y]), viewer)
+    viewer.corners[0] = mouse_xy - (mouse_xy - viewer.corners[0]) / zoom_by
+    viewer.corners[1] = mouse_xy + (viewer.corners[1] - mouse_xy) / zoom_by
+    set_limits_to_corners(viewer)
 
 
-def translate(event,viewer):
+def translate(event,v):
     #translates (moves) image with mouse, when button held down.
-    print('motion / button event!')
-    print('           event = {0}'.format(event))
-    sys.stdout.flush()
     xy_now = np.array([event.x, event.y])
-    if str(event.type) in ("ButtonPress", "Motion") and viewer.mousebuttondown == False:
-        viewer.mousebuttondown = True
-        viewer.translate_home = xy_now
+    if str(event.type) in ("ButtonPress", "Motion") and v.mousebuttondown == False:
+        v.mousebuttondown = True
+        v.corners_home = v.corners.copy()
+        v.xy_home = xy_now.copy()
         return()
     elif str(event.type) == "ButtonRelease":
-        viewer.mousebuttondown =False
+        v.mousebuttondown = False
         return()
     else: #must be a motion event with button down
-        delta_pixels = ( convert_pixel_to_axis(xy_now, viewer) - 
-                           convert_pixel_to_axis(viewer.translate_home, viewer) )
+        delta_data = (dev_to_data(xy_now, v) - dev_to_data(v.xy_home, v) )
+        v.corners = v.corners_home - delta_data
+        set_limits_to_corners(v)
+ 
+        
     
 
 def key_event(p1,viewer):
@@ -206,32 +161,28 @@ def key_event(p1,viewer):
     sys.stdout.flush()
     
 
+def set_limits_to_corners(viewer):
+    viewer.ax.set_xlim(viewer.corners[0,0], viewer.corners[1,0])
+    viewer.ax.set_ylim(viewer.corners[0,1], viewer.corners[1,1])
+    viewer.imgCanvas.draw()
+    
 
 def setup_images(viewer):
 
     viewer.fig, viewer.ax = plt.subplots()
-    x = range(300)
-    viewer.ax.plot(x, x, '--', linewidth=5, color='firebrick',zorder=1)
 
     xsize,ysize = viewer.imgshape[0], viewer.imgshape[1]
+    viewer.corners = np.array([[0,0],[xsize,ysize]])
+
     viewer.rawimg = viewer.ax.imshow(viewer.image, 
                               extent=[0, xsize, 0, ysize],
                               zorder=0,
-                              cmap="gray"
-                              )
+                              cmap="gray")
 
-    x2 = range(20,200,10)
-    #self.dogimg = ax.imshow(thedog, extent=[0, 400, 0, 300],zorder=0.5)#, alpha=0.5) 
     
     circles = viewer.ax.scatter(viewer.locations[:,1],viewer.locations[:,0], 
                          color='green', zorder=2)
-#    blueplot = viewer.ax.scatter(x2, x2, color='blue',zorder=2)
-#    blueplot.set_visible(1)
     viewer.ax.axis('off')
-#    viewer.ax.margins(x=0)
-#    viewer.ax.margins(y=0)
-    viewer.ax.set_xlim(0, xsize)
-    viewer.ax.set_ylim(0, ysize)
     viewer.fig.subplots_adjust(left=0.0, right=1.0, top=1.0, bottom=0.0)
 
     #Replace current placeholder canvas with new canvas object that will
@@ -251,13 +202,14 @@ def setup_images(viewer):
                             rely=canv_rely,
                             relwidth=canv_relw,
                             relheight=canv_relh)
+    set_limits_to_corners(viewer)
 
     #Now bind the canvas to mouse and keyboard events
     viewer.canvWidget.bind("<Button-4>", lambda e:zoom(e, viewer))
     viewer.canvWidget.bind("<Button-5>", lambda e:zoom(e, viewer))
-#    viewer.canvWidget.bind('<B1-Motion>',lambda e:translate(e, viewer))
-#    viewer.canvWidget.bind('<Button-1>', lambda e:translate(e, viewer))
-#    viewer.canvWidget.bind('<ButtonRelease-1>', lambda e:translate(e, viewer))
+    viewer.canvWidget.bind('<B1-Motion>',lambda e:translate(e, viewer))
+    viewer.canvWidget.bind('<Button-1>', lambda e:translate(e, viewer))
+    viewer.canvWidget.bind('<ButtonRelease-1>', lambda e:translate(e, viewer))
     viewer.top.bind("<Key>", lambda e:key_event(e, viewer))
 
 

@@ -89,7 +89,6 @@ def validateInteger(p1, thestring, theinteger):
 
 def GoButtonCommand():
     import time
-    print('pyxtalmain_support.GoButtonCommand')
     sys.stdout.flush()
     pmw.numFiles=len(pmw.filelist)
     for i in range(0,pmw.numFiles):
