@@ -88,7 +88,6 @@ def validateInteger(p1, thestring, theinteger):
         thestring.set(str(theinteger[0]))
 
 def GoButtonCommand():
-    import time
     sys.stdout.flush()
     pmw.numFiles=len(pmw.filelist)
     for i in range(0,pmw.numFiles):
@@ -165,8 +164,6 @@ def loadButtonCommand():
     import pyxtalrc
     #see: https://stackoverflow.com/questions/67631/how-to-import-a-module-given-the-full-path
 
-
-    
 
 def init(top, gui, *args, **kwargs):
     global pmw, top_level, root

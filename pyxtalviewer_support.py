@@ -8,6 +8,7 @@
 import numpy as np
 import sys
 import pyxtalmain_support
+import pyxtal_image_processing as pimg
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.backends.tkagg as tkagg
@@ -85,6 +86,9 @@ def load_images_and_locations(viewer):
         # note that the [::-1] notation above verses the array top-to-bottom.
         # Apparently the locate function reverses the y coordinate.
         viewer.locations = np.array(full_locations)[:,0:2]
+        # It also puts y before x, so flip again:
+        viewer.locations = np.flip(viewer.locations, axis =1)
+        
         
     elif viewer.pmw.inFileType.get() == "particles":
         #read gsd file.
@@ -129,6 +133,7 @@ def zoom(event, viewer):
     else:
         print("error: probably a windows machine. Need to code mousewheel")
         return()
+    viewer.zoom *= zoom_by
     mouse_xy = dev_to_data(np.array([event.x, event.y]), viewer)
     viewer.corners[0] = mouse_xy - (mouse_xy - viewer.corners[0]) / zoom_by
     viewer.corners[1] = mouse_xy + (viewer.corners[1] - mouse_xy) / zoom_by
@@ -137,8 +142,26 @@ def zoom(event, viewer):
 
 def translate(event,v):
     #translates (moves) image with mouse, when button held down.
+    #Also handles double clicking.
+    import datetime
+    
+    time_now = datetime.datetime.now()
     xy_now = np.array([event.x, event.y])
     if str(event.type) in ("ButtonPress", "Motion") and v.mousebuttondown == False:
+        #Button has apparently been clicked.
+        
+        #First, detect if it was a double click.  If so, recenter image.
+        timenow = datetime.datetime.now()
+        if v.prev_button_time != None:
+            ms_elapsed = (timenow - v.prev_button_time).total_seconds()
+            if ms_elapsed < 0.250:
+                #Yes, this was a double click.
+                v.zoom = 1.0
+                v.corners = np.array([[0,0],v.imgshape])
+                set_limits_to_corners(v)
+        v.prev_button_time = timenow
+
+        #Now set "home position" relative to which we move the image on motion.
         v.mousebuttondown = True
         v.corners_home = v.corners.copy()
         v.xy_home = xy_now.copy()
@@ -151,8 +174,6 @@ def translate(event,v):
         v.corners = v.corners_home - delta_data
         set_limits_to_corners(v)
  
-        
-    
 
 def key_event(p1,viewer):
     print('key event!')
@@ -167,21 +188,8 @@ def set_limits_to_corners(viewer):
     viewer.imgCanvas.draw()
     
 
-def setup_images(viewer):
-
+def setup_canvas_and_axes(viewer):
     viewer.fig, viewer.ax = plt.subplots()
-
-    xsize,ysize = viewer.imgshape[0], viewer.imgshape[1]
-    viewer.corners = np.array([[0,0],[xsize,ysize]])
-
-    viewer.rawimg = viewer.ax.imshow(viewer.image, 
-                              extent=[0, xsize, 0, ysize],
-                              zorder=0,
-                              cmap="gray")
-
-    
-    circles = viewer.ax.scatter(viewer.locations[:,1],viewer.locations[:,0], 
-                         color='green', zorder=2)
     viewer.ax.axis('off')
     viewer.fig.subplots_adjust(left=0.0, right=1.0, top=1.0, bottom=0.0)
 
@@ -202,7 +210,6 @@ def setup_images(viewer):
                             rely=canv_rely,
                             relwidth=canv_relw,
                             relheight=canv_relh)
-    set_limits_to_corners(viewer)
 
     #Now bind the canvas to mouse and keyboard events
     viewer.canvWidget.bind("<Button-4>", lambda e:zoom(e, viewer))
@@ -210,11 +217,16 @@ def setup_images(viewer):
     viewer.canvWidget.bind('<B1-Motion>',lambda e:translate(e, viewer))
     viewer.canvWidget.bind('<Button-1>', lambda e:translate(e, viewer))
     viewer.canvWidget.bind('<ButtonRelease-1>', lambda e:translate(e, viewer))
+    viewer.canvWidget.bind('<Double-Button-1>', lambda e:translate(e, viewer))
     viewer.top.bind("<Key>", lambda e:key_event(e, viewer))
 
+    #Add some other housekeeping parts to the viewer, to keep track of
+    #zooming and translation
+    viewer.corners = np.array([ [0,0], viewer.imgshape ])
+    set_limits_to_corners(viewer)
+    viewer.prev_button_time = None
+    viewer.zoom = 1.00
 
-
-    
 
 def init(top, viewer, *args, **kwargs):
     viewer.top = top
@@ -230,8 +242,10 @@ def init(top, viewer, *args, **kwargs):
     viewer.top.update()
     viewer.mousebuttondown = False    
     load_images_and_locations(viewer)
-    setup_images(viewer)    
-    viewer.top.update()    
+    setup_canvas_and_axes(viewer)
+    pimg.do_raw_image(viewer)
+    pimg.do_circle_plot(viewer)
+    pimg.do_triangulation(viewer)    
 
 def destroy_viewer(viewer):
     # Function which closes the window.
