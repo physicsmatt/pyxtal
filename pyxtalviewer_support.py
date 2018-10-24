@@ -46,9 +46,24 @@ def set_views_to_globals(viewer):
     viewer.showOrientation.set(viewer.pmw.showOrientation)
     
 
-def changeVisibleAnnotations():
+def changeVisibleAnnotations(viewer):
     print('pyxtalviewer_support.changeVisibleAnnotations')
     sys.stdout.flush()
+    print(viewer.showCircles.get())
+    viewer.circles.set_visible(viewer.showCircles.get())
+#    viewer.triang.set_visible(viewer.showTriang.get())
+    viewer.angleimg.set_visible(viewer.showOrientation.get())
+    viewer.imgCanvas.draw()
+    
+#        self.whichImage = StringVar()
+#        self.invertImage = BooleanVar()
+#        self.showCircles = BooleanVar()
+#        self.showTriang = BooleanVar()
+#        self.showDefects = BooleanVar()
+#        self.showOrientation = BooleanVar()
+#        self.showTraject = BooleanVar()
+#        self.showStats = BooleanVar()
+    
 
 def invertImageChange():
     print('pyxtalviewer_support.invertImageChange')
@@ -79,6 +94,7 @@ def load_images_and_locations(viewer):
     if viewer.pmw.inFileType.get() == "image":
         #use code from colloid group.
         viewer.image = plt.imread(viewer.filename)
+#        viewer.image = viewer.image[0:50,0:50]
         viewer.imgshape = np.shape(viewer.image)
         
         #This gives dataframe with 8 columns. First two are y, x 
@@ -245,10 +261,11 @@ def init(top, viewer, *args, **kwargs):
     setup_canvas_and_axes(viewer)
     pimg.do_raw_image(viewer)
     pimg.do_circle_plot(viewer)
-    pimg.do_triangulation(viewer)    
+    pimg.do_triangulation(viewer)
+    pimg.do_angle_field(viewer)
 
 def destroy_viewer(viewer):
-    # Function which closes the window.
+    # Function which closes the individual viewer.
     viewer.pmw.viewers.remove(viewer) #remove from main list of viewers
     plt.close(viewer.fig) #keeps the plot from reappearing in the console.
     top = viewer.top

@@ -177,6 +177,11 @@ def init(top, gui, *args, **kwargs):
     pmw.viewers = list()
     initialize_parameters(pmw)
 
+    filename = "double.tif"
+    pmw.filelist.append(filename)
+#    pmw.fileListbox.insert(END, os.path.basename(filename))
+
+
     import os
     os.getcwd()
     pmw.path = os.getcwd()
