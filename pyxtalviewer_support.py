@@ -47,11 +47,13 @@ def set_views_to_globals(viewer):
     
 
 def changeVisibleAnnotations(viewer):
-    print('pyxtalviewer_support.changeVisibleAnnotations')
-    sys.stdout.flush()
-    print(viewer.showCircles.get())
+    imagetype = viewer.whichImage.get()
+    if imagetype == "raw":
+        viewer.rawimg.set_visible(True)
+    if imagetype == "none":
+        viewer.rawimg.set_visible(False)
     viewer.circles.set_visible(viewer.showCircles.get())
-#    viewer.triang.set_visible(viewer.showTriang.get())
+    viewer.triang.set_visible(viewer.showTriang.get())
     viewer.angleimg.set_visible(viewer.showOrientation.get())
     viewer.imgCanvas.draw()
     
@@ -263,6 +265,7 @@ def init(top, viewer, *args, **kwargs):
     pimg.do_circle_plot(viewer)
     pimg.do_triangulation(viewer)
     pimg.do_angle_field(viewer)
+    changeVisibleAnnotations(viewer)
 
 def destroy_viewer(viewer):
     # Function which closes the individual viewer.
