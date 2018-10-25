@@ -62,6 +62,7 @@ def changeVisibleAnnotations(viewer):
     viewer.circles.set_visible(viewer.showCircles.get())
     viewer.triang.set_visible(viewer.showTriang.get())
     viewer.angleimg.set_visible(viewer.showOrientation.get())
+    viewer.pltdisc.set_visible(viewer.showDefects.get())
     viewer.imgCanvas.draw()
     
 #        self.whichImage = StringVar()
@@ -103,7 +104,7 @@ def load_images_and_locations(viewer):
     if viewer.pmw.inFileType.get() == "image":
         #use code from colloid group.
         viewer.image = plt.imread(viewer.filename)
-#        viewer.image = viewer.image[0:50,0:50]
+#        viewer.image = viewer.image[0:100,0:100]
         viewer.imgshape = np.shape(viewer.image)
         
         #This gives dataframe with 8 columns. First two are y, x 
@@ -172,12 +173,27 @@ def zoom(event, viewer):
 def zoom_linewidths(v): 
     #I'll suppose for now I want the thickness to be one image pixel
     #For now, I'm just going to make a starting guess and scale it.
-    lw = int(np.ceil(v.zoom))
+    #On second thought that fails for small images with big spheres.
+    lw = 1 * int(np.ceil(v.zoom))
+
+    #Instead, let's make it always be sphereSize/10.  But how do I get
+    #a sphere size in points?
+    lw = convert_data_to_points(v.pmw.sphereSize[0]/10, v)
     v.circles.set_linewidth(lw)
     v.triang.set_linewidth(lw)
     #v.imgCanvas.draw()
    
     
+def convert_data_to_points(data, viewer):
+    #converts data coordinates to printers' "points", used for linewidths.
+    length = viewer.fig.bbox_inches.width * viewer.ax.get_position().width
+    value_range = np.diff(viewer.ax.get_xlim())
+    # Convert length of axis to points
+    length *= 72
+    # Return data_coords converted to points
+    return (data * (length / value_range))
+
+
 
 def translate(event,v):
     #translates (moves) image with mouse, when button held down.
@@ -289,8 +305,10 @@ def init(top, viewer, *args, **kwargs):
     pimg.do_inverted_images(viewer)
     pimg.do_circle_plot(viewer)
     pimg.do_triangulation(viewer)
+    pimg.do_disclinations(viewer)
     pimg.do_angle_field(viewer)
     changeVisibleAnnotations(viewer)
+    zoom_linewidths(viewer)
 
 def destroy_viewer(viewer):
     # Function which closes the individual viewer.

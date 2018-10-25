@@ -32,10 +32,13 @@ def do_circle_plot(v):
     #scale with the axes as the figure is zoomed.
     #I'll still have to rescale the linewidth manually, however.
     
+
     radius = int(v.pmw.sphereSize[0]*0.7)
-    patches = [matplotlib.pyplot.Circle(xy, radius) 
+    patches = [matplotlib.patches.CirclePolygon(xy, radius) 
                     for xy in v.locations]
-    coll = matplotlib.collections.PatchCollection(patches, edgecolor='green', facecolor='None')
+    coll = matplotlib.collections.PatchCollection(patches, 
+                            edgecolor=('#B4FF64'), facecolor='None', zorder=2)
+    #use RGB color (180,255,100), or #B4FF64.  The hex value seems much faster!
     v.circles = v.ax.add_collection(coll)
 
     #Note that this is how you set linewidths:
@@ -64,9 +67,9 @@ def do_triangulation(v):
     outer_neighbors = v.tri.neighbors[where_outer_tri,:].reshape(-1)
     v.tri.outer_vertices = np.unique(outer_tri[np.where(outer_neighbors != -1)])
     #above are the indices of the outer vertices
-    v.outermost = v.ax.scatter(v.locations[v.tri.outer_vertices,0], 
-                               v.locations[v.tri.outer_vertices,1], 
-                         color='red', zorder=5)
+#    v.outermost = v.ax.scatter(v.locations[v.tri.outer_vertices,0], 
+#                               v.locations[v.tri.outer_vertices,1], 
+#                         color='red', zorder=5)
     #I would like to figure out how to group all of the plots together, 
     #like v.plt.outermost and v.plt.circles but I don't know how.
     v.imgCanvas.draw()
@@ -81,6 +84,7 @@ def do_triangulation(v):
     v.tri.bondsy = np.zeros(num_bonds)
     v.tri.bondsl = np.zeros(num_bonds)
     v.tri.bondsangle = np.zeros(num_bonds)
+    v.tri.cnum = np.zeros(len(v.tri.points)) #coordination number of each vertex
     segs = np.zeros((num_bonds,2,2))
     #See https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.Delaunay.vertex_neighbor_vertices.html#scipy.spatial.Delaunay.vertex_neighbor_vertices
     indptr = v.tri.vertex_neighbor_vertices[0]
@@ -88,7 +92,8 @@ def do_triangulation(v):
     #There's probably a cute way to do the next part using np.where, but since 
     #there's only order N of these to go through, I'll just iterate instead.
     bondi = 0
-    for v1i in range(0,len(v.tri.points)):        
+    for v1i in range(0,len(v.tri.points)):
+        v.tri.cnum[v1i] = indptr[v1i+1] - indptr[v1i]
         for v2i in indices[indptr[v1i]:indptr[v1i + 1]]:
             if v2i > v1i: #This eliminates double counting of bonds
                 x1 = v.tri.points[v1i,0]
@@ -103,15 +108,38 @@ def do_triangulation(v):
                 #turn this into 0 to 60 degrees:
                 v.tri.bondsangle[bondi] = angle % (np.pi / 3)
                 bondi += 1
-    line_coll = matplotlib.collections.LineCollection(segs, color='blue')
+    line_coll = matplotlib.collections.LineCollection(segs, color='blue', zorder=4)
     v.triang = v.ax.add_collection(line_coll)
     v.imgCanvas.draw()
 
+def disc_color(cnum):
+    if cnum <= 4:
+        return('#FF00FF') #magenta
+    if cnum == 5:
+        return('#FF0000') #red
+    if cnum == 7:
+        return('#00FF00') #green
+    if cnum >=8:
+        return('#00FFFF') #cyan
+
     
-#def do_disclinations(v):
-#Not sure if it's best to do these as a single plot with multiple colors,
-#or multiple plots for each different flavor of disclination.  Wait to see how
-#hard it is to handle zooming first.    
+def do_disclinations(v):
+
+    #Note that for some reason, the np.where returns a tuple with one item,
+    #so I need to access it with [0].
+    v.disc = np.where(v.tri.cnum != 6)[0]
+    radius = int(v.pmw.sphereSize[0]*0.5)
+
+    #The line below should be appreciated, as it is particularly pythonic.
+    patches = [matplotlib.patches.Circle(v.locations[i], radius, 
+                                         facecolor=disc_color(v.tri.cnum[i])) 
+                                    for i in v.disc]
+
+    coll = matplotlib.collections.PatchCollection(patches, match_original=True, zorder=5)
+    v.pltdisc = v.ax.add_collection(coll)
+    v.imgCanvas.draw()
+
+
 
 def do_angle_field(v):
     #This function ultimately produces a color image representing the local
@@ -124,26 +152,29 @@ def do_angle_field(v):
     #Now, create the orientation field:
     xsize, ysize = v.imgshape[0], v.imgshape[1]
     grid_x, grid_y = np.mgrid[0:xsize:1, 0:ysize:1]
-    cosangle = np.cos(6 * v.tri.bondsangle)
-    sinangle = np.sin(6 * v.tri.bondsangle)
+    cosangle = np.cos(6 * (v.tri.bondsangle - np.pi/6))
+    sinangle = np.sin(6 * (v.tri.bondsangle - np.pi/6))
+    
+    #Note below that I have switched grid_x and grid_y, contrary to the example
+    #shown in the numpy reference manual.  I did so because x and y were clearly
+    #reversed in the resulting rgb image.
     cosarr = scipy.interpolate.griddata((v.tri.bondsx, v.tri.bondsy), 
-                                          cosangle, (grid_x, grid_y),method='nearest')
+                                          cosangle, (grid_y, grid_x),method='linear')
     sinarr = scipy.interpolate.griddata((v.tri.bondsx, v.tri.bondsy), 
-                                          sinangle, (grid_x, grid_y),method='nearest')
+                                          sinangle, (grid_y, grid_x),method='linear')
     anglearr = (np.arctan2(sinarr,cosarr) + np.pi ) / (2 * np.pi)
 
 
     hsvimg = np.ones((xsize, ysize, 3))
     hsvimg[:,:,0] = anglearr
     v.rgbimg = matplotlib.colors.hsv_to_rgb(hsvimg)
-    v.rgbimg = np.flip(v.rgbimg, axis=1)
-#    v.rgbimg = np.flip(v.rgbimg, axis=0)
+#    v.rgbimg = np.flip(v.rgbimg, axis=1)
+    v.rgbimg = np.flip(v.rgbimg, axis=0)
     rgbvar = v.rgbimg
 
-    print(np.max(rgbvar), np.min(rgbvar))
     v.angleimg = v.ax.imshow(v.rgbimg, 
                               extent=[0, xsize, 0, ysize],
-                              zorder=1, alpha = 0.7)
+                              zorder=1, alpha = 0.3)
     v.imgCanvas.draw()
     
     
