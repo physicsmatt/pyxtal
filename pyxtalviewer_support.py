@@ -45,6 +45,13 @@ def set_views_to_globals(viewer):
     viewer.showDefects.set(viewer.pmw.showDefects)
     viewer.showOrientation.set(viewer.pmw.showOrientation)
     
+def changeInvert(viewer):
+    invert = viewer.invertImage.get()
+    if invert:
+        viewer.rawimg.set_data(viewer.inv_image)
+    else:
+        viewer.rawimg.set_data(viewer.image)
+    viewer.imgCanvas.draw()
 
 def changeVisibleAnnotations(viewer):
     imagetype = viewer.whichImage.get()
@@ -159,7 +166,7 @@ def zoom(event, viewer):
     set_limits_to_corners(viewer)
     #Also, scale various line thicknesses accordingly
     zoom_linewidths(viewer)
-    v.imgCanvas.draw()
+    viewer.imgCanvas.draw()
 
     
 def zoom_linewidths(v): 
@@ -168,7 +175,7 @@ def zoom_linewidths(v):
     lw = int(np.ceil(v.zoom))
     v.circles.set_linewidth(lw)
     v.triang.set_linewidth(lw)
-    v.imgCanvas.draw()
+    #v.imgCanvas.draw()
    
     
 
@@ -279,6 +286,7 @@ def init(top, viewer, *args, **kwargs):
     load_images_and_locations(viewer)
     setup_canvas_and_axes(viewer)
     pimg.do_raw_image(viewer)
+    pimg.do_inverted_images(viewer)
     pimg.do_circle_plot(viewer)
     pimg.do_triangulation(viewer)
     pimg.do_angle_field(viewer)

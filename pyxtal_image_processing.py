@@ -20,6 +20,10 @@ def do_raw_image(v):
                               zorder=0,
                               cmap="gray")
     v.imgCanvas.draw()
+
+
+def do_inverted_images(v):
+    v.inv_image = np.max(v.image) - v.image
     
     
 def do_circle_plot(v):
@@ -28,7 +32,7 @@ def do_circle_plot(v):
     #scale with the axes as the figure is zoomed.
     #I'll still have to rescale the linewidth manually, however.
     
-    radius = int(v.pmw.sphereSize[0]*0.75)
+    radius = int(v.pmw.sphereSize[0]*0.7)
     patches = [matplotlib.pyplot.Circle(xy, radius) 
                     for xy in v.locations]
     coll = matplotlib.collections.PatchCollection(patches, edgecolor='green', facecolor='None')
@@ -149,5 +153,5 @@ def do_angle_field(v):
 
 if __name__ == '__main__':
     #print("This file is not runnable as main.  Run Pyxtalmain.py instead.")
-    import pyxtalmain
-    pyxtalmain.vp_start_gui()
+    import pyxtal
+    pyxtal.vp_start_gui()

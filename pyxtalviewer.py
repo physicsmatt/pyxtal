@@ -114,7 +114,7 @@ class Pyxtal_Viewer:
         self.invertCheck.place(relx=0.75, rely=0.444, relheight=0.378
                 , relwidth=0.225, bordermode='ignore')
         self.invertCheck.configure(activebackground="#d9d9d9")
-        self.invertCheck.configure(command=lambda: pyxtalviewer_support.changeVisibleAnnotations(self))
+        self.invertCheck.configure(command=lambda: pyxtalviewer_support.changeInvert(self))
         self.invertCheck.configure(justify=LEFT)
         self.invertCheck.configure(text='''Invert''')
         self.invertCheck.configure(variable=self.invertImage)
@@ -205,7 +205,7 @@ class Pyxtal_Viewer:
 if __name__ == '__main__':
     #vp_start_gui()
     #print("This file is not runnable as main.  Run Pyxtalmain.py instead.")
-    import pyxtalmain
-    pyxtalmain.vp_start_gui()
+    import pyxtal
+    pyxtal.vp_start_gui()
 
 
