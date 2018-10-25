@@ -242,6 +242,6 @@ def destroy_pyxtalmain(pmw):
 
 if __name__ == '__main__':
     import pyxtalviewer
-    import pyxtalmain
-    pyxtalmain.vp_start_gui()
+    import pyxtal
+    pyxtal.vp_start_gui()
 

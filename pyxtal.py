@@ -19,15 +19,15 @@ except ImportError:
     import tkinter.ttk as ttk
     py3 = True
 
-import pyxtalmain_support
+import pyxtal_support
 
 def vp_start_gui():
     '''Starting point when module is the main routine.'''
     global val, w, root
     root = Tk()
-    pyxtalmain_support.set_Tk_var()
+    pyxtal_support.set_Tk_var()
     top = Pyxtal_Main_Controls (root)
-    pyxtalmain_support.init(root, top)
+    pyxtal_support.init(root, top)
     root.mainloop()
 
 w = None
@@ -36,9 +36,9 @@ def create_Pyxtal_Main_Controls(root, *args, **kwargs):
     global w, w_win, rt
     rt = root
     w = Toplevel (root)
-    pyxtalmain_support.set_Tk_var()
+    pyxtal_support.set_Tk_var()
     top = Pyxtal_Main_Controls (w)
-    pyxtalmain_support.init(w, top, *args, **kwargs)
+    pyxtal_support.init(w, top, *args, **kwargs)
     return (w, top)
 
 def destroy_Pyxtal_Main_Controls():
@@ -119,14 +119,14 @@ class Pyxtal_Main_Controls:
         self.AddButton.place(relx=0.034, rely=0.105, height=33, width=98
                 , bordermode='ignore')
         self.AddButton.configure(activebackground="#d9d9d9")
-        self.AddButton.configure(command=pyxtalmain_support.addButtonCommand)
+        self.AddButton.configure(command=pyxtal_support.addButtonCommand)
         self.AddButton.configure(text='''Add Files''')
 
         self.ClearButton = Button(self.Labelframe2)
         self.ClearButton.place(relx=0.586, rely=0.105, height=33, width=108
                 , bordermode='ignore')
         self.ClearButton.configure(activebackground="#d9d9d9")
-        self.ClearButton.configure(command=pyxtalmain_support.clearButtonCommand)
+        self.ClearButton.configure(command=pyxtal_support.clearButtonCommand)
         self.ClearButton.configure(text='''Clear Files''')
 
         self.pathBox = Text(self.Labelframe2)
@@ -155,7 +155,7 @@ class Pyxtal_Main_Controls:
         self.SaveDefButton = Button(top)
         self.SaveDefButton.place(relx=0.778, rely=0.879, height=33, width=108)
         self.SaveDefButton.configure(activebackground="#d9d9d9")
-        self.SaveDefButton.configure(command=pyxtalmain_support.saveButtonCommand)
+        self.SaveDefButton.configure(command=pyxtal_support.saveButtonCommand)
         self.SaveDefButton.configure(text='''Save Defaults''')
 
         self.inputFrame = LabelFrame(top)
@@ -170,7 +170,7 @@ class Pyxtal_Main_Controls:
                 , relwidth=0.497, bordermode='ignore')
         self.imageRadio.configure(activebackground="#d9d9d9")
         self.imageRadio.configure(anchor=W)
-        self.imageRadio.configure(command=pyxtalmain_support.inFileTypeChange)
+        self.imageRadio.configure(command=pyxtal_support.inFileTypeChange)
         self.imageRadio.configure(justify=LEFT)
         self.imageRadio.configure(text='''Image file''')
         self.imageRadio.configure(value="image")
@@ -181,7 +181,7 @@ class Pyxtal_Main_Controls:
                 , relwidth=0.548, bordermode='ignore')
         self.gsdAssemRadio.configure(activebackground="#d9d9d9")
         self.gsdAssemRadio.configure(anchor=W)
-        self.gsdAssemRadio.configure(command=pyxtalmain_support.inFileTypeChange)
+        self.gsdAssemRadio.configure(command=pyxtal_support.inFileTypeChange)
         self.gsdAssemRadio.configure(justify=LEFT)
         self.gsdAssemRadio.configure(text='''gsd assemblies''')
         self.gsdAssemRadio.configure(value="assemblies")
@@ -192,7 +192,7 @@ class Pyxtal_Main_Controls:
                 , relwidth=0.455, bordermode='ignore')
         self.gsdPartRadio.configure(activebackground="#d9d9d9")
         self.gsdPartRadio.configure(anchor=W)
-        self.gsdPartRadio.configure(command=pyxtalmain_support.inFileTypeChange)
+        self.gsdPartRadio.configure(command=pyxtal_support.inFileTypeChange)
         self.gsdPartRadio.configure(justify=LEFT)
         self.gsdPartRadio.configure(text='''gsd particles''')
         self.gsdPartRadio.configure(value="particles")
@@ -205,7 +205,7 @@ class Pyxtal_Main_Controls:
         self.sphereEntry.configure(font="TkFixedFont")
         self.sphereEntry.configure(selectbackground="#c4c4c4")
         self.sphereEntry.configure(textvariable=self.sphereSizeStr)
-        self.sphereEntry.bind('<FocusOut>',lambda e:pyxtalmain_support.validateInteger(e,
+        self.sphereEntry.bind('<FocusOut>',lambda e:pyxtal_support.validateInteger(e,
                                     self.sphereSizeStr,
                                     self.sphereSize))
 
@@ -255,7 +255,7 @@ class Pyxtal_Main_Controls:
         self.fromEntry.configure(font="TkFixedFont")
         self.fromEntry.configure(selectbackground="#c4c4c4")
         self.fromEntry.configure(textvariable=self.fromFrameStr)
-        self.fromEntry.bind('<FocusOut>',lambda e:pyxtalmain_support.validateInteger(e,
+        self.fromEntry.bind('<FocusOut>',lambda e:pyxtal_support.validateInteger(e,
                                     self.fromFrameStr,
                                     self.fromFrame))
 
@@ -280,7 +280,7 @@ class Pyxtal_Main_Controls:
         self.toEntry.configure(font="TkFixedFont")
         self.toEntry.configure(selectbackground="#c4c4c4")
         self.toEntry.configure(textvariable=self.toFrameStr)
-        self.toEntry.bind('<FocusOut>',lambda e:pyxtalmain_support.validateInteger(e,
+        self.toEntry.bind('<FocusOut>',lambda e:pyxtal_support.validateInteger(e,
                                     self.toFrameStr,
                                     self.toFrame))
 
@@ -298,7 +298,7 @@ class Pyxtal_Main_Controls:
         self.byEntry.configure(font="TkFixedFont")
         self.byEntry.configure(selectbackground="#c4c4c4")
         self.byEntry.configure(textvariable=self.byFrameStr)
-        self.byEntry.bind('<FocusOut>',lambda e:pyxtalmain_support.validateInteger(e,
+        self.byEntry.bind('<FocusOut>',lambda e:pyxtal_support.validateInteger(e,
                                     self.byFrameStr,
                                     self.byFrame))
 
@@ -314,7 +314,7 @@ class Pyxtal_Main_Controls:
         self.LoadDefButton = Button(top)
         self.LoadDefButton.place(relx=0.558, rely=0.879, height=33, width=108)
         self.LoadDefButton.configure(activebackground="#d9d9d9")
-        self.LoadDefButton.configure(command=pyxtalmain_support.loadButtonCommand)
+        self.LoadDefButton.configure(command=pyxtal_support.loadButtonCommand)
         self.LoadDefButton.configure(text='''Load Defaults''')
 
         self.outputFrame = LabelFrame(top)
@@ -331,7 +331,7 @@ class Pyxtal_Main_Controls:
         self.imageSizeEntry.configure(font="TkFixedFont")
         self.imageSizeEntry.configure(selectbackground="#c4c4c4")
         self.imageSizeEntry.configure(textvariable=self.imageSizeStr)
-        self.imageSizeEntry.bind('<FocusOut>',lambda e:pyxtalmain_support.validateInteger(e,
+        self.imageSizeEntry.bind('<FocusOut>',lambda e:pyxtal_support.validateInteger(e,
                                     self.imageSizeStr,
                                     self.imageSize))
 
@@ -432,14 +432,14 @@ class Pyxtal_Main_Controls:
         self.GoButton.place(relx=0.038, rely=0.686, height=43, width=108
                 , bordermode='ignore')
         self.GoButton.configure(activebackground="#d9d9d9")
-        self.GoButton.configure(command=pyxtalmain_support.GoButtonCommand)
+        self.GoButton.configure(command=pyxtal_support.GoButtonCommand)
         self.GoButton.configure(font=font10)
         self.GoButton.configure(text='''Go''')
 
         self.KillAllButton = Button(self.windowFrame)
         self.KillAllButton.place(relx=0.538, rely=0.686, height=43, width=108
                 , bordermode='ignore')
-        self.KillAllButton.configure(command=pyxtalmain_support.killAllButtonCommand)
+        self.KillAllButton.configure(command=pyxtal_support.killAllButtonCommand)
         self.KillAllButton.configure(activebackground="#d9d9d9")
         self.KillAllButton.configure(text='''Kill All 
 Image Windows''')

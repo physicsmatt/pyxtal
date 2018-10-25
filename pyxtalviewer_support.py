@@ -7,7 +7,7 @@
 
 import numpy as np
 import sys
-import pyxtalmain_support
+import pyxtal_support
 import pyxtal_image_processing as pimg
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -294,7 +294,7 @@ def destroy_viewer(viewer):
 if __name__ == '__main__':
     #import pyxtalviewer
     #pyxtalviewer.vp_start_gui()
-    #print("This file is not runnable as main.  Run Pyxtalmain.py instead.")
-    import pyxtalmain
-    pyxtalmain.vp_start_gui()
+    #print("This file is not runnable as main.  Run pyxtal.py instead.")
+    import pyxtal
+    pyxtal.vp_start_gui()
 
