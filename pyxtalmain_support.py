@@ -193,7 +193,7 @@ def initialize_parameters(pmw):
     pmw.whichImage = "raw"
     pmw.invertImage = False
     pmw.showCircles = True
-    pmw.showTriang = False
+    pmw.showTriang = True
     pmw.showDefects = True
     pmw.showOrientation = True
     pmw.showTraject = False
