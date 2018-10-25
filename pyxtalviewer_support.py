@@ -151,12 +151,26 @@ def zoom(event, viewer):
     else:
         print("error: probably a windows machine. Need to code mousewheel")
         return()
+    # To zoom, first change the axes:
     viewer.zoom *= zoom_by
     mouse_xy = dev_to_data(np.array([event.x, event.y]), viewer)
     viewer.corners[0] = mouse_xy - (mouse_xy - viewer.corners[0]) / zoom_by
     viewer.corners[1] = mouse_xy + (viewer.corners[1] - mouse_xy) / zoom_by
     set_limits_to_corners(viewer)
+    #Also, scale various line thicknesses accordingly
+    zoom_linewidths(viewer)
+    v.imgCanvas.draw()
 
+    
+def zoom_linewidths(v): 
+    #I'll suppose for now I want the thickness to be one image pixel
+    #For now, I'm just going to make a starting guess and scale it.
+    lw = int(np.ceil(v.zoom))
+    v.circles.set_linewidth(lw)
+    v.triang.set_linewidth(lw)
+    v.imgCanvas.draw()
+   
+    
 
 def translate(event,v):
     #translates (moves) image with mouse, when button held down.
@@ -177,6 +191,8 @@ def translate(event,v):
                 v.zoom = 1.0
                 v.corners = np.array([[0,0],v.imgshape])
                 set_limits_to_corners(v)
+                zoom_linewidths(v)
+                v.imgCanvas.draw()
         v.prev_button_time = timenow
 
         #Now set "home position" relative to which we move the image on motion.
@@ -191,6 +207,7 @@ def translate(event,v):
         delta_data = (dev_to_data(xy_now, v) - dev_to_data(v.xy_home, v) )
         v.corners = v.corners_home - delta_data
         set_limits_to_corners(v)
+        v.imgCanvas.draw()
  
 
 def key_event(p1,viewer):
@@ -203,7 +220,7 @@ def key_event(p1,viewer):
 def set_limits_to_corners(viewer):
     viewer.ax.set_xlim(viewer.corners[0,0], viewer.corners[1,0])
     viewer.ax.set_ylim(viewer.corners[0,1], viewer.corners[1,1])
-    viewer.imgCanvas.draw()
+    #viewer.imgCanvas.draw()
     
 
 def setup_canvas_and_axes(viewer):

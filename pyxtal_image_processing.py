@@ -28,14 +28,14 @@ def do_circle_plot(v):
     #scale with the axes as the figure is zoomed.
     #I'll still have to rescale the linewidth manually, however.
     
-    radius = int(v.pmw.sphereSize[0]*0.5)
+    radius = int(v.pmw.sphereSize[0]*0.75)
     patches = [matplotlib.pyplot.Circle(xy, radius) 
                     for xy in v.locations]
     coll = matplotlib.collections.PatchCollection(patches, edgecolor='green', facecolor='None')
     v.circles = v.ax.add_collection(coll)
 
     #Note that this is how you set linewidths:
-    v.circles.set_linewidth(2)
+    #v.circles.set_linewidth(2)
     v.imgCanvas.draw()
 
 
