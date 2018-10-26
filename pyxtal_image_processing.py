@@ -15,7 +15,7 @@ import matplotlib
 
 def do_raw_image(v):
     xsize, ysize = v.imgshape[0], v.imgshape[1]
-    v.rawimg = v.ax.imshow(v.image, 
+    v.plt_rawimg = v.ax.imshow(v.image, 
                               extent=[0, xsize, 0, ysize],
                               zorder=0,
                               cmap="gray")
@@ -39,7 +39,7 @@ def do_circle_plot(v):
     coll = matplotlib.collections.PatchCollection(patches, 
                             edgecolor=('#B4FF64'), facecolor='None', zorder=2)
     #use RGB color (180,255,100), or #B4FF64.  The hex value seems much faster!
-    v.circles = v.ax.add_collection(coll)
+    v.plt_circles = v.ax.add_collection(coll)
 
     #Note that this is how you set linewidths:
     #v.circles.set_linewidth(2)
@@ -52,7 +52,7 @@ def do_triangulation(v):
     #Also gets orientation of each bond, which we'll use later for angle field.
 
     v.tri = spat.Delaunay(v.locations, qhull_options="Qj")
-    #v.triang = v.ax.triplot(v.locations[:,0], v.locations[:,1],
+    #v.plt_triang = v.ax.triplot(v.locations[:,0], v.locations[:,1],
     #                       v.tri.simplices.copy(), #why the copy?
     #                     color='blue', zorder=4)
     #The line above worked, but the object it created included some extra 
@@ -70,9 +70,7 @@ def do_triangulation(v):
 #    v.outermost = v.ax.scatter(v.locations[v.tri.outer_vertices,0], 
 #                               v.locations[v.tri.outer_vertices,1], 
 #                         color='red', zorder=5)
-    #I would like to figure out how to group all of the plots together, 
-    #like v.plt.outermost and v.plt.circles but I don't know how.
-    v.imgCanvas.draw()
+
     #Still to do: figure out how to do this for periodic boundary conditions.
 
     #Now step through and get bond information.
@@ -109,7 +107,7 @@ def do_triangulation(v):
                 v.tri.bondsangle[bondi] = angle % (np.pi / 3)
                 bondi += 1
     line_coll = matplotlib.collections.LineCollection(segs, color='blue', zorder=4)
-    v.triang = v.ax.add_collection(line_coll)
+    v.plt_triang = v.ax.add_collection(line_coll)
     v.imgCanvas.draw()
 
 def disc_color(cnum):
@@ -136,7 +134,7 @@ def do_disclinations(v):
                                     for i in v.disc]
 
     coll = matplotlib.collections.PatchCollection(patches, match_original=True, zorder=5)
-    v.pltdisc = v.ax.add_collection(coll)
+    v.plt_disc = v.ax.add_collection(coll)
     v.imgCanvas.draw()
 
 
@@ -172,7 +170,7 @@ def do_angle_field(v):
     v.rgbimg = np.flip(v.rgbimg, axis=0)
     rgbvar = v.rgbimg
 
-    v.angleimg = v.ax.imshow(v.rgbimg, 
+    v.plt_angleimg = v.ax.imshow(v.rgbimg, 
                               extent=[0, xsize, 0, ysize],
                               zorder=1, alpha = 0.3)
     v.imgCanvas.draw()

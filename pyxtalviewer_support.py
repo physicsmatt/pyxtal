@@ -48,29 +48,23 @@ def set_views_to_globals(viewer):
 def changeInvert(viewer):
     invert = viewer.invertImage.get()
     if invert:
-        viewer.rawimg.set_data(viewer.inv_image)
+        viewer.plt_rawimg.set_data(viewer.inv_image)
     else:
-        viewer.rawimg.set_data(viewer.image)
+        viewer.plt_rawimg.set_data(viewer.image)
     viewer.imgCanvas.draw()
 
 def changeVisibleAnnotations(viewer):
     imagetype = viewer.whichImage.get()
     if imagetype == "raw":
-        viewer.rawimg.set_visible(True)
+        viewer.plt_rawimg.set_visible(True)
     if imagetype == "none":
-        viewer.rawimg.set_visible(False)
-    viewer.circles.set_visible(viewer.showCircles.get())
-    viewer.triang.set_visible(viewer.showTriang.get())
-    viewer.angleimg.set_visible(viewer.showOrientation.get())
-    viewer.pltdisc.set_visible(viewer.showDefects.get())
+        viewer.plt_rawimg.set_visible(False)
+    viewer.plt_circles.set_visible(viewer.showCircles.get())
+    viewer.plt_triang.set_visible(viewer.showTriang.get())
+    viewer.plt_angleimg.set_visible(viewer.showOrientation.get())
+    viewer.plt_disc.set_visible(viewer.showDefects.get())
     viewer.imgCanvas.draw()
-    
-#        self.whichImage = StringVar()
-#        self.invertImage = BooleanVar()
-#        self.showCircles = BooleanVar()
-#        self.showTriang = BooleanVar()
-#        self.showDefects = BooleanVar()
-#        self.showOrientation = BooleanVar()
+   
 #        self.showTraject = BooleanVar()
 #        self.showStats = BooleanVar()
     
@@ -104,6 +98,7 @@ def load_images_and_locations(viewer):
     if viewer.pmw.inFileType.get() == "image":
         #use code from colloid group.
         viewer.image = plt.imread(viewer.filename)
+#below I can clip the image to something smaller, just for debugging purposes
 #        viewer.image = viewer.image[0:100,0:100]
         viewer.imgshape = np.shape(viewer.image)
         
@@ -179,8 +174,8 @@ def zoom_linewidths(v):
     #Instead, let's make it always be sphereSize/10.  But how do I get
     #a sphere size in points?
     lw = convert_data_to_points(v.pmw.sphereSize[0]/10, v)
-    v.circles.set_linewidth(lw)
-    v.triang.set_linewidth(lw)
+    v.plt_circles.set_linewidth(lw)
+    v.plt_triang.set_linewidth(lw)
     #v.imgCanvas.draw()
    
     
