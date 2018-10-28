@@ -14,11 +14,21 @@ import matplotlib
 
 
 def do_raw_image(v):
-    xsize, ysize = v.imgshape[0], v.imgshape[1]
-    v.plt_rawimg = v.ax.imshow(v.image, 
-                              extent=[0, xsize, 0, ysize],
-                              zorder=0,
-                              cmap="gray")
+    if v.pmw.inFileType.get() == "image":
+        xsize, ysize = v.imgshape[0], v.imgshape[1]
+        v.plt_rawimg = v.ax.imshow(v.image, 
+                                  extent=[0, xsize, 0, ysize],
+                                  zorder=0,
+                                  cmap="gray")
+    elif v.pmw.inFileType.get() == "particles":
+        #eventually, get radius from sphere diameter?  Should
+        #I set this as the spheresize?  for now, set radius to 1
+        radius = v.pmw.sphereSize[0] / 2
+        patches = [matplotlib.patches.CirclePolygon(xy, radius) 
+                        for xy in v.locations]
+        coll = matplotlib.collections.PatchCollection(patches, 
+                                facecolor='gray', zorder=0)
+        v.plt_rawimg = v.ax.add_collection(coll)
     v.imgCanvas.draw()
 
 
@@ -125,13 +135,13 @@ def do_disclinations(v):
 
     #Note that for some reason, the np.where returns a tuple with one item,
     #so I need to access it with [0].
-    v.disc = np.where(v.tri.cnum != 6)[0]
-    radius = int(v.pmw.sphereSize[0]*0.5)
+    v.tri.disc = np.where(v.tri.cnum != 6)[0]
+    radius = int(v.pmw.sphereSize[0]*0.45)
 
     #The line below should be appreciated, as it is particularly pythonic.
     patches = [matplotlib.patches.Circle(v.locations[i], radius, 
                                          facecolor=disc_color(v.tri.cnum[i])) 
-                                    for i in v.disc]
+                                    for i in v.tri.disc]
 
     coll = matplotlib.collections.PatchCollection(patches, match_original=True, zorder=5)
     v.plt_disc = v.ax.add_collection(coll)
@@ -149,7 +159,8 @@ def do_angle_field(v):
 
     #Now, create the orientation field:
     xsize, ysize = v.imgshape[0], v.imgshape[1]
-    grid_x, grid_y = np.mgrid[0:xsize:1, 0:ysize:1]
+#    grid_x, grid_y = np.mgrid[0:xsize:1, 0:ysize:1]
+    grid_x, grid_y = np.mgrid[0:ysize:1, 0:xsize:1]
     cosangle = np.cos(6 * (v.tri.bondsangle - np.pi/6))
     sinangle = np.sin(6 * (v.tri.bondsangle - np.pi/6))
     
@@ -157,13 +168,12 @@ def do_angle_field(v):
     #shown in the numpy reference manual.  I did so because x and y were clearly
     #reversed in the resulting rgb image.
     cosarr = scipy.interpolate.griddata((v.tri.bondsx, v.tri.bondsy), 
-                                          cosangle, (grid_y, grid_x),method='linear')
+                                          cosangle, (grid_y, grid_x),method='nearest')
     sinarr = scipy.interpolate.griddata((v.tri.bondsx, v.tri.bondsy), 
-                                          sinangle, (grid_y, grid_x),method='linear')
+                                          sinangle, (grid_y, grid_x),method='nearest')
     anglearr = (np.arctan2(sinarr,cosarr) + np.pi ) / (2 * np.pi)
 
-
-    hsvimg = np.ones((xsize, ysize, 3))
+    hsvimg = np.ones((ysize, xsize, 3))
     hsvimg[:,:,0] = anglearr
     v.rgbimg = matplotlib.colors.hsv_to_rgb(hsvimg)
 #    v.rgbimg = np.flip(v.rgbimg, axis=1)

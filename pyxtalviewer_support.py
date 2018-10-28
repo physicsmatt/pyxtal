@@ -94,13 +94,14 @@ def load_images_and_locations(viewer):
     import matplotlib as mpl
     import matplotlib.pyplot as plt
     import trackpy as tp
+    import gsd.hoomd
 
     if viewer.pmw.inFileType.get() == "image":
         #use code from colloid group.
         viewer.image = plt.imread(viewer.filename)
 #below I can clip the image to something smaller, just for debugging purposes
-#        viewer.image = viewer.image[0:100,0:100]
-        viewer.imgshape = np.shape(viewer.image)
+        viewer.image = viewer.image[0:600,0:900]
+        viewer.imgshape = np.flip(np.shape(viewer.image))  #Note that order now [x, y]
         
         #This gives dataframe with 8 columns. First two are y, x 
         full_locations = tp.locate(viewer.image[::-1], viewer.pmw.sphereSize[0])
@@ -108,12 +109,28 @@ def load_images_and_locations(viewer):
         # Apparently the locate function reverses the y coordinate.
         viewer.locations = np.array(full_locations)[:,0:2]
         # It also puts y before x, so flip again:
-        viewer.locations = np.flip(viewer.locations, axis =1)
-        
+        viewer.locations = np.flip(viewer.locations, axis = 1)
         
     elif viewer.pmw.inFileType.get() == "particles":
-        #read gsd file.
-        None
+        #read gsd file
+        s = gsd.hoomd.open(name=viewer.filename, mode='rb')
+        #fn = viewer.framenum
+#FIX THIS
+        fn = 0
+        if fn > len(s):
+            print("ERROR: frame number out of range")
+        boxsize = s[fn].configuration.box[0:2]  #note that for 2d array, z-component is "1", not 0.
+#        particleCount = s[fn].particles.N
+        viewer.locations = s[fn].particles.position[:,0:2].copy() #do I need a copy here?
+        viewer.locations += boxsize / 2
+        viewer.locations *= 10
+        boxsize = np.ceil(boxsize) * 10
+#Get this from gsd. particle diameter
+        viewer.pmw.sphereSize[0] = 1 * 10
+        viewer.imgshape = np.array([int(boxsize[0]),int(boxsize[1])])
+        print("image shape:",viewer.imgshape)
+    else: #must be a gsd assembly
+        None #not yet implemented
 
 def dev_to_data(xy, viewer):
     # This routine translates "device" coordinates (in pixels)
@@ -275,7 +292,13 @@ def setup_canvas_and_axes(viewer):
 
     #Add some other housekeeping parts to the viewer, to keep track of
     #zooming and translation
+#    if viewer.pmw.inFileType.get() == "image":
     viewer.corners = np.array([ [0,0], viewer.imgshape ])
+    print("viewer.corners = ",viewer.corners)
+#    else: #gsd particles or assemblies (assumes center is zero, for now.)
+#        viewer.corners = np.array([ [-viewer.boxsize[0]/2, -viewer.boxsize[1]/2], 
+#                                    [viewer.boxsize[0]/2, viewer.boxsize[1]/2]])
+#        print("viewer.corners = ",viewer.corners)
     set_limits_to_corners(viewer)
     viewer.prev_button_time = None
     viewer.zoom = 1.00
@@ -297,13 +320,15 @@ def init(top, viewer, *args, **kwargs):
     load_images_and_locations(viewer)
     setup_canvas_and_axes(viewer)
     pimg.do_raw_image(viewer)
-    pimg.do_inverted_images(viewer)
+#    pimg.do_inverted_images(viewer)
     pimg.do_circle_plot(viewer)
     pimg.do_triangulation(viewer)
     pimg.do_disclinations(viewer)
     pimg.do_angle_field(viewer)
     changeVisibleAnnotations(viewer)
     zoom_linewidths(viewer)
+    #print(dir(viewer))
+    #print(dir(viewer.tri))
 
 def destroy_viewer(viewer):
     # Function which closes the individual viewer.

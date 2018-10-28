@@ -173,19 +173,21 @@ def init(top, gui, *args, **kwargs):
     pmw.top = top
     top.protocol("WM_DELETE_WINDOW", lambda: destroy_pyxtalmain(pmw))
 
-    pmw.filelist = list()
-    pmw.viewers = list()
-    initialize_parameters(pmw)
-
-    filename = "double.tif"
-    pmw.filelist.append(filename)
-#    pmw.fileListbox.insert(END, os.path.basename(filename))
-
-
     import os
     os.getcwd()
     pmw.path = os.getcwd()
     pmw.pathBox.insert(END, pmw.path)
+
+    pmw.filelist = list()
+    pmw.viewers = list()
+    initialize_parameters(pmw)
+
+    #For debugging purposes, handy to have a default filename already loaded up.
+#    filename = "double.tif"
+    filename = "hex1short.gsd"
+    pmw.filelist.append(filename)
+    pmw.fileListbox.insert(END, os.path.basename(filename))
+
 
 
 def initialize_parameters(pmw):
@@ -200,7 +202,7 @@ def initialize_parameters(pmw):
     pmw.showStats = False
 
     #initialize all of the Tk variables declared during creation: 
-    pmw.inFileType.set("image") 
+    pmw.inFileType.set("particles") 
     pmw.darkSpheres.set(False)
     pmw.partTypeStr.set("")
     pmw.periodBound.set(False)
@@ -218,7 +220,7 @@ def initialize_parameters(pmw):
     #These numeric values function as a way to save previous values
     #if the associated strings are changed to non-integer values.
     pmw.fromFrame = [0]
-    pmw.toFrame = [-1]
+    pmw.toFrame = [1]
     pmw.byFrame = [1]
     pmw.sphereSize = [7]
     pmw.imageSize = [-1]
@@ -230,6 +232,7 @@ def initialize_parameters(pmw):
     pmw.sphereSizeStr.set (str(pmw.sphereSize[0]))
     pmw.imageSizeStr.set (str(pmw.imageSize[0]))
 
+    #Run this procedure so that the active/disabled options reflect the defaults
     inFileTypeChange()
 
 
