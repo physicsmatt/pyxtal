@@ -168,15 +168,16 @@ def do_angle_field(v):
     #shown in the numpy reference manual.  I did so because x and y were clearly
     #reversed in the resulting rgb image.
     cosarr = scipy.interpolate.griddata((v.tri.bondsx, v.tri.bondsy), 
-                                          cosangle, (grid_y, grid_x),method='nearest')
+                                          cosangle, (grid_y, grid_x),method='linear')
     sinarr = scipy.interpolate.griddata((v.tri.bondsx, v.tri.bondsy), 
-                                          sinangle, (grid_y, grid_x),method='nearest')
+                                          sinangle, (grid_y, grid_x),method='linear')
     anglearr = (np.arctan2(sinarr,cosarr) + np.pi ) / (2 * np.pi)
 
     hsvimg = np.ones((ysize, xsize, 3))
     hsvimg[:,:,0] = anglearr
+    w = np.where(np.isnan(hsvimg[:,:,0]))
+    hsvimg[w] = np.array([0,0,1] )
     v.rgbimg = matplotlib.colors.hsv_to_rgb(hsvimg)
-#    v.rgbimg = np.flip(v.rgbimg, axis=1)
     v.rgbimg = np.flip(v.rgbimg, axis=0)
     rgbvar = v.rgbimg
 

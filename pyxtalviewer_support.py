@@ -114,12 +114,10 @@ def load_images_and_locations(viewer):
     elif viewer.pmw.inFileType.get() == "particles":
         #read gsd file
         s = gsd.hoomd.open(name=viewer.filename, mode='rb')
-        #fn = viewer.framenum
-#FIX THIS
-        fn = 0
+        fn = viewer.framenum
         if fn > len(s):
             print("ERROR: frame number out of range")
-        boxsize = s[fn].configuration.box[0:2]  #note that for 2d array, z-component is "1", not 0.
+        boxsize = s[fn].configuration.box[0:2]  #z-component not used. assuming x,y.
 #        particleCount = s[fn].particles.N
         viewer.locations = s[fn].particles.position[:,0:2].copy() #do I need a copy here?
         viewer.locations += boxsize / 2
@@ -128,7 +126,6 @@ def load_images_and_locations(viewer):
 #Get this from gsd. particle diameter
         viewer.pmw.sphereSize[0] = 1 * 10
         viewer.imgshape = np.array([int(boxsize[0]),int(boxsize[1])])
-        print("image shape:",viewer.imgshape)
     else: #must be a gsd assembly
         None #not yet implemented
 
@@ -245,10 +242,17 @@ def translate(event,v):
         v.imgCanvas.draw()
  
 
-def key_event(p1,viewer):
-    print('key event!')
-    print('           p1 = {0}'.format(p1))
-    print("            ", viewer.filename)
+def key_event(event,viewer):
+    if event.keysym in ("Left", "Right"): #right or left arrows
+        thisidx = viewer.idx
+        if event.keysym == ("Left"):
+            targetidx = thisidx - 1
+        else:
+            targetidx = thisidx + 1
+            if targetidx >= len(viewer.pmw.viewers):
+                targetidx = 0
+        viewer.pmw.viewers[targetidx].top.lift()
+        viewer.pmw.viewers[targetidx].top.focus_force()
     sys.stdout.flush()
     
 
@@ -292,13 +296,7 @@ def setup_canvas_and_axes(viewer):
 
     #Add some other housekeeping parts to the viewer, to keep track of
     #zooming and translation
-#    if viewer.pmw.inFileType.get() == "image":
     viewer.corners = np.array([ [0,0], viewer.imgshape ])
-    print("viewer.corners = ",viewer.corners)
-#    else: #gsd particles or assemblies (assumes center is zero, for now.)
-#        viewer.corners = np.array([ [-viewer.boxsize[0]/2, -viewer.boxsize[1]/2], 
-#                                    [viewer.boxsize[0]/2, viewer.boxsize[1]/2]])
-#        print("viewer.corners = ",viewer.corners)
     set_limits_to_corners(viewer)
     viewer.prev_button_time = None
     viewer.zoom = 1.00
@@ -309,10 +307,12 @@ def init(top, viewer, *args, **kwargs):
     viewer.pmw = args[0]
     viewer.filename = args[1]
     viewer.idx = args[2]
+    viewer.framenum = args[3]
     set_views_to_globals(viewer)
-    viewer.top.title("Pyxtal Viewer: "
-                     + viewer.filename 
-                     + " [" + str(viewer.idx) + "]")
+    viewer.top.title("Pyxtal Viewer "
+                     + "[" + str(viewer.idx) + "]: "
+                     + "        " + viewer.filename + "          "
+                     + "(frame: " + str(viewer.framenum) + ")"  )
     viewer.top.protocol("WM_DELETE_WINDOW", lambda: destroy_viewer(viewer))
 
     viewer.top.update()

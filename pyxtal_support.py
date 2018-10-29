@@ -88,11 +88,30 @@ def validateInteger(p1, thestring, theinteger):
         thestring.set(str(theinteger[0]))
 
 def GoButtonCommand():
+    import gsd.hoomd
     sys.stdout.flush()
     pmw.numFiles=len(pmw.filelist)
-    for i in range(0,pmw.numFiles):
-        pmw.viewers.append(pyxtalviewer.create_Pyxtal_Viewer(
-                root, pmw, pmw.filelist[i], i))
+    if pmw.inFileType.get() == "image":
+        for fileidx in range(0,pmw.numFiles):
+            pmw.viewers.append(pyxtalviewer.create_Pyxtal_Viewer(root, pmw, 
+                        pmw.filelist[fileidx], fileidx, 0))
+    else: #some kind of gsd file
+        vieweridx = 0
+#        print(pmw.fromFrame[0], pmw.toFrame[0], pmw.byFrame[0])
+        for fileidx in range(0,pmw.numFiles):
+            filename = pmw.filelist[fileidx]
+            start = pmw.fromFrame[0]
+            end = pmw.toFrame[0]
+            if end == -1:
+                s = gsd.hoomd.open(name=filename, mode='rb')
+                end = len(s)
+            by = pmw.byFrame[0]
+            for frameidx in range(start, end, by):
+                pmw.viewers.append(pyxtalviewer.create_Pyxtal_Viewer(root, pmw, 
+                        filename, vieweridx, frameidx))
+#                print(pmw.filelist[fileidx], vieweridx, frameidx)
+                vieweridx += 1
+                
 
 def killAllButtonCommand():
     for viewer in pmw.viewers.copy():
@@ -220,7 +239,7 @@ def initialize_parameters(pmw):
     #These numeric values function as a way to save previous values
     #if the associated strings are changed to non-integer values.
     pmw.fromFrame = [0]
-    pmw.toFrame = [1]
+    pmw.toFrame = [3]
     pmw.byFrame = [1]
     pmw.sphereSize = [7]
     pmw.imageSize = [-1]
