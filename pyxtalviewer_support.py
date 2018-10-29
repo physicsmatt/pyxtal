@@ -64,27 +64,16 @@ def changeVisibleAnnotations(viewer):
     viewer.plt_angleimg.set_visible(viewer.showOrientation.get())
     viewer.plt_disc.set_visible(viewer.showDefects.get())
     viewer.imgCanvas.draw()
-   
+#The variables below still need to be implemented and eventually included
+#in the list above:
 #        self.showTraject = BooleanVar()
 #        self.showStats = BooleanVar()
     
-
-def invertImageChange():
-    print('pyxtalviewer_support.invertImageChange')
-    sys.stdout.flush()
-
-def showImageChange():
-    print('pyxtalviewer_support.showImageChange')
-    sys.stdout.flush()
 
 def showStatsWin():
     print('pyxtalviewer_support.showStatsWin')
     sys.stdout.flush()
 
-#def xxx(p1):
-#    print('pyxtalviewer_support.xxx')
-#    print('p1 = {0}'.format(p1))
-#    sys.stdout.flush()
 
 def load_images_and_locations(viewer):
     #Based on the input file type, this function reads the file.
@@ -100,10 +89,10 @@ def load_images_and_locations(viewer):
         #use code from colloid group.
         viewer.image = plt.imread(viewer.filename)
 #below I can clip the image to something smaller, just for debugging purposes
-        viewer.image = viewer.image[0:600,0:900]
+#        viewer.image = viewer.image[0:600,0:900]
         viewer.imgshape = np.flip(np.shape(viewer.image))  #Note that order now [x, y]
         
-        #This gives dataframe with 8 columns. First two are y, x 
+        #This gives dataframe with 8 columns. First two columns are y, x 
         full_locations = tp.locate(viewer.image[::-1], viewer.pmw.sphereSize[0])
         # note that the [::-1] notation above verses the array top-to-bottom.
         # Apparently the locate function reverses the y coordinate.
@@ -114,18 +103,24 @@ def load_images_and_locations(viewer):
     elif viewer.pmw.inFileType.get() == "particles":
         #read gsd file
         s = gsd.hoomd.open(name=viewer.filename, mode='rb')
-        fn = viewer.framenum
+        fn = viewer.framenum  #this value was passed in from pmw
         if fn > len(s):
             print("ERROR: frame number out of range")
-        boxsize = s[fn].configuration.box[0:2]  #z-component not used. assuming x,y.
-#        particleCount = s[fn].particles.N
         viewer.locations = s[fn].particles.position[:,0:2].copy() #do I need a copy here?
+
+        #The hoomd box seems to be always centered on 0,0;
+        #I shift the particle locations so 0,0 is the lower left corner.
+        boxsize = s[fn].configuration.box[0:2]  #z-component not used. assuming x,y.
         viewer.locations += boxsize / 2
+
+        #I also scale all locations by an arbitrary scale factor.
+        #Each new unit corresponds to a pixel in the displayed orientation image.
         viewer.locations *= 10
         boxsize = np.ceil(boxsize) * 10
-#Get this from gsd. particle diameter
+#Eventually, I should get the sphere size from gsd particle diameter
         viewer.pmw.sphereSize[0] = 1 * 10
         viewer.imgshape = np.array([int(boxsize[0]),int(boxsize[1])])
+
     else: #must be a gsd assembly
         None #not yet implemented
 
@@ -243,6 +238,9 @@ def translate(event,v):
  
 
 def key_event(event,viewer):
+    # This function parses and handles keyboard events.
+    # So far, the only keyboard keys enabled are the left and right arrows,
+    # used for flipping through the viewer windows.
     if event.keysym in ("Left", "Right"): #right or left arrows
         thisidx = viewer.idx
         if event.keysym == ("Left"):
@@ -253,7 +251,6 @@ def key_event(event,viewer):
                 targetidx = 0
         viewer.pmw.viewers[targetidx].top.lift()
         viewer.pmw.viewers[targetidx].top.focus_force()
-    sys.stdout.flush()
     
 
 def set_limits_to_corners(viewer):

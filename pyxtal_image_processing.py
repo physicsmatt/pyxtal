@@ -21,8 +21,6 @@ def do_raw_image(v):
                                   zorder=0,
                                   cmap="gray")
     elif v.pmw.inFileType.get() == "particles":
-        #eventually, get radius from sphere diameter?  Should
-        #I set this as the spheresize?  for now, set radius to 1
         radius = v.pmw.sphereSize[0] / 2
         patches = [matplotlib.patches.CirclePolygon(xy, radius) 
                         for xy in v.locations]
@@ -77,6 +75,8 @@ def do_triangulation(v):
     outer_neighbors = v.tri.neighbors[where_outer_tri,:].reshape(-1)
     v.tri.outer_vertices = np.unique(outer_tri[np.where(outer_neighbors != -1)])
     #above are the indices of the outer vertices
+
+#For debugging purposes, these lines plot the vertices on the perimeter:
 #    v.outermost = v.ax.scatter(v.locations[v.tri.outer_vertices,0], 
 #                               v.locations[v.tri.outer_vertices,1], 
 #                         color='red', zorder=5)
@@ -121,6 +121,9 @@ def do_triangulation(v):
     v.imgCanvas.draw()
 
 def disc_color(cnum):
+    # These are the rgb colors used for various types of disclinations.
+    # I should figure out how to implement this with a python dictionary,
+    # but I don't know how to handle the cases <=4 or >=8.
     if cnum <= 4:
         return('#FF00FF') #magenta
     if cnum == 5:
@@ -132,7 +135,6 @@ def disc_color(cnum):
 
     
 def do_disclinations(v):
-
     #Note that for some reason, the np.where returns a tuple with one item,
     #so I need to access it with [0].
     v.tri.disc = np.where(v.tri.cnum != 6)[0]
@@ -153,6 +155,7 @@ def do_angle_field(v):
     #This function ultimately produces a color image representing the local
     #orientation of the crystal.
 
+#For debugging purposes, these lines plot the centers of each bond:
 #    v.bondsplot = v.ax.scatter(v.tri.bondsx, 
 #                               v.tri.bondsy, 
 #                         color='red', zorder=15)

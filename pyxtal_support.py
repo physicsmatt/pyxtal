@@ -45,22 +45,22 @@ def set_widget_state(to_state, widgets):
             set_widget_state(to_state, child)
     else:
         widgets.configure(state=to_state)
-    
+
 
 def inFileTypeChange():
     global pmw
     inputtype = pmw.inFileType.get()
     if inputtype=='image':
-       set_widget_state(NORMAL, [pmw.darkSpheresCheck, pmw.SphereSizeLabel, pmw.sphereEntry])
-       set_widget_state(DISABLED, [pmw.framesframe, pmw.PartTypeLabel, pmw.partTypeEntry])
+       set_widget_state('normal', [pmw.darkSpheresCheck, pmw.SphereSizeLabel, pmw.sphereEntry])
+       set_widget_state('disabled', [pmw.framesframe, pmw.PartTypeLabel, pmw.partTypeEntry])
     if inputtype=='particles':
-       set_widget_state(NORMAL, [pmw.framesframe])
-       set_widget_state(DISABLED, [pmw.darkSpheresCheck, pmw.SphereSizeLabel, pmw.sphereEntry])
-       set_widget_state(DISABLED, [pmw.PartTypeLabel, pmw.partTypeEntry])
+       set_widget_state('normal', [pmw.framesframe])
+       set_widget_state('disabled', [pmw.darkSpheresCheck, pmw.SphereSizeLabel, pmw.sphereEntry])
+       set_widget_state('disabled', [pmw.PartTypeLabel, pmw.partTypeEntry])
     if inputtype=='assemblies':
-       set_widget_state(NORMAL, [pmw.framesframe, pmw.SphereSizeLabel, pmw.sphereEntry])
-       set_widget_state(NORMAL, [pmw.PartTypeLabel, pmw.partTypeEntry])
-       set_widget_state(DISABLED, [pmw.darkSpheresCheck])
+       set_widget_state('normal', [pmw.framesframe, pmw.SphereSizeLabel, pmw.sphereEntry])
+       set_widget_state('normal', [pmw.PartTypeLabel, pmw.partTypeEntry])
+       set_widget_state('disabled', [pmw.darkSpheresCheck])
 
 
 def validateInteger(p1, thestring, theinteger):
@@ -88,6 +88,10 @@ def validateInteger(p1, thestring, theinteger):
         thestring.set(str(theinteger[0]))
 
 def GoButtonCommand():
+    #This function actually creates the viewer windows for each file (if image)
+    #or each image and snapshot, if input is a gsd file.
+    #The info passed to create the viewer is the full filename (with path),
+    #the index number of the viewer (0 to whatever) and the frame number.
     import gsd.hoomd
     sys.stdout.flush()
     pmw.numFiles=len(pmw.filelist)
@@ -95,9 +99,8 @@ def GoButtonCommand():
         for fileidx in range(0,pmw.numFiles):
             pmw.viewers.append(pyxtalviewer.create_Pyxtal_Viewer(root, pmw, 
                         pmw.filelist[fileidx], fileidx, 0))
-    else: #some kind of gsd file
+    else: #must be some kind of gsd file
         vieweridx = 0
-#        print(pmw.fromFrame[0], pmw.toFrame[0], pmw.byFrame[0])
         for fileidx in range(0,pmw.numFiles):
             filename = pmw.filelist[fileidx]
             start = pmw.fromFrame[0]
@@ -107,9 +110,11 @@ def GoButtonCommand():
                 end = len(s)
             by = pmw.byFrame[0]
             for frameidx in range(start, end, by):
-                pmw.viewers.append(pyxtalviewer.create_Pyxtal_Viewer(root, pmw, 
-                        filename, vieweridx, frameidx))
-#                print(pmw.filelist[fileidx], vieweridx, frameidx)
+                newv = pyxtalviewer.create_Pyxtal_Viewer(root, pmw, 
+                        filename, vieweridx, frameidx)
+                pmw.viewers.append(newv)
+                if not pmw.retainWin.get():
+                    pyxtalviewer_support.destroy_viewer(newv)
                 vieweridx += 1
                 
 
@@ -139,6 +144,9 @@ def clearButtonCommand():
 
 
 def saveButtonCommand():
+    #This command will eventually save the various parameters to a file,
+    #probably .pyxtalrc or something like that.  Not implemented yet;
+    #does not work.
     global pmw
     savefilename = pmw.path + "/pyxtalrc.py"  #(use os.path.join)
     print(savefilename)
@@ -170,6 +178,9 @@ def saveButtonCommand():
     
 
 def loadButtonCommand():
+    #This command will eventually save the various parameters to a file,
+    #probably .pyxtalrc or something like that.  Not implemented yet;
+    #does not work.
     print("loading parameters.")
     global pmw
     loadfilename = pmw.path + "/pyxtalrc" #(use os.path.join)
@@ -189,7 +200,7 @@ def init(top, gui, *args, **kwargs):
     pmw = gui
     top_level = top
     root = top
-    pmw.top = top
+    pmw.top = top #this "top" is really the tk root.
     top.protocol("WM_DELETE_WINDOW", lambda: destroy_pyxtalmain(pmw))
 
     import os
@@ -201,7 +212,8 @@ def init(top, gui, *args, **kwargs):
     pmw.viewers = list()
     initialize_parameters(pmw)
 
-    #For debugging purposes, handy to have a default filename already loaded up.
+    #For debugging and demonstration purposes, it's handy to have a default 
+    #filename already loaded up.
 #    filename = "double.tif"
     filename = "hex1short.gsd"
     pmw.filelist.append(filename)
@@ -239,8 +251,8 @@ def initialize_parameters(pmw):
     #These numeric values function as a way to save previous values
     #if the associated strings are changed to non-integer values.
     pmw.fromFrame = [0]
-    pmw.toFrame = [3]
-    pmw.byFrame = [1]
+    pmw.toFrame = [-1]
+    pmw.byFrame = [2]
     pmw.sphereSize = [7]
     pmw.imageSize = [-1]
 
