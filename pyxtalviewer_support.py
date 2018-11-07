@@ -7,14 +7,14 @@
 
 import numpy as np
 import sys
-import pyxtal_support
 import pyxtal_image_processing as pimg
 import matplotlib.pyplot as plt
 #import matplotlib.backends.tkagg as tkagg
-#from matplotlib.backends.backend_agg import FigureCanvasAgg
+#import matplotlib.backends.backend_agg 
+#import FigureCanvasAgg
 #https://matplotlib.org/gallery/user_interfaces/embedding_in_tk_canvas_sgskip.html
 #from matplotlib.figure import Figure
-from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg)
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 #from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk
 
 try:
@@ -80,7 +80,7 @@ def load_images_and_locations(viewer):
     #If File is location data, it adds a fake "image" of spheres.
     #If File is assemblies, it calcultes both an image and location data.
 
-#    import trackpy as tp
+    import trackpy as tp
     import gsd.hoomd
 
     if viewer.pmw.inFileType.get() == "image":
