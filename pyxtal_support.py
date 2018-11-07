@@ -216,6 +216,7 @@ def init(top, gui, *args, **kwargs):
     #filename already loaded up.
 #    filename = "double.tif"
     filename = "hex1short.gsd"
+#    filename = "test_diblock1.gsd"
     pmw.filelist.append(filename)
     pmw.fileListbox.insert(END, os.path.basename(filename))
 
@@ -234,8 +235,9 @@ def initialize_parameters(pmw):
 
     #initialize all of the Tk variables declared during creation: 
     pmw.inFileType.set("particles") 
+#    pmw.inFileType.set("assemblies") 
     pmw.darkSpheres.set(False)
-    pmw.partTypeStr.set("")
+    pmw.partTypeStr.set("B")
     pmw.periodBound.set(False)
     pmw.outCircles.set(True)
     pmw.outTriang.set(False)

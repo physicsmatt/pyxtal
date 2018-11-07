@@ -14,7 +14,7 @@ import matplotlib
 
 
 def do_raw_image(v):
-    if v.pmw.inFileType.get() == "image":
+    if v.pmw.inFileType.get() in ["image", "assemblies"]:
         xsize, ysize = v.imgshape[0], v.imgshape[1]
         v.plt_rawimg = v.ax.imshow(v.image, 
                                   extent=[0, xsize, 0, ysize],

@@ -113,14 +113,52 @@ def load_images_and_locations(viewer):
 
         #I also scale all locations by an arbitrary scale factor.
         #Each new unit corresponds to a pixel in the displayed orientation image.
-        viewer.locations *= 10
-        boxsize = np.ceil(boxsize) * 10
+        scale_fact = 10
+        viewer.locations *= scale_fact
+        boxsize = np.ceil(boxsize) * scale_fact
 #Eventually, I should get the sphere size from gsd particle diameter
-        viewer.pmw.sphereSize[0] = 1 * 10
+        viewer.pmw.sphereSize[0] = 1 * scale_fact
         viewer.imgshape = np.array([int(boxsize[0]),int(boxsize[1])])
 
     else: #must be a gsd assembly
-        None #not yet implemented
+        #read gsd file
+        s = gsd.hoomd.open(name=viewer.filename, mode='rb')
+        fn = viewer.framenum  #this value was passed in from pmw
+        if fn > len(s):
+            print("ERROR: frame number out of range")
+        boxsize = s[fn].configuration.box[0:2]  #z-component not used. assuming x,y.
+        boxsize = np.ceil(boxsize)
+        viewer.imgshape = np.array([int(boxsize[0]),int(boxsize[1])])
+        
+        #Get locations of only 'B' particles, or whatever type is specified.
+        typestring = viewer.pmw.partTypeStr.get()
+        typenum = s[fn].particles.types.index(typestring)
+        #Note that for some reason, the np.where returns a tuple with one item,
+        #so I need to access it with [0].
+        w = np.where(s[fn].particles.typeid == typenum)[0]
+        part_locs3d = s[fn].particles.position[w,0:3]
+
+#This is a kludge, which ONLY looks at z values between +5 and  -5 for
+#this particular input file.  Maybe this should be another user option?
+        w2 = np.where(np.abs(part_locs3d[:,2]) < 5)[0]
+        part_locs = part_locs3d[w2,0:2]
+        part_locs += boxsize / 2
+        
+        #now create an "image" based on the densities of particles at x,y locations
+        #use np.histogram2d
+        image = np.histogram2d(part_locs[:,0], part_locs[:,1],
+                               bins = viewer.imgshape)[0]
+        viewer.image = image.copy()
+
+        #Now use trackpy to get locations of spherical domains from image.
+        #This gives dataframe with 8 columns. First two columns are y, x 
+        full_locations = tp.locate(viewer.image[::-1], viewer.pmw.sphereSize[0])
+        # note that the [::-1] notation above verses the array top-to-bottom.
+        # Apparently the locate function reverses the y coordinate.
+        viewer.locations = np.array(full_locations)[:,0:2]
+        # It also puts y before x, so flip again:
+        viewer.locations = np.flip(viewer.locations, axis = 1)
+
 
 def dev_to_data(xy, viewer):
     # This routine translates "device" coordinates (in pixels)
