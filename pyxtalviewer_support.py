@@ -44,20 +44,27 @@ def set_views_to_globals(viewer):
     viewer.showDefects.set(viewer.pmw.showDefects)
     viewer.showOrientation.set(viewer.pmw.showOrientation)
     
-def changeInvert(viewer):
-    #The invert checkbox is disabled for particles, so only deal with
-    #assemblies and images
-    invert = viewer.invertImage.get()
-    cmaps = ("gist_gray","gist_yarg")
-    viewer.plt_rawimg.set_cmap(cmaps[invert])
+def changeVisibleImage(viewer):
+    #First, decide whether to show ANYTHING:
+    imagetype = viewer.whichImage.get()        
+    show_image = imagetype in ["raw", "filtered"]
+    viewer.plt_image.set_visible(show_image)
+
+    #filtered and inverted options only matter for images and assemblies
+    if viewer.pmw.inFileType.get() in ["image", "assemblies"]:
+        invert = viewer.invertImage.get()
+        cmaps = ("gist_gray","gist_yarg")
+        viewer.plt_image.set_cmap(cmaps[invert])
+        
+        if imagetype == "raw":
+            viewer.plt_image.set_data(viewer.image)
+        if imagetype == "filtered":
+            viewer.plt_image.set_data(viewer.filtered_image)
+    
+    
     viewer.imgCanvas.draw()
 
 def changeVisibleAnnotations(viewer):
-    imagetype = viewer.whichImage.get()
-    if imagetype == "raw":
-        viewer.plt_rawimg.set_visible(True)
-    if imagetype == "none":
-        viewer.plt_rawimg.set_visible(False)
     viewer.plt_circles.set_visible(viewer.showCircles.get())
     viewer.plt_triang.set_visible(viewer.showTriang.get())
     viewer.plt_angleimg.set_visible(viewer.showOrientation.get())
@@ -356,6 +363,7 @@ def init(top, viewer, *args, **kwargs):
     load_images_and_locations(viewer)
     setup_canvas_and_axes(viewer)
     pimg.do_raw_image(viewer)
+    pimg.do_filtered_image(viewer)
 #    pimg.do_inverted_images(viewer)
     pimg.do_circle_plot(viewer)
     pimg.do_triangulation(viewer)

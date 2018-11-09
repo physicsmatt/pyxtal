@@ -27,7 +27,7 @@ colordict =	{
 def do_raw_image(v):
     if v.pmw.inFileType.get() in ["image", "assemblies"]:
         xsize, ysize = v.imgshape[0], v.imgshape[1]
-        v.plt_rawimg = v.ax.imshow(v.image, 
+        v.plt_image = v.ax.imshow(v.image, 
                                   extent=[0, xsize, 0, ysize],
                                   zorder=0,
                                   cmap="gist_gray")
@@ -42,12 +42,19 @@ def do_raw_image(v):
         patches.insert(0, background)
         coll = matplotlib.collections.PatchCollection(patches, 
                                 zorder=0,match_original=True)
-        v.plt_rawimg = v.ax.add_collection(coll)
+        v.plt_image = v.ax.add_collection(coll)
     v.imgCanvas.draw()
 
 
-#def do_inverted_images(v):
-#    v.inv_image = np.max(v.image) - v.image
+def do_filtered_image(v):
+    import scipy.ndimage
+    if v.pmw.inFileType.get() in ["image", "assemblies"]:
+        sigma = v.pmw.sphereSize[0]/3
+        input_ = np.fft.fft2(v.image)
+        output_ = scipy.ndimage.fourier_gaussian(input_, sigma)
+        v.filtered_image = np.fft.ifft2(output_).real
+        #now rescale the output to match input
+        v.filtered_image *= np.max(v.image)/np.max(v.filtered_image)
     
     
 def do_circle_plot(v):

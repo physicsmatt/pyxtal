@@ -84,7 +84,7 @@ class Pyxtal_Viewer:
         self.rawButton.place(relx=0.036, rely=0.444, relheight=0.378
                 , relwidth=0.161, bordermode='ignore')
         self.rawButton.configure(activebackground="#d9d9d9")
-        self.rawButton.configure(command=lambda: pyxtalviewer_support.changeVisibleAnnotations(self))
+        self.rawButton.configure(command=lambda: pyxtalviewer_support.changeVisibleImage(self))
         self.rawButton.configure(justify=LEFT)
         self.rawButton.configure(text='''Raw''')
         self.rawButton.configure(value="raw")
@@ -94,7 +94,7 @@ class Pyxtal_Viewer:
         self.filteredButton.place(relx=0.214, rely=0.444, relheight=0.378
                 , relwidth=0.286, bordermode='ignore')
         self.filteredButton.configure(activebackground="#d9d9d9")
-        self.filteredButton.configure(command=lambda: pyxtalviewer_support.changeVisibleAnnotations(self))
+        self.filteredButton.configure(command=lambda: pyxtalviewer_support.changeVisibleImage(self))
         self.filteredButton.configure(justify=LEFT)
         self.filteredButton.configure(text='''Filtered''')
         self.filteredButton.configure(value="filtered")
@@ -104,7 +104,7 @@ class Pyxtal_Viewer:
         self.noneButton.place(relx=0.536, rely=0.444, relheight=0.378
                 , relwidth=0.186, bordermode='ignore')
         self.noneButton.configure(activebackground="#d9d9d9")
-        self.noneButton.configure(command=lambda: pyxtalviewer_support.changeVisibleAnnotations(self))
+        self.noneButton.configure(command=lambda: pyxtalviewer_support.changeVisibleImage(self))
         self.noneButton.configure(justify=LEFT)
         self.noneButton.configure(text='''None''')
         self.noneButton.configure(value="none")
@@ -114,7 +114,7 @@ class Pyxtal_Viewer:
         self.invertCheck.place(relx=0.75, rely=0.444, relheight=0.378
                 , relwidth=0.225, bordermode='ignore')
         self.invertCheck.configure(activebackground="#d9d9d9")
-        self.invertCheck.configure(command=lambda: pyxtalviewer_support.changeInvert(self))
+        self.invertCheck.configure(command=lambda: pyxtalviewer_support.changeVisibleImage(self))
         self.invertCheck.configure(justify=LEFT)
         self.invertCheck.configure(text='''Invert''')
         self.invertCheck.configure(variable=self.invertImage)
