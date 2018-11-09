@@ -13,25 +13,41 @@ import matplotlib.pyplot as plt
 import matplotlib
 
 
+colordict =	{
+    "particles": "0.7",
+    "background": "0.3",
+    "triangulation": "blue",
+    "circles": "#B4FF64", #RGB color (180,255,100)
+    "disc5": '#FF00FF', #magenta
+    "disc6": '#FF0000', #red
+    "disc7": '#00FF00', #green
+    "disc8": '#00FFFF', #cyan
+}
+
 def do_raw_image(v):
     if v.pmw.inFileType.get() in ["image", "assemblies"]:
         xsize, ysize = v.imgshape[0], v.imgshape[1]
         v.plt_rawimg = v.ax.imshow(v.image, 
                                   extent=[0, xsize, 0, ysize],
                                   zorder=0,
-                                  cmap="gray")
+                                  cmap="gist_gray")
     elif v.pmw.inFileType.get() == "particles":
         radius = v.pmw.sphereSize[0] / 2
-        patches = [matplotlib.patches.CirclePolygon(xy, radius) 
-                        for xy in v.locations]
+        patches = [matplotlib.patches.CirclePolygon(xy, radius,
+                        facecolor=colordict["particles"]) 
+                                        for xy in v.locations]
+        background = matplotlib.patches.Rectangle((0,0),
+                        width=v.imgshape[0],height=v.imgshape[1],
+                        facecolor=colordict["background"])
+        patches.insert(0, background)
         coll = matplotlib.collections.PatchCollection(patches, 
-                                facecolor='gray', zorder=0)
+                                zorder=0,match_original=True)
         v.plt_rawimg = v.ax.add_collection(coll)
     v.imgCanvas.draw()
 
 
-def do_inverted_images(v):
-    v.inv_image = np.max(v.image) - v.image
+#def do_inverted_images(v):
+#    v.inv_image = np.max(v.image) - v.image
     
     
 def do_circle_plot(v):
@@ -45,12 +61,9 @@ def do_circle_plot(v):
     patches = [matplotlib.patches.CirclePolygon(xy, radius) 
                     for xy in v.locations]
     coll = matplotlib.collections.PatchCollection(patches, 
-                            edgecolor=('#B4FF64'), facecolor='None', zorder=2)
-    #use RGB color (180,255,100), or #B4FF64.  The hex value seems much faster!
+                            edgecolor=(colordict["circles"]), facecolor='None', zorder=2)
     v.plt_circles = v.ax.add_collection(coll)
 
-    #Note that this is how you set linewidths:
-    #v.circles.set_linewidth(2)
     v.imgCanvas.draw()
 
 
@@ -116,7 +129,8 @@ def do_triangulation(v):
                 #turn this into 0 to 60 degrees:
                 v.tri.bondsangle[bondi] = angle % (np.pi / 3)
                 bondi += 1
-    line_coll = matplotlib.collections.LineCollection(segs, color='blue', zorder=4)
+    line_coll = matplotlib.collections.LineCollection(segs, 
+                                  color=colordict["triangulation"], zorder=4)
     v.plt_triang = v.ax.add_collection(line_coll)
     v.imgCanvas.draw()
 
@@ -125,13 +139,13 @@ def disc_color(cnum):
     # I should figure out how to implement this with a python dictionary,
     # but I don't know how to handle the cases <=4 or >=8.
     if cnum <= 4:
-        return('#FF00FF') #magenta
+        return(colordict["disc5"])
     if cnum == 5:
-        return('#FF0000') #red
+        return(colordict["disc6"])
     if cnum == 7:
-        return('#00FF00') #green
+        return(colordict["disc7"])
     if cnum >=8:
-        return('#00FFFF') #cyan
+        return(colordict["disc8"])
 
     
 def do_disclinations(v):

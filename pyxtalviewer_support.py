@@ -45,11 +45,11 @@ def set_views_to_globals(viewer):
     viewer.showOrientation.set(viewer.pmw.showOrientation)
     
 def changeInvert(viewer):
+    #The invert checkbox is disabled for particles, so only deal with
+    #assemblies and images
     invert = viewer.invertImage.get()
-    if invert:
-        viewer.plt_rawimg.set_data(viewer.inv_image)
-    else:
-        viewer.plt_rawimg.set_data(viewer.image)
+    cmaps = ("gist_gray","gist_yarg")
+    viewer.plt_rawimg.set_cmap(cmaps[invert])
     viewer.imgCanvas.draw()
 
 def changeVisibleAnnotations(viewer):
@@ -349,7 +349,10 @@ def init(top, viewer, *args, **kwargs):
     viewer.top.protocol("WM_DELETE_WINDOW", lambda: destroy_viewer(viewer))
 
     viewer.top.update()
-    viewer.mousebuttondown = False    
+    viewer.mousebuttondown = False
+    if viewer.pmw.inFileType.get() == "particles":
+        viewer.filteredButton.configure(state='disabled')
+        viewer.invertCheck.configure(state='disabled')
     load_images_and_locations(viewer)
     setup_canvas_and_axes(viewer)
     pimg.do_raw_image(viewer)
