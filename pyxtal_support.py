@@ -232,6 +232,9 @@ def initialize_parameters(pmw):
     pmw.showOrientation = True
     pmw.showTraject = False
     pmw.showStats = False
+    pmw.global_zoom = 1.00
+    pmw.global_corners = None
+    pmw.global_corners_set = False
 
     #initialize all of the Tk variables declared during creation: 
 #    pmw.inFileType.set("particles") 

@@ -36,6 +36,21 @@ def set_Tk_var():
     #the widgets.  That functionality is now within the creation function.
 
     
+def write_zoom_to_globals(viewer):
+    print("writing global zoom")
+    viewer.pmw.global_corners_set = True
+    viewer.pmw.global_corners = viewer.corners.copy()
+    viewer.pmw.global_zoom = viewer.zoom
+    
+def read_zoom_from_globals(viewer):
+    if viewer.pmw.global_corners_set:
+        print("actually reading global zoom")
+        viewer.corners = viewer.pmw.global_corners.copy()
+        viewer.zoom = viewer.pmw.global_zoom
+        set_limits_to_corners(viewer)
+        zoom_linewidths(viewer)
+
+    
 def write_views_to_globals(viewer):
     viewer.pmw.whichImage = viewer.whichImage.get()
     viewer.pmw.invertImage = viewer.invertImage.get()
@@ -309,12 +324,17 @@ def focus_in_event(event,viewer):
         read_views_from_globals(viewer)
         changeVisibleAnnotations(viewer)
         changeVisibleImage(viewer)
+    if viewer.pmw.lockZoom.get():
+        read_zoom_from_globals(viewer)
+    viewer.imgCanvas.draw()
     
 
 def focus_out_event(event,viewer):
     #print("Viewer number ", viewer.idx," Lost focus.")
     if viewer.pmw.lockViews.get():
         write_views_to_globals(viewer)
+    if viewer.pmw.lockZoom.get():
+        write_zoom_to_globals(viewer)
 
 
 def set_limits_to_corners(viewer):
