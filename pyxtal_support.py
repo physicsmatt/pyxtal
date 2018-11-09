@@ -194,6 +194,11 @@ def loadButtonCommand():
     import pyxtalrc
     #see: https://stackoverflow.com/questions/67631/how-to-import-a-module-given-the-full-path
 
+def pmw_key_event(event, pmw):
+    #print("pmw key event: ",event)
+    if event.keysym == "Return":
+        pmw.top.focus_force()
+
 
 def init(top, gui, *args, **kwargs):
     global pmw, top_level, root
@@ -220,6 +225,7 @@ def init(top, gui, *args, **kwargs):
     pmw.filelist.append(filename)
     pmw.fileListbox.insert(END, os.path.basename(filename))
 
+    pmw.top.bind("<Key>", lambda e:pmw_key_event(e, pmw))
 
 
 def initialize_parameters(pmw):
