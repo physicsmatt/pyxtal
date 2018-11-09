@@ -36,14 +36,22 @@ def set_Tk_var():
     #the widgets.  That functionality is now within the creation function.
 
     
-def set_views_to_globals(viewer):
+def write_views_to_globals(viewer):
+    viewer.pmw.whichImage = viewer.whichImage.get()
+    viewer.pmw.invertImage = viewer.invertImage.get()
+    viewer.pmw.showCircles = viewer.showCircles.get()
+    viewer.pmw.showTriang = viewer.showTriang.get()
+    viewer.pmw.showDefects = viewer.showDefects.get()
+    viewer.pmw.showOrientation = viewer.showOrientation.get()
+    
+def read_views_from_globals(viewer):
     viewer.whichImage.set(viewer.pmw.whichImage)
     viewer.invertImage.set(viewer.pmw.invertImage)
     viewer.showCircles.set(viewer.pmw.showCircles)
     viewer.showTriang.set(viewer.pmw.showTriang)
     viewer.showDefects.set(viewer.pmw.showDefects)
     viewer.showOrientation.set(viewer.pmw.showOrientation)
-    
+
 def changeVisibleImage(viewer):
     #First, decide whether to show ANYTHING:
     imagetype = viewer.whichImage.get()        
@@ -60,7 +68,6 @@ def changeVisibleImage(viewer):
             viewer.plt_image.set_data(viewer.image)
         if imagetype == "filtered":
             viewer.plt_image.set_data(viewer.filtered_image)
-    
     
     viewer.imgCanvas.draw()
 
@@ -294,7 +301,21 @@ def key_event(event,viewer):
                 targetidx = 0
         viewer.pmw.viewers[targetidx].top.lift()
         viewer.pmw.viewers[targetidx].top.focus_force()
+
+
+def focus_in_event(event,viewer):
+    #print("Viewer number ", viewer.idx," Gained focus.")
+    if viewer.pmw.lockViews.get():
+        read_views_from_globals(viewer)
+        changeVisibleAnnotations(viewer)
+        changeVisibleImage(viewer)
     
+
+def focus_out_event(event,viewer):
+    #print("Viewer number ", viewer.idx," Lost focus.")
+    if viewer.pmw.lockViews.get():
+        write_views_to_globals(viewer)
+
 
 def set_limits_to_corners(viewer):
     viewer.ax.set_xlim(viewer.corners[0,0], viewer.corners[1,0])
@@ -333,6 +354,8 @@ def setup_canvas_and_axes(viewer):
     viewer.canvWidget.bind('<ButtonRelease-1>', lambda e:translate(e, viewer))
     viewer.canvWidget.bind('<Double-Button-1>', lambda e:translate(e, viewer))
     viewer.top.bind("<Key>", lambda e:key_event(e, viewer))
+    viewer.top.bind("<FocusIn>", lambda e:focus_in_event(e, viewer))
+    viewer.top.bind("<FocusOut>", lambda e:focus_out_event(e, viewer))
 
     #Add some other housekeeping parts to the viewer, to keep track of
     #zooming and translation
@@ -348,7 +371,7 @@ def init(top, viewer, *args, **kwargs):
     viewer.filename = args[1]
     viewer.idx = args[2]
     viewer.framenum = args[3]
-    set_views_to_globals(viewer)
+    read_views_from_globals(viewer)
     viewer.top.title("Pyxtal Viewer "
                      + "[" + str(viewer.idx) + "]: "
                      + "        " + viewer.filename + "          "
