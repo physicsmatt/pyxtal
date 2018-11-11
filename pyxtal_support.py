@@ -213,9 +213,17 @@ def init(top, gui, *args, **kwargs):
     pmw.path = os.getcwd()
     pmw.pathBox.insert(END, pmw.path)
 
+    #as this is a work in progress, I'm disabling controls that are
+    #not implemented yet:
+    set_widget_state('disabled', pmw.PeriodicCheck)
+    set_widget_state('disabled', [pmw.outputFrame, pmw.analysisFrame])
+    set_widget_state('disabled', [pmw.SaveDefButton, pmw.LoadDefButton])
+
     pmw.filelist = list()
     pmw.viewers = list()
     initialize_parameters(pmw)
+
+
 
     #For debugging and demonstration purposes, it's handy to have a default 
     #filename already loaded up.

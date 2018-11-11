@@ -8,6 +8,7 @@
 import numpy as np
 import sys
 import pyxtal_image_processing as pimg
+import pyxtal_support
 import matplotlib.pyplot as plt
 #import matplotlib.backends.tkagg as tkagg
 #import matplotlib.backends.backend_agg 
@@ -400,6 +401,11 @@ def init(top, viewer, *args, **kwargs):
                      + "        " + viewer.filename + "          "
                      + "(frame: " + str(viewer.framenum) + ")"  )
     viewer.top.protocol("WM_DELETE_WINDOW", lambda: destroy_viewer(viewer))
+
+    #as this is a work in progress, I'm disabling controls that are
+    #not implemented yet:
+    pyxtal_support.set_widget_state('disabled', viewer.trajectCheck)
+    pyxtal_support.set_widget_state('disabled', viewer.statsCheck)
 
     viewer.top.update()
     viewer.mousebuttondown = False
