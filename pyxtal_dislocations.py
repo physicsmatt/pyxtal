@@ -5,6 +5,8 @@ Created on Fri Nov  9 12:41:02 2018
 
 @author: mtrawick
 """
+
+
 import numpy as np
 
 def create_inbounds_list_slow(v):
@@ -67,18 +69,20 @@ def create_inbounds_list(v):
         ds = np.abs(np.cross(p2-p1,p3-p1, axis = 1) * denom)
         min_d = np.min(ds)
         v.tri.inbounds[i] = (min_d > threshhold)
-        w = np.where(v.tri.inbounds)
-    #For debugging purposes, these lines plot the vertices on the perimeter:
 
+    #For debugging purposes, these lines plot the vertices on the perimeter:
+#    w = np.where(v.tri.inbounds)
 #    v.plt_inbounds = v.ax.scatter(v.locations[w,0], 
 #                               v.locations[w,1], 
 #                         color='red', zorder=5)
 
 def neighbor_inds(p,v):
     return(np.array(range(v.tri.indptr[p], v.tri.indptr[p+1])))
+
     
 def neighbors(p,v):
     return(v.tri.indices[neighbor_inds(p,v)])
+
 
 def make_bond_between(p1, p2, v):
     #print("making bond between ",p1,p2)
@@ -87,21 +91,8 @@ def make_bond_between(p1, p2, v):
     v.tri.unboundness[p1] += sign_p2
     v.tri.unboundness[p2] += sign_p1
     
-    #Find place in v.tri.indices that references p1 -> p2
-#    neighbor_range = np.array(range(v.tri.indptr[p1], v.tri.indptr[p1+1]))
-#    p1_neighbors = v.tri.indices[neighbor_range]
-#    wp2 = np.where(p1_neighbors == p2)
-#    v.tri.is_dislocation[neighbor_range[wp2]] += 1
-    
     wp2 = np.where(neighbors(p1,v) == p2)
     v.tri.is_dislocation[neighbor_inds(p1,v)[wp2]] +=1
-
-
-    #Find place in v.tri.indices that references p2 -> p1
-#    neighbor_range = np.array(range(v.tri.indptr[p2], v.tri.indptr[p2+1]))
-#    p2_neighbors = v.tri.indices[neighbor_range]
-#    wp1 = np.where(p2_neighbors == p1)
-#    v.tri.is_dislocation[neighbor_range[wp1]] += 1
 
     wp1 = np.where(neighbors(p2,v) == p1)
     v.tri.is_dislocation[neighbor_inds(p2,v)[wp1]] +=1
@@ -111,17 +102,12 @@ def break_bond_between(p1, p2, v):
     v.tri.unboundness[p1] += np.sign(v.tri.cnum[p1] - 6)
     v.tri.unboundness[p2] += np.sign(v.tri.cnum[p2] - 6)
 
-    #Find place in v.tri.indices that references p1 -> p2
-    neighbor_range = np.array(range(v.tri.indptr[p1], v.tri.indptr[p1+1]))
-    p1_neighbors = v.tri.indices[neighbor_range]
-    wp2 = np.where(p1_neighbors == p2)
-    v.tri.is_dislocation[neighbor_range[wp2]] -= 1
+    wp2 = np.where(neighbors(p1,v) == p2)
+    v.tri.is_dislocation[neighbor_inds(p1,v)[wp2]] -=1
 
-    #Find place in v.tri.indices that references p2 -> p1
-    neighbor_range = np.array(range(v.tri.indptr[p2], v.tri.indptr[p2+1]))
-    p2_neighbors = v.tri.indices[neighbor_range]
-    wp1 = np.where(p2_neighbors == p1)
-    v.tri.is_dislocation[neighbor_range[wp1]] -= 1
+    wp1 = np.where(neighbors(p2,v) == p1)
+    v.tri.is_dislocation[neighbor_inds(p2,v)[wp1]] -=1
+
 
 def can_retract_from(p1, p2, v, edges_ok):
     #print("Recursion level: ", v.tri.recursion_level)
@@ -180,8 +166,6 @@ def helpful_to_butt_in_on(p1, p2, v, edges_ok):
 
 def find_a_mate_rudely(p1, v, edges_ok):
    # print("finding mate RUDELY for", p1)
-    #for each neighbor of p1
-#    for p2 in v.tri.indices[v.tri.indptr[p1]:v.tri.indptr[p1 + 1]] :
     for p2 in neighbors(p1,v) :
         if helpful_to_butt_in_on(p1, p2, v, edges_ok):
             if can_butt_in_on(p1, p2, v, edges_ok):
@@ -196,10 +180,9 @@ def helpful_to_bond_nicely(p1,p2,v,edges_ok):
                     and (v.tri.inbounds[p2] or edges_ok))
     return(helpful)
 
+
 def find_a_mate_nicely(p1, v, edges_ok):
     #print("finding mate nicely for",p1)
-    #for each neighbor of p1
-#    for p2 in v.tri.indices[v.tri.indptr[p1]:v.tri.indptr[p1 + 1]] :
     for p2 in neighbors(p1,v) :
         if helpful_to_bond_nicely(p1, p2, v, edges_ok):
             make_bond_between(p1, p2, v)
@@ -210,6 +193,7 @@ def find_a_mate_nicely(p1, v, edges_ok):
 def find_mates_for(p,v):
     if v.tri.inbounds[p]:
         v.tri.inprocess[p] = True
+        #I suspect that these inprocess statements are unnecessary in this funciton.
         while v.tri.unboundness[p] != 0:
             if not find_a_mate_nicely(p, v, edges_ok=False): break
 
@@ -233,16 +217,8 @@ def find_dislocations(v):
     v.tri.ButtInOnAble=np.full((len(v.tri.points), 2), True)
     v.tri.unboundness = v.tri.cnum.copy() - 6
     v.tri.recursion_level = 0
-    unboundness = v.tri.unboundness
     for i in range(0, len(v.tri.points)):
         find_mates_for(i, v)
-#    for i in range(0, len(v.tri.points)):
-#        find_a_mate_rudely(i, v, edges_ok=True)
-    
-    is_dislocation = v.tri.is_dislocation
-    indptr =v.tri.indptr
-    indices = v.tri.indices
-    #print("hello")
 
     
 if __name__ == '__main__':

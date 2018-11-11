@@ -251,6 +251,7 @@ def zoom_linewidths(v):
     lw = convert_data_to_points(v.pmw.sphereSize[0]/10, v)
     v.plt_circles.set_linewidth(lw)
     v.plt_triang.set_linewidth(lw)
+    v.plt_unbound.set_linewidth(lw)
     v.plt_disloc.set_linewidth(2*lw)
     #v.imgCanvas.draw()
    
@@ -413,6 +414,7 @@ def init(top, viewer, *args, **kwargs):
     pimg.do_triangulation(viewer)
     pimg.do_disclinations(viewer)
     pimg.do_dislocations(viewer)
+    pimg.do_unbound_discs(viewer)
     pimg.do_angle_field(viewer)
 #    pimg.do_label_points(viewer)
     changeVisibleAnnotations(viewer)
