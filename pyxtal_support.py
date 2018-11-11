@@ -262,7 +262,7 @@ def initialize_parameters(pmw):
     #These numeric values function as a way to save previous values
     #if the associated strings are changed to non-integer values.
     pmw.fromFrame = [0]
-    pmw.toFrame = [-1]
+    pmw.toFrame = [2]
     pmw.byFrame = [2]
     pmw.sphereSize = [7]
     pmw.imageSize = [-1]

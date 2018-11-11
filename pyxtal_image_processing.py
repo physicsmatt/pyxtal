@@ -11,6 +11,7 @@ import scipy.spatial as spat
 import scipy.interpolate
 import matplotlib.pyplot as plt
 import matplotlib
+import pyxtal_dislocations as dislocs
 
 
 colordict =	{
@@ -22,6 +23,7 @@ colordict =	{
     "disc6": '#FF0000', #red
     "disc7": '#00FF00', #green
     "disc8": '#00FFFF', #cyan
+    "dislocations": '#FFFF00', #yellow
 }
 
 def do_raw_image(v):
@@ -94,13 +96,15 @@ def do_triangulation(v):
     outer_tri = v.tri.simplices[where_outer_tri,:].reshape(-1)
     outer_neighbors = v.tri.neighbors[where_outer_tri,:].reshape(-1)
     v.tri.outer_vertices = np.unique(outer_tri[np.where(outer_neighbors != -1)])
-    #above are the indices of the outer vertices
+    #above are the indices of the outer vertices.  Note that there are many
+    #others that are CLOSE to the outside besides these.  These are in no 
+    #particular order.
 
 #For debugging purposes, these lines plot the vertices on the perimeter:
 #    v.outermost = v.ax.scatter(v.locations[v.tri.outer_vertices,0], 
 #                               v.locations[v.tri.outer_vertices,1], 
 #                         color='red', zorder=5)
-
+#    print(v.locations[v.tri.outer_vertices])
     #Still to do: figure out how to do this for periodic boundary conditions.
 
     #Now step through and get bond information.
@@ -115,14 +119,14 @@ def do_triangulation(v):
     v.tri.cnum = np.zeros(len(v.tri.points)) #coordination number of each vertex
     segs = np.zeros((num_bonds,2,2))
     #See https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.Delaunay.vertex_neighbor_vertices.html#scipy.spatial.Delaunay.vertex_neighbor_vertices
-    indptr = v.tri.vertex_neighbor_vertices[0]
-    indices = v.tri.vertex_neighbor_vertices[1]
+    v.tri.indptr = v.tri.vertex_neighbor_vertices[0]
+    v.tri.indices = v.tri.vertex_neighbor_vertices[1]
     #There's probably a cute way to do the next part using np.where, but since 
     #there's only order N of these to go through, I'll just iterate instead.
     bondi = 0
     for v1i in range(0,len(v.tri.points)):
-        v.tri.cnum[v1i] = indptr[v1i+1] - indptr[v1i]
-        for v2i in indices[indptr[v1i]:indptr[v1i + 1]]:
+        v.tri.cnum[v1i] = v.tri.indptr[v1i+1] - v.tri.indptr[v1i]
+        for v2i in v.tri.indices[v.tri.indptr[v1i]:v.tri.indptr[v1i + 1]] :
             if v2i > v1i: #This eliminates double counting of bonds
                 x1 = v.tri.points[v1i,0]
                 x2 = v.tri.points[v2i,0]
@@ -171,6 +175,35 @@ def do_disclinations(v):
     v.imgCanvas.draw()
 
 
+def do_label_points(v):
+    for i in range(0,len(v.tri.points)):
+        label = str(i)
+        v.ax.annotate(label,v.tri.points[i],zorder=10,color="#FFFFFF",size=20)
+    
+def do_dislocations(v):
+    dislocs.find_dislocations(v)
+    #Now, step through the lists as we did in do_disclinations to compile
+    #list of line segments to plot:
+    num_dislocs = int(np.sum(v.tri.is_dislocation) / 2)
+    segs = np.zeros((num_dislocs,2,2))
+    disloci = 0
+    for v1 in range(0,len(v.tri.points)):
+        for index in range(v.tri.indptr[v1], v.tri.indptr[v1 + 1]):
+            v2 = v.tri.indices[index]
+            if v.tri.is_dislocation[index] > 0 and v2 > v1:
+                x1 = v.tri.points[v1,0]
+                x2 = v.tri.points[v2,0]
+                y1 = v.tri.points[v1,1]
+                y2 = v.tri.points[v2,1]
+                #print(disloci,v1,v2)
+                segs[disloci] = np.array([[x1,y1],[x2,y2]])
+                disloci += 1
+    line_coll = matplotlib.collections.LineCollection(segs, 
+                                  color=colordict["dislocations"], zorder=6)
+    v.plt_disloc = v.ax.add_collection(line_coll)
+    v.imgCanvas.draw()
+    
+  
 
 def do_angle_field(v):
     #This function ultimately produces a color image representing the local
@@ -203,7 +236,6 @@ def do_angle_field(v):
     hsvimg[w] = np.array([0,0,1] )
     v.rgbimg = matplotlib.colors.hsv_to_rgb(hsvimg)
     v.rgbimg = np.flip(v.rgbimg, axis=0)
-    rgbvar = v.rgbimg
 
     v.plt_angleimg = v.ax.imshow(v.rgbimg, 
                               extent=[0, xsize, 0, ysize],

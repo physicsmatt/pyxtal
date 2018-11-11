@@ -37,14 +37,14 @@ def set_Tk_var():
 
     
 def write_zoom_to_globals(viewer):
-    print("writing global zoom")
+    #print("writing global zoom")
     viewer.pmw.global_corners_set = True
     viewer.pmw.global_corners = viewer.corners.copy()
     viewer.pmw.global_zoom = viewer.zoom
     
 def read_zoom_from_globals(viewer):
     if viewer.pmw.global_corners_set:
-        print("actually reading global zoom")
+        #print("actually reading global zoom")
         viewer.corners = viewer.pmw.global_corners.copy()
         viewer.zoom = viewer.pmw.global_zoom
         set_limits_to_corners(viewer)
@@ -91,6 +91,7 @@ def changeVisibleAnnotations(viewer):
     viewer.plt_triang.set_visible(viewer.showTriang.get())
     viewer.plt_angleimg.set_visible(viewer.showOrientation.get())
     viewer.plt_disc.set_visible(viewer.showDefects.get())
+    viewer.plt_disloc.set_visible(viewer.showDefects.get())
     viewer.imgCanvas.draw()
 #The variables below still need to be implemented and eventually included
 #in the list above:
@@ -250,6 +251,7 @@ def zoom_linewidths(v):
     lw = convert_data_to_points(v.pmw.sphereSize[0]/10, v)
     v.plt_circles.set_linewidth(lw)
     v.plt_triang.set_linewidth(lw)
+    v.plt_disloc.set_linewidth(2*lw)
     #v.imgCanvas.draw()
    
     
@@ -407,11 +409,12 @@ def init(top, viewer, *args, **kwargs):
     setup_canvas_and_axes(viewer)
     pimg.do_raw_image(viewer)
     pimg.do_filtered_image(viewer)
-#    pimg.do_inverted_images(viewer)
     pimg.do_circle_plot(viewer)
     pimg.do_triangulation(viewer)
     pimg.do_disclinations(viewer)
+    pimg.do_dislocations(viewer)
     pimg.do_angle_field(viewer)
+#    pimg.do_label_points(viewer)
     changeVisibleAnnotations(viewer)
     zoom_linewidths(viewer)
     #print(dir(viewer))
