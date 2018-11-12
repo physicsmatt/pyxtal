@@ -200,6 +200,10 @@ def pmw_key_event(event, pmw):
         pmw.top.focus_force()
 
 
+def hide_stats(pmw):
+    pmw.stats.top.withdraw()
+    pmw.stats.viewer.showStats.set(False)
+
 def init(top, gui, *args, **kwargs):
     global pmw, top_level, root
     pmw = gui
@@ -221,6 +225,15 @@ def init(top, gui, *args, **kwargs):
 
     pmw.filelist = list()
     pmw.viewers = list()
+
+    import pyxtalstats
+    pmw.stats = pyxtalstats.create_pyxtal_stats_win(pmw.top)
+    pmw.statsText = pmw.stats.Scrolledtext1
+    for i in range(0,15):
+        pmw.statsText.insert("end", "Number of sandwiches: " + str(i) + "\n")
+    pmw.stats.top.withdraw()
+    pmw.stats.top.protocol("WM_DELETE_WINDOW", lambda: hide_stats(pmw))
+
     initialize_parameters(pmw)
 
 

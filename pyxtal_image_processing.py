@@ -195,7 +195,7 @@ def do_dislocations(v):
                 x2 = v.tri.points[v2,0]
                 y1 = v.tri.points[v1,1]
                 y2 = v.tri.points[v2,1]
-                #print(disloci,v1,v2)
+                print(disloci,v1,v2)
                 segs[disloci] = np.array([[x1,y1],[x2,y2]])
                 disloci += 1
     line_coll = matplotlib.collections.LineCollection(segs, 
@@ -258,7 +258,47 @@ def do_angle_field(v):
     v.imgCanvas.draw()
     
     
-    
+def do_stats(v):
+     v.pmw.stats.viewer=v
+     st =  v.pmw.statsText
+     st.delete(1.0, "end")
+     formstr = "{:28}{:10}{:10}\n"
+     st.insert("end", formstr.format(" ","     Total","     Inbounds"))
+     st.insert("end", formstr.format(
+             "Number of spheres found:",
+               len(v.tri.points), np.sum(v.tri.inbounds,dtype=int) ))
+     st.insert("end", formstr.format(
+             "    With <= 4 neighbors:",
+               len(np.where(v.tri.cnum <= 4)[0]), 
+               len(np.where((v.tri.cnum <= 4) * v.tri.inbounds)[0]) ))
+     st.insert("end", formstr.format(
+             "    With 5 neighbors:",
+               len(np.where(v.tri.cnum == 5)[0]), 
+               len(np.where(v.tri.cnum * v.tri.inbounds == 4)[0]) ))
+     st.insert("end", formstr.format(
+             "    With 6 neighbors:",
+               len(np.where(v.tri.cnum == 6)[0]), 
+               len(np.where(v.tri.cnum * v.tri.inbounds == 6)[0]) ))
+     st.insert("end", formstr.format(
+             "    With 7 neighbors:",
+               len(np.where(v.tri.cnum == 7)[0]), 
+               len(np.where(v.tri.cnum * v.tri.inbounds == 7)[0]) ))
+     st.insert("end", formstr.format(
+             "    With >= 8 neighbors:",
+               len(np.where(v.tri.cnum >= 8)[0]), 
+               len(np.where((v.tri.cnum >= 8) * v.tri.inbounds)[0]) ))
+     st.insert("end", formstr.format(
+             "        Total != 6 neighbors:",
+               len(np.where(v.tri.cnum != 6)[0]), 
+               len(np.where((v.tri.cnum != 6) * v.tri.inbounds)[0]) ))
+     
+     st.insert("end","\n")
+     st.insert("end","Number of dislocations: "  + 
+#                   str(int(np.sum(v.tri.is_dislocation) / 2)) + "\n")
+                   str(int(len(np.where(v.tri.is_dislocation != 0)[0]) / 2)) + "\n")
+     st.insert("end","Number of unbound disclinations (inbounds only): "  + 
+                   str(len(np.where((v.tri.unboundness != 0) & v.tri.inbounds)[0])) )
+
 
 
 

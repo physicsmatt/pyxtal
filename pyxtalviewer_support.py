@@ -59,6 +59,7 @@ def write_views_to_globals(viewer):
     viewer.pmw.showTriang = viewer.showTriang.get()
     viewer.pmw.showDefects = viewer.showDefects.get()
     viewer.pmw.showOrientation = viewer.showOrientation.get()
+    viewer.pmw.showStats = viewer.showStats.get()
     
 def read_views_from_globals(viewer):
     viewer.whichImage.set(viewer.pmw.whichImage)
@@ -66,7 +67,7 @@ def read_views_from_globals(viewer):
     viewer.showCircles.set(viewer.pmw.showCircles)
     viewer.showTriang.set(viewer.pmw.showTriang)
     viewer.showDefects.set(viewer.pmw.showDefects)
-    viewer.showOrientation.set(viewer.pmw.showOrientation)
+    viewer.showStats.set(viewer.pmw.showStats)
 
 def changeVisibleImage(viewer):
     #First, decide whether to show ANYTHING:
@@ -97,7 +98,13 @@ def changeVisibleAnnotations(viewer):
 #The variables below still need to be implemented and eventually included
 #in the list above:
 #        self.showTraject = BooleanVar()
-#        self.showStats = BooleanVar()
+    
+#def changeStatsVisibility
+    if viewer.showStats.get():
+        viewer.pmw.stats.top.deiconify()
+    else:
+        viewer.pmw.stats.top.withdraw()
+    viewer.top.focus_force()
     
 
 def showStatsWin():
@@ -324,12 +331,14 @@ def key_event(event,viewer):
 
 def focus_in_event(event,viewer):
     #print("Viewer number ", viewer.idx," Gained focus.")
+    pimg.do_stats(viewer)
     if viewer.pmw.lockViews.get():
         read_views_from_globals(viewer)
         changeVisibleAnnotations(viewer)
         changeVisibleImage(viewer)
     if viewer.pmw.lockZoom.get():
         read_zoom_from_globals(viewer)
+    changeVisibleAnnotations(viewer)
     viewer.imgCanvas.draw()
     
 
@@ -378,6 +387,7 @@ def setup_canvas_and_axes(viewer):
     viewer.canvWidget.bind('<ButtonRelease-1>', lambda e:translate(e, viewer))
     viewer.canvWidget.bind('<Double-Button-1>', lambda e:translate(e, viewer))
     viewer.top.bind("<Key>", lambda e:key_event(e, viewer))
+
     viewer.top.bind("<FocusIn>", lambda e:focus_in_event(e, viewer))
     viewer.top.bind("<FocusOut>", lambda e:focus_out_event(e, viewer))
 
@@ -405,7 +415,7 @@ def init(top, viewer, *args, **kwargs):
     #as this is a work in progress, I'm disabling controls that are
     #not implemented yet:
     pyxtal_support.set_widget_state('disabled', viewer.trajectCheck)
-    pyxtal_support.set_widget_state('disabled', viewer.statsCheck)
+#    pyxtal_support.set_widget_state('disabled', viewer.statsCheck)
 
     viewer.top.update()
     viewer.mousebuttondown = False
@@ -422,6 +432,7 @@ def init(top, viewer, *args, **kwargs):
     pimg.do_dislocations(viewer)
     pimg.do_unbound_discs(viewer)
     pimg.do_angle_field(viewer)
+    pimg.do_stats(viewer)
 #    pimg.do_label_points(viewer)
     changeVisibleAnnotations(viewer)
     zoom_linewidths(viewer)

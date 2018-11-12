@@ -23,7 +23,7 @@ def create_inbounds_list_slow(v):
     #There's probably a cuter way to do this:
     numpoints = len(v.tri.points)
     numverts = len(bverts)
-    v.tri.inbounds = np.zeros(numpoints)
+    v.tri.inbounds = np.zeros(numpoints, dtype=int)
     print("starting to find edge vertices.")
     for i in range(0,numpoints):
         p3 = v.tri.points[i]
@@ -59,7 +59,7 @@ def create_inbounds_list(v):
     #There's probably a cuter way to do this:
     numpoints = len(v.tri.points)
     #numverts = len(bverts)
-    v.tri.inbounds = np.zeros(numpoints)
+    v.tri.inbounds = np.zeros(numpoints, dtype=bool)
     threshhold = np.median(v.tri.bondsl) * 0.7
     p1 = bverts
     p2 = np.roll(bverts, 1, axis = 0)

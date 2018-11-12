@@ -185,6 +185,7 @@ class Pyxtal_Viewer:
         self.statsCheck.configure(text='''Show stats''')
         self.statsCheck.configure(variable=self.showStats)
         self.statsCheck.configure(wraplength="40")
+        self.statsCheck.configure(command=lambda: pyxtalviewer_support.changeVisibleAnnotations(self))
 
         self.imgCanvas = Canvas(top)
         self.imgCanvas.place(relx=0.012, rely=0.069, relheight=0.923
