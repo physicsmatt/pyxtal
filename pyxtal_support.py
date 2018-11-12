@@ -93,15 +93,15 @@ def GoButtonCommand():
     #The info passed to create the viewer is the full filename (with path),
     #the index number of the viewer (0 to whatever) and the frame number.
     import gsd.hoomd
-    sys.stdout.flush()
-    pmw.numFiles=len(pmw.filelist)
+    numFiles = len(pmw.filelist)
+    vieweridx = len(pmw.viewers)
     if pmw.inFileType.get() == "image":
-        for fileidx in range(0,pmw.numFiles):
+        for fileidx in range(0,numFiles):
             pmw.viewers.append(pyxtalviewer.create_Pyxtal_Viewer(root, pmw, 
-                        pmw.filelist[fileidx], fileidx, 0))
+                    pmw.filelist[fileidx], vieweridx, 0))
+            vieweridx += 1
     else: #must be some kind of gsd file
-        vieweridx = 0
-        for fileidx in range(0,pmw.numFiles):
+        for fileidx in range(0,numFiles):
             filename = pmw.filelist[fileidx]
             start = pmw.fromFrame[0]
             end = pmw.toFrame[0]
