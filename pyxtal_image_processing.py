@@ -195,7 +195,7 @@ def do_dislocations(v):
                 x2 = v.tri.points[v2,0]
                 y1 = v.tri.points[v1,1]
                 y2 = v.tri.points[v2,1]
-                print(disloci,v1,v2)
+                #print(disloci,v1,v2)
                 segs[disloci] = np.array([[x1,y1],[x2,y2]])
                 disloci += 1
     line_coll = matplotlib.collections.LineCollection(segs, 
@@ -268,38 +268,68 @@ def do_stats(v):
              "Number of spheres found:",
                len(v.tri.points), np.sum(v.tri.inbounds,dtype=int) ))
      st.insert("end", formstr.format(
-             "    With <= 4 neighbors:",
+             "    with <= 4 neighbors:",
                len(np.where(v.tri.cnum <= 4)[0]), 
                len(np.where((v.tri.cnum <= 4) * v.tri.inbounds)[0]) ))
      st.insert("end", formstr.format(
-             "    With 5 neighbors:",
+             "    with 5 neighbors:",
                len(np.where(v.tri.cnum == 5)[0]), 
                len(np.where(v.tri.cnum * v.tri.inbounds == 4)[0]) ))
      st.insert("end", formstr.format(
-             "    With 6 neighbors:",
+             "    with 6 neighbors:",
                len(np.where(v.tri.cnum == 6)[0]), 
                len(np.where(v.tri.cnum * v.tri.inbounds == 6)[0]) ))
      st.insert("end", formstr.format(
-             "    With 7 neighbors:",
+             "    with 7 neighbors:",
                len(np.where(v.tri.cnum == 7)[0]), 
                len(np.where(v.tri.cnum * v.tri.inbounds == 7)[0]) ))
      st.insert("end", formstr.format(
-             "    With >= 8 neighbors:",
+             "    with >= 8 neighbors:",
                len(np.where(v.tri.cnum >= 8)[0]), 
                len(np.where((v.tri.cnum >= 8) * v.tri.inbounds)[0]) ))
      st.insert("end", formstr.format(
-             "        Total != 6 neighbors:",
+             "    Total != 6 neighbors:",
                len(np.where(v.tri.cnum != 6)[0]), 
                len(np.where((v.tri.cnum != 6) * v.tri.inbounds)[0]) ))
      
      st.insert("end","\n")
      st.insert("end","Number of dislocations: "  + 
-#                   str(int(np.sum(v.tri.is_dislocation) / 2)) + "\n")
                    str(int(len(np.where(v.tri.is_dislocation != 0)[0]) / 2)) + "\n")
      st.insert("end","Number of unbound disclinations (inbounds only): "  + 
                    str(len(np.where((v.tri.unboundness != 0) & v.tri.inbounds)[0])) )
 
 
+def do_output_files(v):
+    splitpoint = v.filename.rfind('.')
+    base = v.filename[0:splitpoint]
+    if v.pmw.inFileType.get() != "image":
+        base += "_f" + str(v.framenum)
+    if v.pmw.outCircles.get():
+        v.plt_circles.set_visible(True)
+        v.plt_triang.set_visible(False)
+        v.plt_angleimg.set_visible(False)
+        v.plt_disc.set_visible(False)
+        v.plt_disloc.set_visible(False)
+        v.plt_unbound.set_visible(False)
+#        v.fig.tight_layout(pad=0)
+        v.fig.savefig(base + "_circ.tif", bbox_inches='tight',pad_inches=0)
+    if v.pmw.outAll.get():
+        v.plt_circles.set_visible(True)
+        v.plt_triang.set_visible(False)
+        v.plt_angleimg.set_visible(True)
+        v.plt_disc.set_visible(True)
+        v.plt_disloc.set_visible(True)
+        v.plt_unbound.set_visible(True)
+        v.fig.savefig(base + "_all.tif", bbox_inches='tight',pad_inches=0)
+    if v.pmw.outTriang.get():
+        v.plt_circles.set_visible(False)
+        v.plt_triang.set_visible(True)
+        v.plt_angleimg.set_visible(False)
+        v.plt_disc.set_visible(False)
+        v.plt_disloc.set_visible(False)
+        v.plt_unbound.set_visible(False)
+        v.fig.savefig(base + "_triang.tif", bbox_inches='tight',pad_inches=0)
+     
 
 
 if __name__ == '__main__':

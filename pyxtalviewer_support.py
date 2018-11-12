@@ -94,6 +94,7 @@ def changeVisibleAnnotations(viewer):
     viewer.plt_angleimg.set_visible(viewer.showOrientation.get())
     viewer.plt_disc.set_visible(viewer.showDefects.get())
     viewer.plt_disloc.set_visible(viewer.showDefects.get())
+    viewer.plt_unbound.set_visible(viewer.showDefects.get())
     viewer.imgCanvas.draw()
 #The variables below still need to be implemented and eventually included
 #in the list above:
@@ -433,9 +434,10 @@ def init(top, viewer, *args, **kwargs):
     pimg.do_unbound_discs(viewer)
     pimg.do_angle_field(viewer)
     pimg.do_stats(viewer)
+    zoom_linewidths(viewer)
+    pimg.do_output_files(viewer)
 #    pimg.do_label_points(viewer)
     changeVisibleAnnotations(viewer)
-    zoom_linewidths(viewer)
     #print(dir(viewer))
     #print(dir(viewer.tri))
 

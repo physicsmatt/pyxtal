@@ -220,7 +220,9 @@ def init(top, gui, *args, **kwargs):
     #as this is a work in progress, I'm disabling controls that are
     #not implemented yet:
     set_widget_state('disabled', pmw.PeriodicCheck)
-    set_widget_state('disabled', [pmw.outputFrame, pmw.analysisFrame])
+    set_widget_state('disabled', pmw.analysisFrame)
+    set_widget_state('disabled', [pmw.outMpegCheck, pmw.outLogCheck, 
+                                  pmw.ImageSizeLabel, pmw.imageSizeEntry])
     set_widget_state('disabled', [pmw.SaveDefButton, pmw.LoadDefButton])
 
     pmw.filelist = list()
@@ -269,9 +271,9 @@ def initialize_parameters(pmw):
     pmw.darkSpheres.set(False)
     pmw.partTypeStr.set("B")
     pmw.periodBound.set(False)
-    pmw.outCircles.set(True)
+    pmw.outCircles.set(False)
     pmw.outTriang.set(False)
-    pmw.outAll.set(True)
+    pmw.outAll.set(False)
     pmw.outMpeg.set(False)
     pmw.outLog.set(True)
     pmw.doOrientCorr.set(False)
