@@ -19,8 +19,8 @@ colordict =	{
     "background": "0.3",
     "triangulation": "blue",
     "circles": "#B4FF64", #RGB color (180,255,100)
-    "disc5": '#FF00FF', #magenta
-    "disc6": '#FF0000', #red
+    "disc4": '#FF00FF', #magenta
+    "disc5": '#FF0000', #red
     "disc7": '#00FF00', #green
     "disc8": '#00FFFF', #cyan
     "dislocations": '#FFFF00', #yellow
@@ -150,9 +150,9 @@ def disc_color(cnum):
     # I should figure out how to implement this with a python dictionary,
     # but I don't know how to handle the cases <=4 or >=8.
     if cnum <= 4:
-        return(colordict["disc5"])
+        return(colordict["disc4"])
     if cnum == 5:
-        return(colordict["disc6"])
+        return(colordict["disc5"])
     if cnum == 7:
         return(colordict["disc7"])
     if cnum >=8:
