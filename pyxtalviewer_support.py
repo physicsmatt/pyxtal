@@ -67,6 +67,7 @@ def read_views_from_globals(viewer):
     viewer.showCircles.set(viewer.pmw.showCircles)
     viewer.showTriang.set(viewer.pmw.showTriang)
     viewer.showDefects.set(viewer.pmw.showDefects)
+    viewer.showOrientation.set(viewer.pmw.showOrientation)
     viewer.showStats.set(viewer.pmw.showStats)
 
 def changeVisibleImage(viewer):
