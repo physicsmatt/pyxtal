@@ -87,6 +87,10 @@ def validateInteger(p1, thestring, theinteger):
     #    print("rejected")
         thestring.set(str(theinteger[0]))
 
+def create_logfile(pmw):
+    pmw.logfile = open("output.log", 'w')
+    pmw.logfile.write("This is the log file\n")
+
 def GoButtonCommand():
     #This function actually creates the viewer windows for each file (if image)
     #or each image and snapshot, if input is a gsd file.
@@ -95,6 +99,8 @@ def GoButtonCommand():
     import gsd.hoomd
     numFiles = len(pmw.filelist)
     vieweridx = len(pmw.viewers)
+    if pmw.outLog.get():
+        create_logfile(pmw)
     if pmw.inFileType.get() == "image":
         for fileidx in range(0,numFiles):
             pmw.viewers.append(pyxtalviewer.create_Pyxtal_Viewer(root, pmw, 
@@ -222,7 +228,7 @@ def init(top, gui, *args, **kwargs):
     #not implemented yet:
     set_widget_state('disabled', pmw.PeriodicCheck)
     set_widget_state('disabled', pmw.analysisFrame)
-    set_widget_state('disabled', [pmw.outMpegCheck, pmw.outLogCheck, 
+    set_widget_state('disabled', [pmw.outMpegCheck, 
                                   pmw.ImageSizeLabel, pmw.imageSizeEntry])
     set_widget_state('disabled', [pmw.SaveDefButton, pmw.LoadDefButton])
 
@@ -305,6 +311,7 @@ def initialize_parameters(pmw):
 def destroy_pyxtalmain(pmw):
     # Function which closes the window.
 #    global top_level
+    pmw.logfile.close()
     killAllButtonCommand()    
     pmw.top.destroy()
     top_level = None

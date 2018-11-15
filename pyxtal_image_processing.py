@@ -245,6 +245,8 @@ def do_angle_field(v):
                                           sinangle, (grid_y, grid_x),method='linear')
     anglearr = (np.arctan2(sinarr,cosarr) + np.pi ) / (2 * np.pi)
 
+    v.angle_histogram = np.histogram(anglearr[np.where(np.isfinite(anglearr))], 
+                                              bins=60,range=(0,1))[0]
     hsvimg = np.ones((ysize, xsize, 3))
     hsvimg[:,:,0] = anglearr
     w = np.where(np.isnan(hsvimg[:,:,0]))
@@ -256,7 +258,10 @@ def do_angle_field(v):
                               extent=[0, xsize, 0, ysize],
                               zorder=1, alpha = 0.3)
     v.imgCanvas.draw()
-    
+
+
+def write_logfile_entry(v):
+    v.pmw.logfile.write(str(v.angle_histogram) + "\n")
     
 def do_stats(v):
      v.pmw.stats.viewer=v

@@ -437,6 +437,9 @@ def init(top, viewer, *args, **kwargs):
     pimg.do_unbound_discs(viewer)
     pimg.do_angle_field(viewer)
     pimg.do_stats(viewer)
+#    pimg.do_orientation_distribution
+    if viewer.pmw.outLog.get():
+        pimg.write_logfile_entry(viewer)
     zoom_linewidths(viewer)
     pimg.do_output_files(viewer)
 #    pimg.do_label_points(viewer)
