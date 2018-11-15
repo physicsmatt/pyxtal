@@ -122,10 +122,12 @@ def load_images_and_locations(viewer):
 
     import trackpy as tp
     import gsd.hoomd
+    import os
 
+    full_filename = os.path.join(viewer.pmw.path, viewer.filename)
     if viewer.pmw.inFileType.get() == "image":
         #use code from colloid group.
-        viewer.image = plt.imread(viewer.filename)
+        viewer.image = plt.imread(full_filename)
 #below I can clip the image to something smaller, just for debugging purposes
 #        viewer.image = viewer.image[0:600,0:900]
         viewer.imgshape = np.flip(np.shape(viewer.image))  #Note that order now [x, y]
@@ -140,7 +142,7 @@ def load_images_and_locations(viewer):
         
     elif viewer.pmw.inFileType.get() == "particles":
         #read gsd file
-        s = gsd.hoomd.open(name=viewer.filename, mode='rb')
+        s = gsd.hoomd.open(name=full_filename, mode='rb')
         fn = viewer.framenum  #this value was passed in from pmw
         if fn > len(s):
             print("ERROR: frame number out of range")
@@ -162,7 +164,7 @@ def load_images_and_locations(viewer):
 
     else: #must be a gsd assembly
         #read gsd file
-        s = gsd.hoomd.open(name=viewer.filename, mode='rb')
+        s = gsd.hoomd.open(name=full_filename, mode='rb')
         fn = viewer.framenum  #this value was passed in from pmw
         if fn > len(s):
             print("ERROR: frame number out of range")

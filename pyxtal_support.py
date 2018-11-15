@@ -106,7 +106,8 @@ def GoButtonCommand():
             start = pmw.fromFrame[0]
             end = pmw.toFrame[0]
             if end == -1:
-                s = gsd.hoomd.open(name=filename, mode='rb')
+                full_filename = os.path.join(pmw.path, filename)
+                s = gsd.hoomd.open(name=full_filename, mode='rb')
                 end = len(s)
             by = pmw.byFrame[0]
             for frameidx in range(start, end, by):

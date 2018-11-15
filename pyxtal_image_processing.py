@@ -300,8 +300,9 @@ def do_stats(v):
 
 
 def do_output_files(v):
+    import os
     splitpoint = v.filename.rfind('.')
-    base = v.filename[0:splitpoint]
+    base = os.path.join(v.pmw.path, v.filename[0:splitpoint])
     if v.pmw.inFileType.get() != "image":
         base += "_f" + str(v.framenum)
     if v.pmw.outCircles.get():
@@ -311,8 +312,8 @@ def do_output_files(v):
         v.plt_disc.set_visible(False)
         v.plt_disloc.set_visible(False)
         v.plt_unbound.set_visible(False)
-#        v.fig.tight_layout(pad=0)
-        v.fig.savefig(base + "_circ.tif", bbox_inches='tight',pad_inches=0)
+        v.fig.tight_layout(pad=-1.08)
+        v.fig.savefig(base + "_circ.tif")#, bbox_inches='tight',pad_inches=0)
     if v.pmw.outAll.get():
         v.plt_circles.set_visible(True)
         v.plt_triang.set_visible(False)
@@ -320,7 +321,9 @@ def do_output_files(v):
         v.plt_disc.set_visible(True)
         v.plt_disloc.set_visible(True)
         v.plt_unbound.set_visible(True)
+        
         v.fig.savefig(base + "_all.tif", bbox_inches='tight',pad_inches=0)
+        X = np.array(v.fig.canvas.renderer._renderer)
     if v.pmw.outTriang.get():
         v.plt_circles.set_visible(False)
         v.plt_triang.set_visible(True)
@@ -329,7 +332,15 @@ def do_output_files(v):
         v.plt_disloc.set_visible(False)
         v.plt_unbound.set_visible(False)
         v.fig.savefig(base + "_triang.tif", bbox_inches='tight',pad_inches=0)
-     
+
+    #print(X.shape)
+    #Use X as a frame for an mpeg output.
+    
+#    fig2 = plt.figure()
+#    ax2 = fig2.add_subplot(111, frameon=False)
+#    ax2.imshow(X)
+#    plt.show()
+#    plt.imsave("testout.tif", X)
 
 
 if __name__ == '__main__':
