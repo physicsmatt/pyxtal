@@ -87,9 +87,11 @@ def validateInteger(p1, thestring, theinteger):
     #    print("rejected")
         thestring.set(str(theinteger[0]))
 
-def create_logfile(pmw):
-    pmw.logfile = open("output.log", 'w')
-    pmw.logfile.write("This is the log file\n")
+def create_logfile(pmw, filename):
+    import os
+    splitpoint = filename.rfind('.')
+    base = os.path.join(pmw.path, filename[0:splitpoint])
+    pmw.logfile = open(base + "_log.txt", 'w')
 
 def GoButtonCommand():
     #This function actually creates the viewer windows for each file (if image)
@@ -99,9 +101,9 @@ def GoButtonCommand():
     import gsd.hoomd
     numFiles = len(pmw.filelist)
     vieweridx = len(pmw.viewers)
-    if pmw.outLog.get():
-        create_logfile(pmw)
     if pmw.inFileType.get() == "image":
+        #For image input, only one log file created, for first image
+        create_logfile(pmw, filelist[0])
         for fileidx in range(0,numFiles):
             pmw.viewers.append(pyxtalviewer.create_Pyxtal_Viewer(root, pmw, 
                     pmw.filelist[fileidx], vieweridx, 0))
@@ -109,6 +111,8 @@ def GoButtonCommand():
     else: #must be some kind of gsd file
         for fileidx in range(0,numFiles):
             filename = pmw.filelist[fileidx]
+            #For gsd input, each gsd file gets a separate logfile:
+            create_logfile(pmw, filename) 
             start = pmw.fromFrame[0]
             end = pmw.toFrame[0]
             if end == -1:
