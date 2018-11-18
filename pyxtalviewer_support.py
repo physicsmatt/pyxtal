@@ -453,6 +453,7 @@ def destroy_viewer(viewer):
     plt.close(viewer.fig) #keeps the plot from reappearing in the console.
     top = viewer.top
     top.destroy()
+    viewer=None
 
 if __name__ == '__main__':
     #import pyxtalviewer

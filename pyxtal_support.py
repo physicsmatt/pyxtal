@@ -10,6 +10,7 @@
 import sys
 import pyxtalviewer
 import pyxtalviewer_support
+#import gc
 
 try:
     from Tkinter import *

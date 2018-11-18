@@ -21,16 +21,17 @@ except ImportError:
 
 import pyxtalviewer_support
 
-def vp_start_gui():
-    '''Starting point when module is the main routine.'''
-    global val, w, root
-    root = Tk()
-    pyxtalviewer_support.set_Tk_var()
-    top = Pyxtal_Viewer (root)
-    pyxtalviewer_support.init(root, top)
-    root.mainloop()
+#def vp_start_gui():
+#    '''Starting point when module is the main routine.'''
+#    global val, w, root
+#    root = Tk()
+#    pyxtalviewer_support.set_Tk_var()
+#    top = Pyxtal_Viewer (root)
+#    pyxtalviewer_support.init(root, top)
+#    root.mainloop()
 
-w = None
+#w = None
+
 def create_Pyxtal_Viewer(root, *args, **kwargs):
     '''Starting point when module is imported by another program.'''
     top = Toplevel(root)
@@ -39,11 +40,11 @@ def create_Pyxtal_Viewer(root, *args, **kwargs):
     pyxtalviewer_support.init(top, w, *args, **kwargs)
     return(w)
 
-def destroy_Pyxtal_Viewer():
-    global w
-    w.destroy()
-    print("destroying pixal viewer")
-    w = None
+#def destroy_Pyxtal_Viewer():
+#    global w
+#    w.destroy()
+#    print("destroying pixal viewer")
+#    w = None
 
 
 class Pyxtal_Viewer:
