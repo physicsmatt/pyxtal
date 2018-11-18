@@ -104,7 +104,7 @@ def GoButtonCommand():
     vieweridx = len(pmw.viewers)
     if pmw.inFileType.get() == "image":
         #For image input, only one log file created, for first image
-        create_logfile(pmw, filelist[0])
+        create_logfile(pmw, pmw.filelist[0])
         for fileidx in range(0,numFiles):
             pmw.viewers.append(pyxtalviewer.create_Pyxtal_Viewer(root, pmw, 
                     pmw.filelist[fileidx], vieweridx, 0))
