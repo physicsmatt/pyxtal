@@ -431,27 +431,29 @@ def init(top, viewer, *args, **kwargs):
         viewer.invertCheck.configure(state='disabled')
     load_images_and_locations(viewer)
     setup_canvas_and_axes(viewer)
-    pimg.do_raw_image(viewer)
+    pimg.plot_raw_image(viewer)
     pimg.do_filtered_image(viewer)
+    pimg.calculate_triangulation(viewer)
+    pimg.calculate_angle_field(viewer)
+    dislocs.calculate_dislocations(viewer)
     #When running in batchmode, and with no image output, 
     #Don't create all the plots, as they take time.
-    pimg.plot_circles(viewer)
-    pimg.calculate_triangulation(viewer)
-    pimg.plot_triangulation(viewer)
-    pimg.plot_disclinations(viewer)
-    dislocs.calculate_dislocations(viewer)
-    pimg.plot_dislocations(viewer)
-    pimg.do_unbound_discs(viewer)
-    pimg.calculate_angle_field(viewer)
-    pimg.plot_angle_field(viewer)
+    if (not viewer.pmw.batchmode.get() or
+            (viewer.pmw.outCircles.get() or viewer.pmw.outTriang.get()
+                                        or viewer.pmw.outAll.get())):
+        pimg.plot_circles(viewer)
+        pimg.plot_triangulation(viewer)
+        pimg.plot_disclinations(viewer)
+        pimg.plot_dislocations(viewer)
+        pimg.plot_unbound_discs(viewer)
+        pimg.plot_angle_field(viewer)
+        zoom_linewidths(viewer)
+        changeVisibleAnnotations(viewer)
     pimg.do_stats(viewer)
-#    pimg.do_orientation_distribution
     if viewer.pmw.outLog.get():
         pimg.write_logfile_entry(viewer)
-    zoom_linewidths(viewer)
     pimg.do_output_files(viewer)
 #    pimg.do_label_points(viewer)
-    changeVisibleAnnotations(viewer)
     #print(dir(viewer))
     #print(dir(viewer.tri))
 

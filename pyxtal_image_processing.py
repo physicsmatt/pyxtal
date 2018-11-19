@@ -25,7 +25,7 @@ colordict =	{
     "dislocations": '#FFFF00', #yellow
 }
 
-def do_raw_image(v):
+def plot_raw_image(v):
     if v.pmw.inFileType.get() in ["image", "assemblies"]:
         xsize, ysize = v.imgshape[0], v.imgshape[1]
         v.plt_image = v.ax.imshow(v.image, 
@@ -204,15 +204,15 @@ def plot_dislocations(v):
     v.plt_disloc = v.ax.add_collection(line_coll)
     v.imgCanvas.draw()
     
-def do_unbound_discs(v):
-    v.tri.unbound_discs = np.where(v.tri.unboundness != 0)[0]
+def plot_unbound_discs(v):
+    unbound_discs = np.where(v.tri.unboundness != 0)[0]
     radius = int(v.pmw.sphereSize[0]*0.7)
 
     #The line below should be appreciated, as it is particularly pythonic.
     patches = [matplotlib.patches.Circle(v.locations[i], radius, 
                          edgecolor=disc_color(v.tri.unboundness[i]+6),
                          facecolor='None') 
-                                    for i in v.tri.unbound_discs]
+                                    for i in unbound_discs]
 
     coll = matplotlib.collections.PatchCollection(patches, match_original=True, zorder=5)
     v.plt_unbound = v.ax.add_collection(coll)
