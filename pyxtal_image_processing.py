@@ -11,7 +11,6 @@ import scipy.spatial as spat
 import scipy.interpolate
 import matplotlib.pyplot as plt
 import matplotlib
-import pyxtal_dislocations as dislocs
 
 
 colordict =	{
@@ -59,7 +58,7 @@ def do_filtered_image(v):
         v.filtered_image *= np.max(v.image)/np.max(v.filtered_image)
     
     
-def do_circle_plot(v):
+def plot_circles(v):
     #Plot circles around the locations of the spheres.
     #I've used a collection of circle "patches", so that the radius can
     #scale with the axes as the figure is zoomed.
@@ -76,7 +75,7 @@ def do_circle_plot(v):
     v.imgCanvas.draw()
 
 
-def do_triangulation(v):
+def calculate_triangulation(v):
     #Performs Delaunay triangulation and creates a plot of it.
     #Also finds outermost vertices, which we'll want later.
     #Also gets orientation of each bond, which we'll use later for angle field.
@@ -117,7 +116,7 @@ def do_triangulation(v):
     v.tri.bondsl = np.zeros(num_bonds)
     v.tri.bondsangle = np.zeros(num_bonds)
     v.tri.cnum = np.zeros(len(v.tri.points)) #coordination number of each vertex
-    segs = np.zeros((num_bonds,2,2))
+    v.tri.segs = np.zeros((num_bonds,2,2))
     #See https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.Delaunay.vertex_neighbor_vertices.html#scipy.spatial.Delaunay.vertex_neighbor_vertices
     v.tri.indptr = v.tri.vertex_neighbor_vertices[0]
     v.tri.indices = v.tri.vertex_neighbor_vertices[1]
@@ -132,7 +131,7 @@ def do_triangulation(v):
                 x2 = v.tri.points[v2i,0]
                 y1 = v.tri.points[v1i,1]
                 y2 = v.tri.points[v2i,1]
-                segs[bondi] = np.array([[x1,y1],[x2,y2]])
+                v.tri.segs[bondi] = np.array([[x1,y1],[x2,y2]])
                 v.tri.bondsx[bondi] = (x1 + x2) / 2
                 v.tri.bondsy[bondi] = (y1 + y2) / 2
                 v.tri.bondsl[bondi] =  np.sqrt((x2 - x1)**2 + (y2 - y1)**2)
@@ -140,7 +139,10 @@ def do_triangulation(v):
                 #turn this into 0 to 60 degrees:
                 v.tri.bondsangle[bondi] = angle % (np.pi / 3)
                 bondi += 1
-    line_coll = matplotlib.collections.LineCollection(segs, 
+
+
+def plot_triangulation(v):
+    line_coll = matplotlib.collections.LineCollection(v.tri.segs, 
                                   color=colordict["triangulation"], zorder=4)
     v.plt_triang = v.ax.add_collection(line_coll)
     v.imgCanvas.draw()
@@ -159,16 +161,16 @@ def disc_color(cnum):
         return(colordict["disc8"])
 
     
-def do_disclinations(v):
+def plot_disclinations(v):
     #Note that for some reason, the np.where returns a tuple with one item,
     #so I need to access it with [0].
-    v.tri.disc = np.where(v.tri.cnum != 6)[0]
+    disc = np.where(v.tri.cnum != 6)[0]
     radius = int(v.pmw.sphereSize[0]*0.45)
 
     #The line below should be appreciated, as it is particularly pythonic.
     patches = [matplotlib.patches.Circle(v.locations[i], radius, 
                                          facecolor=disc_color(v.tri.cnum[i])) 
-                                    for i in v.tri.disc]
+                                    for i in disc]
 
     coll = matplotlib.collections.PatchCollection(patches, match_original=True, zorder=5)
     v.plt_disc = v.ax.add_collection(coll)
@@ -180,8 +182,7 @@ def do_label_points(v):
         label = str(i)
         v.ax.annotate(label,v.tri.points[i],zorder=10,color="#FFFFFF",size=20)
     
-def do_dislocations(v):
-    dislocs.find_dislocations(v)
+def plot_dislocations(v):
     #Now, step through the lists as we did in do_disclinations to compile
     #list of line segments to plot:
     num_dislocs = int(np.sum(v.tri.is_dislocation) / 2)
@@ -220,7 +221,7 @@ def do_unbound_discs(v):
 
 
 
-def do_angle_field(v):
+def calculate_angle_field(v):
     #This function ultimately produces a color image representing the local
     #orientation of the crystal.
 
@@ -243,12 +244,15 @@ def do_angle_field(v):
                                           cosangle, (grid_y, grid_x),method='linear')
     sinarr = scipy.interpolate.griddata((v.tri.bondsx, v.tri.bondsy), 
                                           sinangle, (grid_y, grid_x),method='linear')
-    anglearr = (np.arctan2(sinarr,cosarr) + np.pi ) / (2 * np.pi)
+    v.anglearr = (np.arctan2(sinarr,cosarr) + np.pi ) / (2 * np.pi)
 
-    v.angle_histogram = np.histogram(anglearr[np.where(np.isfinite(anglearr))], 
+    v.angle_histogram = np.histogram(v.anglearr[np.where(np.isfinite(v.anglearr))], 
                                               bins=30,range=(0,1))[0]
+
+def plot_angle_field(v):
+    xsize, ysize = v.imgshape[0], v.imgshape[1]
     hsvimg = np.ones((ysize, xsize, 3))
-    hsvimg[:,:,0] = anglearr
+    hsvimg[:,:,0] = v.anglearr
     w = np.where(np.isnan(hsvimg[:,:,0]))
     hsvimg[w] = np.array([0,0,1] )
     v.rgbimg = matplotlib.colors.hsv_to_rgb(hsvimg)

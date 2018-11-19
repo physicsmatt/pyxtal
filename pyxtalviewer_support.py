@@ -8,6 +8,7 @@
 import numpy as np
 import sys
 import pyxtal_image_processing as pimg
+import pyxtal_dislocations as dislocs
 import pyxtal_support
 import matplotlib.pyplot as plt
 #import matplotlib.backends.tkagg as tkagg
@@ -432,12 +433,17 @@ def init(top, viewer, *args, **kwargs):
     setup_canvas_and_axes(viewer)
     pimg.do_raw_image(viewer)
     pimg.do_filtered_image(viewer)
-    pimg.do_circle_plot(viewer)
-    pimg.do_triangulation(viewer)
-    pimg.do_disclinations(viewer)
-    pimg.do_dislocations(viewer)
+    #When running in batchmode, and with no image output, 
+    #Don't create all the plots, as they take time.
+    pimg.plot_circles(viewer)
+    pimg.calculate_triangulation(viewer)
+    pimg.plot_triangulation(viewer)
+    pimg.plot_disclinations(viewer)
+    dislocs.calculate_dislocations(viewer)
+    pimg.plot_dislocations(viewer)
     pimg.do_unbound_discs(viewer)
-    pimg.do_angle_field(viewer)
+    pimg.calculate_angle_field(viewer)
+    pimg.plot_angle_field(viewer)
     pimg.do_stats(viewer)
 #    pimg.do_orientation_distribution
     if viewer.pmw.outLog.get():

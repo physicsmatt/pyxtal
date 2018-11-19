@@ -209,7 +209,7 @@ def find_mates_for(p,v):
         v.tri.inprocess[p] = False
 
 
-def find_dislocations(v):
+def calculate_dislocations(v):
     create_inbounds_list(v)
     v.tri.is_dislocation = np.zeros(len(v.tri.indices), dtype=np.int16)
     #the bond between a 4 and an 8 would be a "double bond", with a 2 here.
