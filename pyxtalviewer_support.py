@@ -415,6 +415,8 @@ def init(top, viewer, *args, **kwargs):
                      + "        " + viewer.filename + "          "
                      + "(frame: " + str(viewer.framenum) + ")"  )
     viewer.top.protocol("WM_DELETE_WINDOW", lambda: destroy_viewer(viewer))
+    if viewer.pmw.batchmode.get():
+        viewer.top.withdraw()
 
     #as this is a work in progress, I'm disabling controls that are
     #not implemented yet:

@@ -52,16 +52,25 @@ def inFileTypeChange():
     global pmw
     inputtype = pmw.inFileType.get()
     if inputtype=='image':
-       set_widget_state('normal', [pmw.darkSpheresCheck, pmw.SphereSizeLabel, pmw.sphereEntry])
-       set_widget_state('disabled', [pmw.framesframe, pmw.PartTypeLabel, pmw.partTypeEntry])
+        set_widget_state('normal', [pmw.darkSpheresCheck, pmw.SphereSizeLabel, pmw.sphereEntry])
+        set_widget_state('disabled', [pmw.framesframe, pmw.PartTypeLabel, pmw.partTypeEntry])
     if inputtype=='particles':
-       set_widget_state('normal', [pmw.framesframe])
-       set_widget_state('disabled', [pmw.darkSpheresCheck, pmw.SphereSizeLabel, pmw.sphereEntry])
-       set_widget_state('disabled', [pmw.PartTypeLabel, pmw.partTypeEntry])
+        set_widget_state('normal', [pmw.framesframe])
+        set_widget_state('disabled', [pmw.darkSpheresCheck, pmw.SphereSizeLabel, pmw.sphereEntry])
+        set_widget_state('disabled', [pmw.PartTypeLabel, pmw.partTypeEntry])
     if inputtype=='assemblies':
-       set_widget_state('normal', [pmw.framesframe, pmw.SphereSizeLabel, pmw.sphereEntry])
-       set_widget_state('normal', [pmw.PartTypeLabel, pmw.partTypeEntry])
-       set_widget_state('disabled', [pmw.darkSpheresCheck])
+        set_widget_state('normal', [pmw.framesframe, pmw.SphereSizeLabel, pmw.sphereEntry])
+        set_widget_state('normal', [pmw.PartTypeLabel, pmw.partTypeEntry])
+        set_widget_state('disabled', [pmw.darkSpheresCheck])
+
+
+def batchmodeChange():
+    global pmw
+    if pmw.batchmode.get():
+        pmw.retainWin.set(False)
+        set_widget_state('disabled', [pmw.RetainCheck])
+    else:
+        set_widget_state('normal', [pmw.RetainCheck])
 
 
 def validateInteger(p1, thestring, theinteger):
@@ -111,6 +120,8 @@ def GoButtonCommand():
             vieweridx += 1
     else: #must be some kind of gsd file
         for fileidx in range(0,numFiles):
+            pmw.fileMessage.configure(text="Files: "
+                                      +str(fileidx+1) +"/" + str(numFiles))
             filename = pmw.filelist[fileidx]
             #For gsd input, each gsd file gets a separate logfile:
             create_logfile(pmw, filename) 
@@ -121,7 +132,12 @@ def GoButtonCommand():
                 s = gsd.hoomd.open(name=full_filename, mode='rb')
                 end = len(s)
             by = pmw.byFrame[0]
+            numframes = int((end - start ) / by)
+            framecount = 0
             for frameidx in range(start, end, by):
+                framecount += 1
+                pmw.frameMessage.configure(text="Frames: "
+                                      +str(framecount) +"/" + str(numframes))
                 newv = pyxtalviewer.create_Pyxtal_Viewer(root, pmw, 
                         filename, vieweridx, frameidx)
                 pmw.viewers.append(newv)
@@ -316,7 +332,11 @@ def initialize_parameters(pmw):
 def destroy_pyxtalmain(pmw):
     # Function which closes the window.
 #    global top_level
-    pmw.logfile.close()
+    #Not sure if I need to do this:
+    try:
+        pmw.logfile.close()
+    except:
+        None
     killAllButtonCommand()    
     pmw.top.destroy()
     top_level = None

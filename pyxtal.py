@@ -471,6 +471,7 @@ Image Windows''')
         self.BatchmodeCheck.configure(justify='left')
         self.BatchmodeCheck.configure(text='''Quiet Batchmode''')
         self.BatchmodeCheck.configure(variable=self.batchmode)
+        self.BatchmodeCheck.configure(command=pyxtal_support.batchmodeChange)
         self.BatchmodeCheck.configure(width=129)
 
         self.Progressframe = tk.LabelFrame(top)
@@ -489,14 +490,14 @@ Image Windows''')
         self.fileMessage.place(relx=0.037, rely=0.267, relheight=0.227
                 , relwidth=0.485, bordermode='ignore')
         self.fileMessage.configure(anchor='w')
-        self.fileMessage.configure(text='''Files: 101/200''')
+        self.fileMessage.configure(text='''Files: ''')
         self.fileMessage.configure(width=131)
 
         self.frameMessage = tk.Message(self.Progressframe)
         self.frameMessage.place(relx=0.037, rely=0.667, relheight=0.227
                 , relwidth=0.559, bordermode='ignore')
         self.frameMessage.configure(anchor='w')
-        self.frameMessage.configure(text='''Frames: 1000/10000''')
+        self.frameMessage.configure(text='''Frames: ''')
         self.frameMessage.configure(width=151)
 
         self.frameProgressbar = ttk.Progressbar(self.Progressframe)
