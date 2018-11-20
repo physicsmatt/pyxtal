@@ -80,7 +80,7 @@ def calculate_triangulation(v):
     #Also finds outermost vertices, which we'll want later.
     #Also gets orientation of each bond, which we'll use later for angle field.
 
-    v.tri = spat.Delaunay(v.locations, qhull_options="Qj")
+    v.tri = spat.Delaunay(v.locations, qhull_options="QJ")
     #v.plt_triang = v.ax.triplot(v.locations[:,0], v.locations[:,1],
     #                       v.tri.simplices.copy(), #why the copy?
     #                     color='blue', zorder=4)
