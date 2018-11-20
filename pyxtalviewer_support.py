@@ -153,6 +153,7 @@ def load_images_and_locations(viewer):
         #I shift the particle locations so 0,0 is the lower left corner.
         boxsize = s[fn].configuration.box[0:2]  #z-component not used. assuming x,y.
         viewer.locations += boxsize / 2
+        viewer.timestep = s[fn].configuration.step
 
         #I also scale all locations by an arbitrary scale factor.
         #Each new unit corresponds to a pixel in the displayed orientation image.
@@ -172,6 +173,7 @@ def load_images_and_locations(viewer):
         boxsize = s[fn].configuration.box[0:2]  #z-component not used. assuming x,y.
         boxsize = np.ceil(boxsize)
         viewer.imgshape = np.array([int(boxsize[0]),int(boxsize[1])])
+        viewer.timestep = s[fn].configuration.step
         
         #Get locations of only 'B' particles, or whatever type is specified.
         typestring = viewer.pmw.partTypeStr.get()

@@ -266,6 +266,7 @@ def plot_angle_field(v):
 
 def write_logfile_entry(v):
     #print("writing log file")
+    v.pmw.logfile.write(str(v.timestep) + ', ')
     v.pmw.logfile.write(np.array2string(v.angle_histogram, 
                     max_line_width=1000, separator=',')[1:-2] + "\n")
     v.pmw.logfile.flush()
