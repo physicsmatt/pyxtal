@@ -74,37 +74,35 @@ def plot_circles(v):
 
     v.imgCanvas.draw()
 
+def plot_outer_vertices(v):
+#For debugging purposes, these lines plot the vertices on the perimeter:
+    v.outermost = v.ax.scatter(v.locations[v.tri.outer_vertices,0], 
+                               v.locations[v.tri.outer_vertices,1], 
+                         color='red', zorder=5)
+#    print(v.locations[v.tri.outer_vertices])
 
-def calculate_triangulation(v):
-    #Performs Delaunay triangulation and creates a plot of it.
-    #Also finds outermost vertices, which we'll want later.
-    #Also gets orientation of each bond, which we'll use later for angle field.
 
-    v.tri = spat.Delaunay(v.locations, qhull_options="QJ")
-    #v.plt_triang = v.ax.triplot(v.locations[:,0], v.locations[:,1],
-    #                       v.tri.simplices.copy(), #why the copy?
-    #                     color='blue', zorder=4)
-    #The line above worked, but the object it created included some extra 
-    #unneeded stuff, and the object couldn't be used with set_visible method.
-    
-    #Now find outermost vertices of the triangulation.  
+def find_outer_vertices(v):
+    #Finds outermost vertices of the triangulation, in no particular order.  
+    #Note that there are many other vertices besides these that are CLOSE to 
+    #to being outer vertices. 
+
     #tri.neighbors gives the neighbors of each triangle ("simplex").
     #Index of -1 means no neighboring simplex, so the other two vertices
     #in that triangle must be on the outside.
     where_outer_tri = np.where(v.tri.neighbors == -1)[0] #rows that contain -1
     outer_tri = v.tri.simplices[where_outer_tri,:].reshape(-1)
     outer_neighbors = v.tri.neighbors[where_outer_tri,:].reshape(-1)
-    v.tri.outer_vertices = np.unique(outer_tri[np.where(outer_neighbors != -1)])
-    #above are the indices of the outer vertices.  Note that there are many
-    #others that are CLOSE to the outside besides these.  These are in no 
-    #particular order.
+    return(np.unique(outer_tri[np.where(outer_neighbors != -1)]))
 
-#For debugging purposes, these lines plot the vertices on the perimeter:
-#    v.outermost = v.ax.scatter(v.locations[v.tri.outer_vertices,0], 
-#                               v.locations[v.tri.outer_vertices,1], 
-#                         color='red', zorder=5)
-#    print(v.locations[v.tri.outer_vertices])
+def calculate_triangulation(v):
+    #Performs Delaunay triangulation and creates a plot of it.
+    #Also finds outermost vertices, which we'll want later.
+    #Also gets orientation of each bond, which we'll use later for angle field.
     #Still to do: figure out how to do this for periodic boundary conditions.
+
+    v.tri = spat.Delaunay(v.locations, qhull_options="QJ")
+    v.tri.outer_vertices = find_outer_vertices(v)
 
     #Now step through and get bond information.
     #First, get the x,y positions and angles of each "bond" between vertices
@@ -117,7 +115,8 @@ def calculate_triangulation(v):
     v.tri.bondsangle = np.zeros(num_bonds)
     v.tri.cnum = np.zeros(len(v.tri.points)) #coordination number of each vertex
     v.tri.segs = np.zeros((num_bonds,2,2))
-    #See https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.Delaunay.vertex_neighbor_vertices.html#scipy.spatial.Delaunay.vertex_neighbor_vertices
+    #See https://docs.scipy.org/doc/scipy/reference/generated
+    #                 /scipy.spatial.Delaunay.vertex_neighbor_vertices.html
     v.tri.indptr = v.tri.vertex_neighbor_vertices[0]
     v.tri.indices = v.tri.vertex_neighbor_vertices[1]
     #There's probably a cute way to do the next part using np.where, but since 
