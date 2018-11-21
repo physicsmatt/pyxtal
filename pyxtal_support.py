@@ -25,6 +25,7 @@ except ImportError:
     py3 = True
 
 import tkinter.filedialog as fd
+#import tkfilebrowser as fd  Maybe this is better?
 import os.path
 
 def set_Tk_var():
