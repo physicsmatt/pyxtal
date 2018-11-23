@@ -109,35 +109,32 @@ def calculate_triangulation(v):
     num_tri = len(v.tri.simplices)
     num_outer = len(v.tri.outer_vertices)
     num_bonds = int((num_tri * 3 + num_outer ) / 2)
-    v.tri.bondsx = np.zeros(num_bonds)
-    v.tri.bondsy = np.zeros(num_bonds)
-    v.tri.bondsl = np.zeros(num_bonds)
-    v.tri.bondsangle = np.zeros(num_bonds)
-    v.tri.cnum = np.zeros(len(v.tri.points)) #coordination number of each vertex
-    v.tri.segs = np.zeros((num_bonds,2,2))
+    v.tri.bond_ind = np.zeros((num_bonds,2), dtype=int)
+
     #See https://docs.scipy.org/doc/scipy/reference/generated
     #                 /scipy.spatial.Delaunay.vertex_neighbor_vertices.html
     v.tri.indptr = v.tri.vertex_neighbor_vertices[0]
     v.tri.indices = v.tri.vertex_neighbor_vertices[1]
+
     #There's probably a cute way to do the next part using np.where, but since 
     #there's only order N of these to go through, I'll just iterate instead.
     bondi = 0
+    v.tri.cnum = np.zeros(len(v.tri.points)) #coordination number of each vertex
     for v1i in range(0,len(v.tri.points)):
         v.tri.cnum[v1i] = v.tri.indptr[v1i+1] - v.tri.indptr[v1i]
         for v2i in v.tri.indices[v.tri.indptr[v1i]:v.tri.indptr[v1i + 1]] :
             if v2i > v1i: #This eliminates double counting of bonds
-                x1 = v.tri.points[v1i,0]
-                x2 = v.tri.points[v2i,0]
-                y1 = v.tri.points[v1i,1]
-                y2 = v.tri.points[v2i,1]
-                v.tri.segs[bondi] = np.array([[x1,y1],[x2,y2]])
-                v.tri.bondsx[bondi] = (x1 + x2) / 2
-                v.tri.bondsy[bondi] = (y1 + y2) / 2
-                v.tri.bondsl[bondi] =  np.sqrt((x2 - x1)**2 + (y2 - y1)**2)
-                angle = np.pi + np.arctan2(y2-y1, x2-x1) #from 0 to 2pi
-                #turn this into 0 to 60 degrees:
-                v.tri.bondsangle[bondi] = angle % (np.pi / 3)
+                v.tri.bond_ind[bondi]=[v1i,v2i]
                 bondi += 1
+                
+    xy0 = v.tri.points[v.tri.bond_ind[:,0]]
+    xy1 = v.tri.points[v.tri.bond_ind[:,1]]
+    v.tri.segs = np.stack([xy0,xy1],axis=1)
+    v.tri.bondsxy = (xy0 + xy1) / 2
+    diffs = xy1 - xy0
+    v.tri.bondsl = np.linalg.norm(diffs, axis = 1)
+    v.tri.bondsangle = np.arctan2(diffs[:,1],diffs[:,0]) + np.pi #from 0 to 2pi
+    v.tri.bondsangle %= (np.pi / 3)
 
 
 def plot_triangulation(v):
@@ -225,8 +222,8 @@ def calculate_angle_field(v):
     #orientation of the crystal.
 
 #For debugging purposes, these lines plot the centers of each bond:
-#    v.bondsplot = v.ax.scatter(v.tri.bondsx, 
-#                               v.tri.bondsy, 
+#    v.bondsplot = v.ax.scatter(v.tri.bondsxy[:,0], 
+#                               v.tri.bondsxy[:,1], 
 #                         color='red', zorder=15)
 
     #Now, create the orientation field:
@@ -239,9 +236,9 @@ def calculate_angle_field(v):
     #Note below that I have switched grid_x and grid_y, contrary to the example
     #shown in the numpy reference manual.  I did so because x and y were clearly
     #reversed in the resulting rgb image.
-    cosarr = scipy.interpolate.griddata((v.tri.bondsx, v.tri.bondsy), 
+    cosarr = scipy.interpolate.griddata((v.tri.bondsxy[:,0], v.tri.bondsxy[:,1]), 
                                           cosangle, (grid_y, grid_x),method='linear')
-    sinarr = scipy.interpolate.griddata((v.tri.bondsx, v.tri.bondsy), 
+    sinarr = scipy.interpolate.griddata((v.tri.bondsxy[:,0], v.tri.bondsxy[:,1]), 
                                           sinangle, (grid_y, grid_x),method='linear')
     v.anglearr = (np.arctan2(sinarr,cosarr) + np.pi ) / (2 * np.pi)
 
@@ -308,7 +305,8 @@ def do_stats(v):
      st.insert("end","Number of dislocations: "  + 
                    str(int(len(np.where(v.tri.is_dislocation != 0)[0]) / 2)) + "\n")
      st.insert("end","Number of unbound disclinations (inbounds only): "  + 
-                   str(len(np.where((v.tri.unboundness != 0) & v.tri.inbounds)[0])) )
+                   str(len(np.where((v.tri.unboundness != 0) & v.tri.inbounds)[0])) + "\n" )
+     st.insert("end","Median bond length: {:.2f}\n".format( np.median(v.tri.bondsl) ))
 
 
 def do_output_files(v):

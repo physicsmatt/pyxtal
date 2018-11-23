@@ -185,8 +185,9 @@ def load_images_and_locations(viewer):
 
 #This is a kludge, which ONLY looks at z values between +5 and  -5 for
 #this particular input file.  Maybe this should be another user option?
-        w2 = np.where(np.abs(part_locs3d[:,2]) < 5)[0]
-        part_locs = part_locs3d[w2,0:2]
+#        w2 = np.where(np.abs(part_locs3d[:,2]) < 5)[0]
+        part_locs = part_locs3d[:,0:2]
+
         part_locs += boxsize / 2
         
         #now create an "image" based on the densities of particles at x,y locations
@@ -435,6 +436,9 @@ def init(top, viewer, *args, **kwargs):
     setup_canvas_and_axes(viewer)
     pimg.plot_raw_image(viewer)
     pimg.do_filtered_image(viewer)
+#    if len(viewer.locations) == 0:
+#        print("No particles found.  Killing viewer.")
+#        #destroy_viewer(viewer)
     pimg.calculate_triangulation(viewer)
     pimg.calculate_angle_field(viewer)
     dislocs.calculate_dislocations(viewer)
