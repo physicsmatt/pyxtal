@@ -130,7 +130,7 @@ def load_images_and_locations(viewer):
         #use code from colloid group.
         viewer.image = plt.imread(full_filename)
 #below I can clip the image to something smaller, just for debugging purposes
-#        viewer.image = viewer.image[0:600,0:900]
+        viewer.image = viewer.image[0:600,0:900]
         viewer.imgshape = np.flip(np.shape(viewer.image))  #Note that order now [x, y]
         
         #This gives dataframe with 8 columns. First two columns are y, x 
@@ -192,14 +192,16 @@ def load_images_and_locations(viewer):
         
         #now create an "image" based on the densities of particles at x,y locations
         #use np.histogram2d
-        image = np.histogram2d(part_locs[:,0], part_locs[:,1],
-                               bins = viewer.imgshape)[0]
+        image = np.histogram2d(part_locs[:,1], part_locs[:,0],
+                               bins = np.flip(viewer.imgshape))[0]
+        image = np.flip(image,axis=0)
         viewer.image = image.copy()
 
         #Now use trackpy to get locations of spherical domains from image.
         #This gives dataframe with 8 columns. First two columns are y, x 
         full_locations = tp.locate(viewer.image[::-1], viewer.pmw.sphereSize[0])
-        # note that the [::-1] notation above verses the array top-to-bottom.
+#        full_locations = tp.locate(viewer.image[1], viewer.pmw.sphereSize[0])
+        # note that the [::-1] notation above reverses the array top-to-bottom.
         # Apparently the locate function reverses the y coordinate.
         viewer.locations = np.array(full_locations)[:,0:2]
         # It also puts y before x, so flip again:

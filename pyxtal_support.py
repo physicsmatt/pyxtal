@@ -244,6 +244,7 @@ def init(top, gui, *args, **kwargs):
     import os
     os.getcwd()
     pmw.path = os.getcwd()
+    pmw.path = "/home/mtrawick/Documents/simulations/2d_diblock/half-loop"
     pmw.pathBox.insert(END, pmw.path)
 
     #as this is a work in progress, I'm disabling controls that are
@@ -272,8 +273,9 @@ def init(top, gui, *args, **kwargs):
     #For debugging and demonstration purposes, it's handy to have a default 
     #filename already loaded up.
 #    filename = "double.tif"
-    filename = "hex1short.gsd"
+#    filename = "hex1short.gsd"
 #    filename = "test_diblock1.gsd"
+    filename = "HLsph_uh6_uw10_se41_kT1.0_ts5000000.gsd"
     pmw.filelist.append(filename)
     pmw.fileListbox.insert(END, os.path.basename(filename))
 
@@ -295,8 +297,8 @@ def initialize_parameters(pmw):
     pmw.global_corners_set = False
 
     #initialize all of the Tk variables declared during creation: 
-    pmw.inFileType.set("particles") 
-#    pmw.inFileType.set("assemblies") 
+#    pmw.inFileType.set("particles") 
+    pmw.inFileType.set("assemblies") 
     pmw.darkSpheres.set(False)
     pmw.partTypeStr.set("B")
     pmw.periodBound.set(False)
@@ -313,7 +315,7 @@ def initialize_parameters(pmw):
 
     #These numeric values function as a way to save previous values
     #if the associated strings are changed to non-integer values.
-    pmw.fromFrame = [0]
+    pmw.fromFrame = [118]
     pmw.toFrame = [-1]
     pmw.byFrame = [1]
     pmw.sphereSize = [7]
