@@ -11,19 +11,6 @@ import sys
 import pyxtalviewer
 import pyxtalviewer_support
 #import gc
-
-try:
-    from Tkinter import *
-except ImportError:
-    from tkinter import *
-
-try:
-    import ttk
-    py3 = False
-except ImportError:
-    import tkinter.ttk as ttk
-    py3 = True
-
 import tkinter.filedialog as fd
 #import tkfilebrowser as fd  Maybe this is better?
 import os.path
@@ -156,18 +143,18 @@ def addButtonCommand():
     filenames = fd.askopenfilenames()
     for filename in filenames:
         pmw.filelist.append(os.path.basename(filename))
-        pmw.fileListbox.insert(END, os.path.basename(filename))
+        pmw.fileListbox.insert("end", os.path.basename(filename))
 
     #...And updates the path to wherever the files came from.
     pmw.path = os.path.dirname(filenames[0])
-    pmw.pathBox.delete(1.0, END)
+    pmw.pathBox.delete(1.0, "end")
     #I don't know why the correct index above is 1.0
-    pmw.pathBox.insert(END, pmw.path)
+    pmw.pathBox.insert("end", pmw.path)
 
 
 def clearButtonCommand():
     pmw.filelist.clear()
-    pmw.fileListbox.delete(0, END)
+    pmw.fileListbox.delete(0, "end")
     #Note: I don't understand why the index for deleting is "0" here, but
     #1.0 for clearing the pathBox.
 
@@ -245,7 +232,7 @@ def init(top, gui, *args, **kwargs):
     os.getcwd()
     pmw.path = os.getcwd()
     pmw.path = "/home/mtrawick/Documents/simulations/2d_diblock/half-loop"
-    pmw.pathBox.insert(END, pmw.path)
+    pmw.pathBox.insert("end", pmw.path)
 
     #as this is a work in progress, I'm disabling controls that are
     #not implemented yet:
@@ -277,7 +264,7 @@ def init(top, gui, *args, **kwargs):
 #    filename = "test_diblock1.gsd"
     filename = "HLsph_uh6_uw10_se41_kT1.0_ts5000000.gsd"
     pmw.filelist.append(filename)
-    pmw.fileListbox.insert(END, os.path.basename(filename))
+    pmw.fileListbox.insert("end", os.path.basename(filename))
 
     pmw.top.bind("<Key>", lambda e:pmw_key_event(e, pmw))
 

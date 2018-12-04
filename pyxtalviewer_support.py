@@ -19,20 +19,8 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 #from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk
 
-try:
-    from Tkinter import *
-except ImportError:
-    from tkinter import *
-
-try:
-    import ttk
-    py3 = False
-except ImportError:
-    import tkinter.ttk as ttk
-    py3 = True
-
 def set_Tk_var():
-    None
+    pass
     #This function is a place holder, originally created by PAGE
     #It defined a zillion global Tk variables that were used for all
     #the widgets.  That functionality is now within the creation function.
