@@ -9,40 +9,6 @@ Created on Fri Nov  9 12:41:02 2018
 
 import numpy as np
 
-def create_inbounds_list_slow(v):
-    bvertsidx = v.tri.outer_vertices
-    bverts = v.tri.points[bvertsidx]
-    centerx = (np.max(bverts[:,0]) + np.min(bverts[:,0])) / 2
-    centery = (np.max(bverts[:,1]) + np.min(bverts[:,1])) / 2
-    disp = bverts - np.array([centerx,centery])
-    theta = np.arctan2(disp[:,1],disp[:,0])
-    #sort these.
-    order = np.argsort(theta)
-    bverts = bverts[order]
-    
-    #There's probably a cuter way to do this:
-    numpoints = len(v.tri.points)
-    numverts = len(bverts)
-    v.tri.inbounds = np.zeros(numpoints, dtype=int)
-    print("starting to find edge vertices.")
-    for i in range(0,numpoints):
-        p3 = v.tri.points[i]
-        min_d = v.pmw.sphereSize[0]*100
-        for j in range (-1, numverts-1):
-            p1 = bverts[j]
-            p2 = bverts[j+1]
-            d = np.abs(np.cross(p2-p1,p3-p1)/np.linalg.norm(p2-p1))
-            if d < min_d:
-                min_d = d
-        v.tri.inbounds[i] = (min_d > (v.pmw.sphereSize[0] * 2))
-        w = np.where(v.tri.inbounds)
-    #For debugging purposes, these lines plot the vertices on the perimeter:
-    print("done finding edge vertices.")
-
-    v.plt_inbounds = v.ax.scatter(v.locations[w,0], 
-                               v.locations[w,1], 
-                         color='red', zorder=5)
-
 def create_inbounds_list(v):
     #creates a list of NEAR edge vertices, which probably have weird
     #numbers of neighbors.
