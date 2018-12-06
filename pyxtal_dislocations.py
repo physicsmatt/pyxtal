@@ -46,6 +46,10 @@ def create_inbounds_list_slow(v):
 def create_inbounds_list(v):
     #creates a list of NEAR edge vertices, which probably have weird
     #numbers of neighbors.
+    if v.pmw.periodBound.get():
+        v.tri.inbounds = np.ones(len(v.locations), dtype=bool)
+        return()
+    
     bvertsidx = v.tri.outer_vertices
     bverts = v.tri.points[bvertsidx]
     centerx = (np.max(bverts[:,0]) + np.min(bverts[:,0])) / 2
@@ -60,7 +64,7 @@ def create_inbounds_list(v):
     numpoints = len(v.tri.points)
     #numverts = len(bverts)
     v.tri.inbounds = np.zeros(numpoints, dtype=bool)
-    threshhold = np.median(v.tri.bondsl) * 0.7
+    threshhold = v.median_bondlength * 0.7
     p1 = bverts
     p2 = np.roll(bverts, 1, axis = 0)
     denom = 1/ np.linalg.norm(p2-p1, axis=1)
@@ -213,11 +217,11 @@ def calculate_dislocations(v):
     create_inbounds_list(v)
     v.tri.is_dislocation = np.zeros(len(v.tri.indices), dtype=np.int16)
     #the bond between a 4 and an 8 would be a "double bond", with a 2 here.
-    v.tri.inprocess=np.full(len(v.tri.points), False)
-    v.tri.ButtInOnAble=np.full((len(v.tri.points), 2), True)
+    v.tri.inprocess=np.full(len(v.locations), False)
+    v.tri.ButtInOnAble=np.full((len(v.locations), 2), True)
     v.tri.unboundness = v.tri.cnum.copy() - 6
     v.tri.recursion_level = 0
-    for i in range(0, len(v.tri.points)):
+    for i in range(0, len(v.locations)):
         find_mates_for(i, v)
 
     

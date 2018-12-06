@@ -231,12 +231,12 @@ def init(top, gui, *args, **kwargs):
     import os
     os.getcwd()
     pmw.path = os.getcwd()
-    pmw.path = "/home/mtrawick/Documents/simulations/2d_diblock/half-loop"
+#    pmw.path = "/home/mtrawick/Documents/simulations/2d_diblock/half-loop"
     pmw.pathBox.insert("end", pmw.path)
 
     #as this is a work in progress, I'm disabling controls that are
     #not implemented yet:
-    set_widget_state('disabled', pmw.PeriodicCheck)
+#    set_widget_state('disabled', pmw.PeriodicCheck)
     set_widget_state('disabled', pmw.analysisFrame)
     set_widget_state('disabled', [pmw.outMpegCheck, 
                                   pmw.ImageSizeLabel, pmw.imageSizeEntry])
@@ -261,8 +261,9 @@ def init(top, gui, *args, **kwargs):
     #filename already loaded up.
 #    filename = "double.tif"
 #    filename = "hex1short.gsd"
+    filename = "small_2d_test.gsd"
 #    filename = "test_diblock1.gsd"
-    filename = "HLsph_uh6_uw10_se41_kT1.0_ts5000000.gsd"
+#    filename = "HLsph_uh6_uw10_se41_kT1.0_ts5000000.gsd"
     pmw.filelist.append(filename)
     pmw.fileListbox.insert("end", os.path.basename(filename))
 
@@ -284,11 +285,11 @@ def initialize_parameters(pmw):
     pmw.global_corners_set = False
 
     #initialize all of the Tk variables declared during creation: 
-#    pmw.inFileType.set("particles") 
-    pmw.inFileType.set("assemblies") 
+    pmw.inFileType.set("particles") 
+#    pmw.inFileType.set("assemblies") 
     pmw.darkSpheres.set(False)
     pmw.partTypeStr.set("B")
-    pmw.periodBound.set(False)
+    pmw.periodBound.set(True)
     pmw.outCircles.set(False)
     pmw.outTriang.set(False)
     pmw.outAll.set(False)
@@ -302,8 +303,8 @@ def initialize_parameters(pmw):
 
     #These numeric values function as a way to save previous values
     #if the associated strings are changed to non-integer values.
-    pmw.fromFrame = [118]
-    pmw.toFrame = [-1]
+    pmw.fromFrame = [5]
+    pmw.toFrame = [6]
     pmw.byFrame = [1]
     pmw.sphereSize = [7]
     pmw.imageSize = [-1]

@@ -23,27 +23,68 @@ colordict =	{
     "disc7": '#00FF00', #green
     "disc8": '#00FFFF', #cyan
     "dislocations": '#FFFF00', #yellow
+    "border": '#FF00FF', #magenta
 }
 
+def pad_locations(locs, width, size, with_indices=False):
+    #This function is analogous to the numpy.pad function in "wrap" mode.
+    #The input locs is an array of (x,y) coordinates.
+    #This function makes additional coordinates of the points just outside
+    #the range, mimicking periodic boundaries.
+    #If with_indices==True, then it
+    #also adds a third column, which is a reference back to the index of
+    #the original vertex.
+    
+    #First, create the third column
+    indices = np.arange(0,len(locs))
+    locs = np.stack((locs[:,0], locs[:,1], indices), axis=1)
+
+    #Now make copies of vertices within range of the edges
+    #use them to make new points for padding
+    x1 = locs[np.where(locs[:,0] < width)] + [size[0],0,0]
+    x2 = locs[np.where(locs[:,0] > size[0] - width)] - [size[0],0,0]
+    locs = np.concatenate((locs, x1, x2))
+    y1 = locs[np.where(locs[:,1] < width)] + [0,size[1],0]
+    y2 = locs[np.where(locs[:,1] > size[1] - width)] - [0,size[1],0]
+    locs = np.concatenate((locs, y1, y2))
+    if with_indices:
+        return(locs)
+    else:
+        return(locs[:,0:2])
+    
+
 def plot_raw_image(v):
+    if v.pmw.periodBound.get():
+        pad = v.pmw.sphereSize[0] * 5
+    else:
+        pad = 0
+
     if v.pmw.inFileType.get() in ["image", "assemblies"]:
         xsize, ysize = v.imgshape[0], v.imgshape[1]
-        v.plt_image = v.ax.imshow(v.image, 
-                                  extent=[0, xsize, 0, ysize],
+        v.plt_image = v.ax.imshow(np.pad(v.image, pad, "wrap"), 
+                                  extent=[-pad, xsize + pad, -pad, ysize + pad],
                                   zorder=0,
                                   cmap="gist_gray")
     elif v.pmw.inFileType.get() == "particles":
         radius = v.pmw.sphereSize[0] / 2
+        locations = pad_locations(v.locations, pad, v.imgshape)
         patches = [matplotlib.patches.CirclePolygon(xy, radius,
                         facecolor=colordict["particles"]) 
-                                        for xy in v.locations]
-        background = matplotlib.patches.Rectangle((0,0),
-                        width=v.imgshape[0],height=v.imgshape[1],
+                                        for xy in locations]
+        background = matplotlib.patches.Rectangle((-pad,-pad),
+                        width=v.imgshape[0] + 2 * pad, 
+                        height=v.imgshape[1] + 2 * pad,
                         facecolor=colordict["background"])
         patches.insert(0, background)
         coll = matplotlib.collections.PatchCollection(patches, 
                                 zorder=0,match_original=True)
         v.plt_image = v.ax.add_collection(coll)
+
+    border = matplotlib.patches.Rectangle((0,0),v.imgshape[0],v.imgshape[1],
+                    linewidth=2,edgecolor=colordict["border"],facecolor='none',
+                    zorder = 0.5)
+    v.plt_border = v.ax.add_patch(border)
+
     v.imgCanvas.draw()
 
 
@@ -96,45 +137,81 @@ def find_outer_vertices(v):
     return(np.unique(outer_tri[np.where(outer_neighbors != -1)]))
 
 def calculate_triangulation(v):
-    #Performs Delaunay triangulation and creates a plot of it.
+    #Performs Delaunay triangulation.
     #Also finds outermost vertices, which we'll want later.
     #Also gets orientation of each bond, which we'll use later for angle field.
-    #Still to do: figure out how to do this for periodic boundary conditions.
 
-    v.tri = spat.Delaunay(v.locations, qhull_options="QJ")
+    locations = v.locations.copy()
+    #pad_width should be 0 for non-periodic boundaries, so location not changed.
+    pad_width = int(v.pmw.periodBound.get()) * v.pmw.sphereSize[0] * 5
+    locations = pad_locations(locations, pad_width, 
+                              v.imgshape, with_indices=True)
+    v.tri = spat.Delaunay(locations[:,0:2], qhull_options="QJ")
     v.tri.outer_vertices = find_outer_vertices(v)
-
-    #Now step through and get bond information.
-    #First, get the x,y positions and angles of each "bond" between vertices
-    num_tri = len(v.tri.simplices)
-    num_outer = len(v.tri.outer_vertices)
-    num_bonds = int((num_tri * 3 + num_outer ) / 2)
-    v.tri.bond_ind = np.zeros((num_bonds,2), dtype=int)
 
     #See https://docs.scipy.org/doc/scipy/reference/generated
     #                 /scipy.spatial.Delaunay.vertex_neighbor_vertices.html
     v.tri.indptr = v.tri.vertex_neighbor_vertices[0]
     v.tri.indices = v.tri.vertex_neighbor_vertices[1]
 
+    #figure out number of bonds.  For period boundaries, num_bonds is too big,
+    #and the array v.tri.bond_ind will be truncated later.
+    num_tri = len(v.tri.simplices)
+    num_outer = len(v.tri.outer_vertices)
+    num_bonds = int((num_tri * 3 + num_outer ) / 2)  
+    v.tri.bond_ind = np.zeros((num_bonds,2), dtype=int)
+
+    #Now step through and get vertices of the ends for each bond.
     #There's probably a cute way to do the next part using np.where, but since 
     #there's only order N of these to go through, I'll just iterate instead.
     bondi = 0
-    v.tri.cnum = np.zeros(len(v.tri.points)) #coordination number of each vertex
-    for v1i in range(0,len(v.tri.points)):
+    #edge_bond_count = 0  #This was used for debugging purposes
+    v.tri.cnum = np.zeros(len(v.locations)) #coordination number of each vertex
+    for v1i in range(0,len(v.locations)): #with these limits, v1 is NOT in padding.
         v.tri.cnum[v1i] = v.tri.indptr[v1i+1] - v.tri.indptr[v1i]
         for v2i in v.tri.indices[v.tri.indptr[v1i]:v.tri.indptr[v1i + 1]] :
-            if v2i > v1i: #This eliminates double counting of bonds
+            if v2i > v1i:
                 v.tri.bond_ind[bondi]=[v1i,v2i]
                 bondi += 1
+                #if v2i >= len(v.locations):
+                #    edge_bond_count +=1
+    v.tri.bond_ind = v.tri.bond_ind[0:bondi]
+    #Note that the bonds included here may include some bonds that extend from
+    #inside the box ("real" vertices) to virtual points outside the box,
+    #due to periodic boundary conditions.  As a result, some physical bonds
+    #are included twice, once on each side of the image.
                 
+    #Now Calculate information for all of the bonds
     xy0 = v.tri.points[v.tri.bond_ind[:,0]]
     xy1 = v.tri.points[v.tri.bond_ind[:,1]]
-    v.tri.segs = np.stack([xy0,xy1],axis=1)
-    v.tri.bondsxy = (xy0 + xy1) / 2
+    v.tri.segs = np.stack([xy0,xy1],axis=1)  #Coords for plotting each line segment
+    v.tri.bondsxy = (xy0 + xy1) / 2 #xy center of each bond.  
     diffs = xy1 - xy0
-    v.tri.bondsl = np.linalg.norm(diffs, axis = 1)
+    v.tri.bondslength = np.linalg.norm(diffs, axis = 1)
     v.tri.bondsangle = np.arctan2(diffs[:,1],diffs[:,0]) + np.pi #from 0 to 2pi
-    v.tri.bondsangle %= (np.pi / 3)
+    v.tri.bondsangle %= (np.pi / 3) #Orientation, from 0 to pi/3
+
+    #Remove the few duplicate bonds on the edges (if periodic) 
+    #and calculate the median bond length
+    real_bondsxy = v.tri.bondsxy % v.imgshape
+    u, u_idx = np.unique(real_bondsxy, axis=0, return_index=True)
+    real_bondslength = v.tri.bondslength[u_idx]
+    v.median_bondlength = np.median(real_bondslength)
+
+    #These lines test the code for removing unique bonds
+    #dup_bonds = np.setdiff1d(np.arange(0,bondi,dtype=int), u_idx)
+    #print("number of bonds removed: ",len(dup_bonds))
+    #print("duplicate these bonds:")
+    #print(v.tri.bondsxy[dup_bonds])
+    #print("edge bond count: ", edge_bond_count)
+    #v.tri.segs=v.tri.segs[dup_bonds]
+
+    #Finally, change the indices and indptr arrays for periodic boundary 
+    #conditions.  For NON-periodic boundaries, these lines should have
+    #no effect.
+    v.tri.indices_unwrapped = v.tri.indices.copy()
+    v.tri.indices = locations[v.tri.indices,2].astype(int)
+    v.tri.indptr = v.tri.indptr[0:len(v.locations)+1]
 
 
 def plot_triangulation(v):
@@ -181,12 +258,12 @@ def do_label_points(v):
 def plot_dislocations(v):
     #Now, step through the lists as we did in do_disclinations to compile
     #list of line segments to plot:
-    num_dislocs = int(np.sum(v.tri.is_dislocation) / 2)
+    num_dislocs = int(np.sum(v.tri.is_dislocation))
     segs = np.zeros((num_dislocs,2,2))
     disloci = 0
-    for v1 in range(0,len(v.tri.points)):
+    for v1 in range(0,len(v.locations)):
         for index in range(v.tri.indptr[v1], v.tri.indptr[v1 + 1]):
-            v2 = v.tri.indices[index]
+            v2 = v.tri.indices_unwrapped[index]
             if v.tri.is_dislocation[index] > 0 and v2 > v1:
                 x1 = v.tri.points[v1,0]
                 x2 = v.tri.points[v2,0]
@@ -195,10 +272,12 @@ def plot_dislocations(v):
                 #print(disloci,v1,v2)
                 segs[disloci] = np.array([[x1,y1],[x2,y2]])
                 disloci += 1
+    segs = segs[0:disloci]
     line_coll = matplotlib.collections.LineCollection(segs, 
                                   color=colordict["dislocations"], zorder=6)
     v.plt_disloc = v.ax.add_collection(line_coll)
     v.imgCanvas.draw()
+    
     
 def plot_unbound_discs(v):
     unbound_discs = np.where(v.tri.unboundness != 0)[0]
@@ -275,7 +354,7 @@ def do_stats(v):
      st.insert("end", formstr.format(" ","     Total","     Inbounds"))
      st.insert("end", formstr.format(
              "Number of spheres found:",
-               len(v.tri.points), np.sum(v.tri.inbounds,dtype=int) ))
+               len(v.locations), np.sum(v.tri.inbounds,dtype=int) ))
      st.insert("end", formstr.format(
              "    with <= 4 neighbors:",
                len(np.where(v.tri.cnum <= 4)[0]), 
@@ -283,7 +362,7 @@ def do_stats(v):
      st.insert("end", formstr.format(
              "    with 5 neighbors:",
                len(np.where(v.tri.cnum == 5)[0]), 
-               len(np.where(v.tri.cnum * v.tri.inbounds == 4)[0]) ))
+               len(np.where(v.tri.cnum * v.tri.inbounds == 5)[0]) ))
      st.insert("end", formstr.format(
              "    with 6 neighbors:",
                len(np.where(v.tri.cnum == 6)[0]), 
@@ -306,7 +385,7 @@ def do_stats(v):
                    str(int(len(np.where(v.tri.is_dislocation != 0)[0]) / 2)) + "\n")
      st.insert("end","Number of unbound disclinations (inbounds only): "  + 
                    str(len(np.where((v.tri.unboundness != 0) & v.tri.inbounds)[0])) + "\n" )
-     st.insert("end","Median bond length: {:.2f}\n".format( np.median(v.tri.bondsl) ))
+     st.insert("end","Median bond length: {:.2f}\n".format(v.median_bondlength) )
 
 
 def do_output_files(v):

@@ -102,6 +102,40 @@ def showStatsWin():
     print('pyxtalviewer_support.showStatsWin')
     sys.stdout.flush()
 
+def get_locations_from_image(v):
+    #The main work in this function is done by trackpy.locate.
+    #This function is a wrapper that fixes some quirks in the
+    #coordinate system and deals with the case of periodic
+    #boundary conditions
+    import trackpy as tp
+
+    if v.pmw.periodBound.get():
+        wrap_width = v.pmw.sphereSize[0] * 5
+    else:
+        wrap_width = 0
+    
+    # Apparently the locate function reverses the y coordinate, so
+    # the [::-1] notation above verses the array top-to-bottom.
+    img_for_locs = v.image[::-1]
+    
+    #now add periodic wraparound, if required:
+    img_for_locs = np.pad(img_for_locs, wrap_width, "wrap")
+    
+    #Trackpy gives dataframe with 8 columns. First two columns are y, x 
+    full_locations = tp.locate(img_for_locs, v.pmw.sphereSize[0])
+    locations = np.array(full_locations)[:,0:2]
+
+    # Trackpy also puts y before x, so flip them back:
+    locations = np.flip(locations, axis = 1)
+
+    #Finally, remove the effects of the wraparound, and kill any out of bounds.
+    locations -= np.array([wrap_width, wrap_width])
+    w = np.where((0 <= locations[:,0]) &
+                 (locations[:,0] < v.imgshape[0]) &
+                 (0 <= locations[:,1]) &
+                 (locations[:,1] < v.imgshape[1]) )
+
+    return(locations[w])
 
 def load_images_and_locations(viewer):
     #Based on the input file type, this function reads the file.
@@ -109,7 +143,6 @@ def load_images_and_locations(viewer):
     #If File is location data, it adds a fake "image" of spheres.
     #If File is assemblies, it calcultes both an image and location data.
 
-    import trackpy as tp
     import gsd.hoomd
     import os
 
@@ -118,16 +151,10 @@ def load_images_and_locations(viewer):
         #use code from colloid group.
         viewer.image = plt.imread(full_filename)
 #below I can clip the image to something smaller, just for debugging purposes
-        viewer.image = viewer.image[0:600,0:900]
+#        viewer.image = viewer.image[0:600,0:900]
         viewer.imgshape = np.flip(np.shape(viewer.image))  #Note that order now [x, y]
-        
-        #This gives dataframe with 8 columns. First two columns are y, x 
-        full_locations = tp.locate(viewer.image[::-1], viewer.pmw.sphereSize[0])
-        # note that the [::-1] notation above verses the array top-to-bottom.
-        # Apparently the locate function reverses the y coordinate.
-        viewer.locations = np.array(full_locations)[:,0:2]
-        # It also puts y before x, so flip again:
-        viewer.locations = np.flip(viewer.locations, axis = 1)
+        viewer.locations = get_locations_from_image(viewer)        
+
         
     elif viewer.pmw.inFileType.get() == "particles":
         #read gsd file
@@ -184,16 +211,8 @@ def load_images_and_locations(viewer):
                                bins = np.flip(viewer.imgshape))[0]
         image = np.flip(image,axis=0)
         viewer.image = image.copy()
+        viewer.locations = get_locations_from_image(viewer)        
 
-        #Now use trackpy to get locations of spherical domains from image.
-        #This gives dataframe with 8 columns. First two columns are y, x 
-        full_locations = tp.locate(viewer.image[::-1], viewer.pmw.sphereSize[0])
-#        full_locations = tp.locate(viewer.image[1], viewer.pmw.sphereSize[0])
-        # note that the [::-1] notation above reverses the array top-to-bottom.
-        # Apparently the locate function reverses the y coordinate.
-        viewer.locations = np.array(full_locations)[:,0:2]
-        # It also puts y before x, so flip again:
-        viewer.locations = np.flip(viewer.locations, axis = 1)
 
 
 def dev_to_data(xy, viewer):
