@@ -110,7 +110,7 @@ def can_retract_from(p1, p2, v, edges_ok):
 
 def can_butt_in_on(p1, p2, v, edges_ok):
     if (not v.tri.inbounds[p2]) and (not edges_ok): return(False)
-    if not v.tri.ButtInOnAble[p2, int(edges_ok)]: return(False)
+    if not v.tri.buttInOnAble[p2, int(edges_ok)]: return(False)
     v.tri.inprocess[p1]=True
     for i in neighbor_inds(p2,v):
         p3 = v.tri.indices[i]
@@ -119,7 +119,7 @@ def can_butt_in_on(p1, p2, v, edges_ok):
                 v.tri.inprocess[p1]=False
                 return(True)
     v.tri.inprocess[p1]=False
-    v.tri.ButtInOnAble[p2,int(edges_ok)] = False
+    v.tri.buttInOnAble[p2,int(edges_ok)] = False
     return(False)
     #Note: I really wonder about setting p1 in process.  Isn't it already in process?
     #And don't I screw stuff up if I make it NOT inprocess at the end?
@@ -184,7 +184,7 @@ def calculate_dislocations(v):
     v.tri.is_dislocation = np.zeros(len(v.tri.indices), dtype=np.int16)
     #the bond between a 4 and an 8 would be a "double bond", with a 2 here.
     v.tri.inprocess=np.full(len(v.locations), False)
-    v.tri.ButtInOnAble=np.full((len(v.locations), 2), True)
+    v.tri.buttInOnAble=np.full((len(v.locations), 2), True)
     v.tri.unboundness = v.tri.cnum.copy() - 6
     v.tri.recursion_level = 0
     for i in range(0, len(v.locations)):

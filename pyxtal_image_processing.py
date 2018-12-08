@@ -209,7 +209,7 @@ def calculate_triangulation(v):
     #Finally, change the indices and indptr arrays for periodic boundary 
     #conditions.  For NON-periodic boundaries, these lines should have
     #no effect.
-    v.tri.indices_unwrapped = v.tri.indices.copy()
+    v.tri.indices_notwrapped = v.tri.indices.copy()
     v.tri.indices = locations[v.tri.indices,2].astype(int)
     v.tri.indptr = v.tri.indptr[0:len(v.locations)+1]
 
@@ -263,7 +263,7 @@ def plot_dislocations(v):
     disloci = 0
     for v1 in range(0,len(v.locations)):
         for index in range(v.tri.indptr[v1], v.tri.indptr[v1 + 1]):
-            v2 = v.tri.indices_unwrapped[index]
+            v2 = v.tri.indices_notwrapped[index]
             if v.tri.is_dislocation[index] > 0 and v2 > v1:
                 x1 = v.tri.points[v1,0]
                 x2 = v.tri.points[v2,0]
