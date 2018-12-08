@@ -61,7 +61,8 @@ def plot_raw_image(v):
 
     if v.pmw.inFileType.get() in ["image", "assemblies"]:
         xsize, ysize = v.imgshape[0], v.imgshape[1]
-        v.plt_image = v.ax.imshow(np.pad(v.image, pad, "wrap"), 
+        v.image = np.pad(v.image, pad, "wrap")
+        v.plt_image = v.ax.imshow(v.image, 
                                   extent=[-pad, xsize + pad, -pad, ysize + pad],
                                   zorder=0,
                                   cmap="gist_gray")
