@@ -198,6 +198,9 @@ def calculate_triangulation(v):
     u, u_idx = np.unique(real_bondsxy, axis=0, return_index=True)
     real_bondslength = v.tri.bondslength[u_idx]
     v.median_bondlength = np.median(real_bondslength)
+#I should do the previous lines differently, simply selecting the ones where the
+#xy center is actually within the original image.  Also need to save xy and angle to
+#the viewer structure for later calculation of orientational correlation function.
 
     #These lines test the code for removing unique bonds
     #dup_bonds = np.setdiff1d(np.arange(0,bondi,dtype=int), u_idx)
@@ -377,7 +380,7 @@ def do_stats(v):
                len(np.where(v.tri.cnum >= 8)[0]), 
                len(np.where((v.tri.cnum >= 8) * v.tri.inbounds)[0]) ))
      st.insert("end", formstr.format(
-             "    Total != 6 neighbors:",
+             "    Total <> 6 neighbors:",
                len(np.where(v.tri.cnum != 6)[0]), 
                len(np.where((v.tri.cnum != 6) * v.tri.inbounds)[0]) ))
      

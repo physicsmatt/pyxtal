@@ -101,7 +101,7 @@ def GoButtonCommand():
     vieweridx = len(pmw.viewers)
     if pmw.inFileType.get() == "image":
         #For image input, only one log file created, for first image
-        create_logfile(pmw, pmw.filelist[0])
+        if pmw.outLog.get() : create_logfile(pmw, pmw.filelist[0])
         for fileidx in range(0,numFiles):
             pmw.viewers.append(pyxtalviewer.create_Pyxtal_Viewer(root, pmw, 
                     pmw.filelist[fileidx], vieweridx, 0))
@@ -112,7 +112,7 @@ def GoButtonCommand():
                                       +str(fileidx+1) +"/" + str(numFiles))
             filename = pmw.filelist[fileidx]
             #For gsd input, each gsd file gets a separate logfile:
-            create_logfile(pmw, filename) 
+            if pmw.outLog.get() : create_logfile(pmw, filename) 
             start = pmw.fromFrame[0]
             end = pmw.toFrame[0]
             if end == -1:
