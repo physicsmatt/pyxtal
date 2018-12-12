@@ -194,20 +194,32 @@ def calculate_triangulation(v):
 
     #Remove the few duplicate bonds on the edges (if periodic) 
     #and calculate the median bond length
-    real_bondsxy = v.tri.bondsxy % v.imgshape
-    u, u_idx = np.unique(real_bondsxy, axis=0, return_index=True)
-    real_bondslength = v.tri.bondslength[u_idx]
-    v.median_bondlength = np.median(real_bondslength)
-#I should do the previous lines differently, simply selecting the ones where the
-#xy center is actually within the original image.  Also need to save xy and angle to
-#the viewer structure for later calculation of orientational correlation function.
+    #There are two possible ways to remove duplicate bonds.  Below, we simply
+    #find all of the fonds that are unique
+    real_bondsxy_with_dupes = v.tri.bondsxy % v.imgshape
+    u, w = np.unique(real_bondsxy_with_dupes, axis=0, return_index=True)
+    #Below is an alternate method, which selects only bonds which have their
+    #centers within the real image.  However, it fails in the (rare) case of
+    #two vertices just outside the corner of an image, but the bond is within
+    #the image.  This leads to the wrong number of bonds.
+    #w = np.where((0 <= v.tri.bondsxy[:,0]) &
+    #             (v.tri.bondsxy[:,0] < v.imgshape[0]) &
+    #             (0 <= v.tri.bondsxy[:,1]) &
+    #             (v.tri.bondsxy[:,1] < v.imgshape[1]))
+    #The real bondsxy and bondsangle will be used for the correlation function.
+    v.tri.real_bondsxy = v.tri.bondsxy[w]
+    v.tri.real_bondsangle = v.tri.bondsangle[w]
+    v.median_bondlength = np.median(v.tri.bondslength[w])
 
     #These lines test the code for removing unique bonds
-    #dup_bonds = np.setdiff1d(np.arange(0,bondi,dtype=int), u_idx)
+    #dup_bonds = np.setdiff1d(np.arange(0,bondi,dtype=int), w)
+    #print(v.imgshape)
     #print("number of bonds removed: ",len(dup_bonds))
-    #print("duplicate these bonds:")
+    #print("these are the bonds that were duplicates:")
     #print(v.tri.bondsxy[dup_bonds])
     #print("edge bond count: ", edge_bond_count)
+    #print("number of real bonds is: ",len(v.tri.real_bondsxy))
+    #print("number of real vertices is: ",len(v.locations))
     #v.tri.segs=v.tri.segs[dup_bonds]
 
     #Finally, change the indices and indptr arrays for periodic boundary 
