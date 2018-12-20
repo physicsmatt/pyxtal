@@ -140,16 +140,17 @@ def killAllButtonCommand():
 
 def addButtonCommand():
     #Adds files to the filelist (the variable and the scroll box)...
-    filenames = fd.askopenfilenames()
+    filenames = fd.askopenfilenames(initialdir=pmw.path)
     for filename in filenames:
         pmw.filelist.append(os.path.basename(filename))
         pmw.fileListbox.insert("end", os.path.basename(filename))
 
     #...And updates the path to wherever the files came from.
-    pmw.path = os.path.dirname(filenames[0])
-    pmw.pathBox.delete(1.0, "end")
-    #I don't know why the correct index above is 1.0
-    pmw.pathBox.insert("end", pmw.path)
+    if len(filenames) > 0:
+        pmw.path = os.path.dirname(filenames[0])
+        pmw.pathBox.delete(1.0, "end")
+        #I don't know why the correct index above is 1.0
+        pmw.pathBox.insert("end", pmw.path)
 
 
 def clearButtonCommand():
@@ -232,6 +233,7 @@ def init(top, gui, *args, **kwargs):
     os.getcwd()
     pmw.path = os.getcwd()
 #    pmw.path = "/home/mtrawick/Documents/simulations/2d_diblock/half-loop"
+    pmw.path = "/home/mtrawick/Documents/simulations/half_loop_particles/take2"
     pmw.pathBox.insert("end", pmw.path)
 
     #as this is a work in progress, I'm disabling controls that are
@@ -289,7 +291,7 @@ def initialize_parameters(pmw):
 #    pmw.inFileType.set("assemblies") 
     pmw.darkSpheres.set(False)
     pmw.partTypeStr.set("B")
-    pmw.periodBound.set(True)
+    pmw.periodBound.set(False)
     pmw.outCircles.set(False)
     pmw.outTriang.set(False)
     pmw.outAll.set(False)
@@ -297,14 +299,14 @@ def initialize_parameters(pmw):
     pmw.outLog.set(True)
     pmw.doOrientCorr.set(False)
     pmw.doTraject.set(False)
-    pmw.retainWin.set(True)
+    pmw.retainWin.set(False)
     pmw.lockViews.set(False)
     pmw.lockZoom.set(False)
 
     #These numeric values function as a way to save previous values
     #if the associated strings are changed to non-integer values.
-    pmw.fromFrame = [5]
-    pmw.toFrame = [6]
+    pmw.fromFrame = [1]
+    pmw.toFrame = [-1]
     pmw.byFrame = [1]
     pmw.sphereSize = [7]
     pmw.imageSize = [-1]
