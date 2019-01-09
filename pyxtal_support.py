@@ -231,19 +231,11 @@ def init(top, gui, *args, **kwargs):
 
     import os
     os.getcwd()
-#    pmw.path = os.getcwd()
+    pmw.path = os.getcwd()
 #    pmw.path = "/home/mtrawick/Documents/simulations/2d_diblock/half-loop"
 #    pmw.path = "/home/mtrawick/Documents/simulations/half_loop_particles/take2"
-    pmw.path = "/home/mtrawick/Documents/simulations/2d_diblock/half-loop/take2"
+#    pmw.path = "/home/mtrawick/Documents/simulations/2d_diblock/half-loop/take2"
     pmw.pathBox.insert("end", pmw.path)
-
-    #as this is a work in progress, I'm disabling controls that are
-    #not implemented yet:
-#    set_widget_state('disabled', pmw.PeriodicCheck)
-    set_widget_state('disabled', pmw.analysisFrame)
-    set_widget_state('disabled', [pmw.outMpegCheck, 
-                                  pmw.ImageSizeLabel, pmw.imageSizeEntry])
-    set_widget_state('disabled', [pmw.SaveDefButton, pmw.LoadDefButton])
 
     pmw.filelist = list()
     pmw.viewers = list()
@@ -258,7 +250,13 @@ def init(top, gui, *args, **kwargs):
 
     initialize_parameters(pmw)
 
-
+    #as this is a work in progress, I'm disabling controls that are
+    #not implemented yet:
+    set_widget_state('disabled', pmw.analysisFrame)
+    set_widget_state('disabled', [pmw.outMpegCheck, 
+                                  pmw.ImageSizeLabel, pmw.imageSizeEntry])
+    set_widget_state('disabled', [pmw.SaveDefButton, pmw.LoadDefButton])
+    if pmw.batchmode.get(): set_widget_state('disabled', pmw.RetainCheck)
 
     #For debugging and demonstration purposes, it's handy to have a default 
     #filename already loaded up.
@@ -288,11 +286,11 @@ def initialize_parameters(pmw):
     pmw.global_corners_set = False
 
     #initialize all of the Tk variables declared during creation: 
-    pmw.inFileType.set("particles") 
-#    pmw.inFileType.set("assemblies") 
+#    pmw.inFileType.set("particles") 
+    pmw.inFileType.set("assemblies") 
     pmw.darkSpheres.set(False)
     pmw.partTypeStr.set("B")
-    pmw.periodBound.set(False)
+    pmw.periodBound.set(True)
     pmw.outCircles.set(False)
     pmw.outTriang.set(False)
     pmw.outAll.set(False)
@@ -300,16 +298,16 @@ def initialize_parameters(pmw):
     pmw.outLog.set(True)
     pmw.doOrientCorr.set(False)
     pmw.doTraject.set(False)
-    pmw.batchmode.set(True)
-    pmw.retainWin.set(False)
-    pmw.lockViews.set(False)
-    pmw.lockZoom.set(False)
+    pmw.batchmode.set(False)
+    pmw.retainWin.set(True)
+    pmw.lockViews.set(True)
+    pmw.lockZoom.set(True)
 
     #These numeric values function as a way to save previous values
     #if the associated strings are changed to non-integer values.
-    pmw.fromFrame = [1]
+    pmw.fromFrame = [0]
     pmw.toFrame = [-1]
-    pmw.byFrame = [1]
+    pmw.byFrame = [50]
     pmw.sphereSize = [7]
     pmw.imageSize = [-1]
 
