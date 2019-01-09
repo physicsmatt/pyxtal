@@ -231,9 +231,10 @@ def init(top, gui, *args, **kwargs):
 
     import os
     os.getcwd()
-    pmw.path = os.getcwd()
+#    pmw.path = os.getcwd()
 #    pmw.path = "/home/mtrawick/Documents/simulations/2d_diblock/half-loop"
-    pmw.path = "/home/mtrawick/Documents/simulations/half_loop_particles/take2"
+#    pmw.path = "/home/mtrawick/Documents/simulations/half_loop_particles/take2"
+    pmw.path = "/home/mtrawick/Documents/simulations/2d_diblock/half-loop/take2"
     pmw.pathBox.insert("end", pmw.path)
 
     #as this is a work in progress, I'm disabling controls that are
@@ -299,6 +300,7 @@ def initialize_parameters(pmw):
     pmw.outLog.set(True)
     pmw.doOrientCorr.set(False)
     pmw.doTraject.set(False)
+    pmw.batchmode.set(True)
     pmw.retainWin.set(False)
     pmw.lockViews.set(False)
     pmw.lockZoom.set(False)

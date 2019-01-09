@@ -351,7 +351,7 @@ def plot_angle_field(v):
 
     v.plt_angleimg = v.ax.imshow(v.rgbimg, 
                               extent=[0, xsize, 0, ysize],
-                              zorder=1, alpha = 0.3)
+                              zorder=1, alpha = 0.5)
     v.imgCanvas.draw()
 
 
