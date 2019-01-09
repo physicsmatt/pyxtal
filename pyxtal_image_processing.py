@@ -420,8 +420,8 @@ def do_output_files(v):
         v.fig.tight_layout(pad=-1.08)
         v.fig.savefig(base + "_circ.tif")#, bbox_inches='tight',pad_inches=0)
     if v.pmw.outAll.get():
-        v.plt_circles.set_visible(True)
-        v.plt_triang.set_visible(False)
+        v.plt_circles.set_visible(False)
+        v.plt_triang.set_visible(True)
         v.plt_angleimg.set_visible(True)
         v.plt_disc.set_visible(True)
         v.plt_disloc.set_visible(True)
