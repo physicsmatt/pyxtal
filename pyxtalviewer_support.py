@@ -107,24 +107,25 @@ def get_locations_from_image(v):
     #This function is a wrapper that fixes some quirks in the
     #coordinate system and deals with the case of periodic
     #boundary conditions
-    import trackpy as tp
+    import trackpy
 
+    img_for_locs = v.image
+    
+    #Add periodic wraparound, if required:
     if v.pmw.periodBound.get():
         wrap_width = v.pmw.sphereSize[0] * 5
     else:
         wrap_width = 0
+    img_for_locs = np.pad(img_for_locs, wrap_width, "wrap")
     
     # Apparently the locate function reverses the y coordinate, so
     # the [::-1] notation above verses the array top-to-bottom.
-    img_for_locs = v.image[::-1]
-    
-    #now add periodic wraparound, if required:
-    img_for_locs = np.pad(img_for_locs, wrap_width, "wrap")
-    
-    #Trackpy gives dataframe with 8 columns. First two columns are y, x 
-    full_locations = tp.locate(img_for_locs, v.pmw.sphereSize[0])
-    locations = np.array(full_locations)[:,0:2]
+    img_for_locs = img_for_locs[::-1]
 
+    full_locations = trackpy.locate(img_for_locs, v.pmw.sphereSize[0])
+
+    #Trackpy gives dataframe with 8 columns. First two columns are y, x 
+    locations = np.array(full_locations)[:,0:2]
     # Trackpy also puts y before x, so flip them back:
     locations = np.flip(locations, axis = 1)
 
