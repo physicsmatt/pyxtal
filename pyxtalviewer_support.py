@@ -102,7 +102,25 @@ def showStatsWin():
     print('pyxtalviewer_support.showStatsWin')
     sys.stdout.flush()
 
-def get_locations_from_image(v):
+def get_contiguous_regions_from_image(img):
+    #This function is similar to trackpy in that it returns locatios of
+    #features from an image.  But the "features" here are specifically
+    #contiguous areas of non-zero density.
+    import skimage.measure as skim
+    
+    nonzero = (img > 0)
+    labels = skim.label(nonzero, connectivity=2)
+    props = skim.regionprops(labels, intensity_image = img, cache=False)
+    locations = np.array([p.weighted_centroid for p in props])
+    masses = np.array([p.weighted_moments[0,0] for p in props])
+
+    #Set a mass cutoff
+    w = np.where(masses > 6)
+    print(np.sort(masses))
+    return(locations[w])
+    
+
+def get_locations_from_image(v, method="trackpy"):
     #The main work in this function is done by trackpy.locate.
     #This function is a wrapper that fixes some quirks in the
     #coordinate system and deals with the case of periodic
@@ -122,10 +140,13 @@ def get_locations_from_image(v):
     # the [::-1] notation above verses the array top-to-bottom.
     img_for_locs = img_for_locs[::-1]
 
-    full_locations = trackpy.locate(img_for_locs, v.pmw.sphereSize[0])
+    if method == "contiguous":
+        locations = get_contiguous_regions_from_image(img_for_locs)
+    else: #presumably using "trackpy"
+        full_locations = trackpy.locate(img_for_locs, v.pmw.sphereSize[0])
+        #Trackpy gives dataframe with 8 columns. First two columns are y, x 
+        locations = np.array(full_locations)[:,0:2]
 
-    #Trackpy gives dataframe with 8 columns. First two columns are y, x 
-    locations = np.array(full_locations)[:,0:2]
     # Trackpy also puts y before x, so flip them back:
     locations = np.flip(locations, axis = 1)
 
@@ -176,8 +197,9 @@ def load_images_and_locations(viewer):
         scale_fact = 10
         viewer.locations *= scale_fact
         boxsize = np.ceil(boxsize) * scale_fact
-#Eventually, I should get the sphere size from gsd particle diameter
-        viewer.pmw.sphereSize[0] = 1 * scale_fact
+
+        #set the global sphere size from diameter of first particle
+        viewer.pmw.sphereSize[0] = s[fn].particles.diameter[0] * scale_fact
         viewer.imgshape = np.array([int(boxsize[0]),int(boxsize[1])])
 
     else: #must be a gsd assembly
@@ -186,9 +208,9 @@ def load_images_and_locations(viewer):
         fn = viewer.framenum  #this value was passed in from pmw
         if fn > len(s):
             print("ERROR: frame number out of range")
-        boxsize = s[fn].configuration.box[0:2]  #z-component not used. assuming x,y.
-        boxsize = np.ceil(boxsize)
-        viewer.imgshape = np.array([int(boxsize[0]),int(boxsize[1])])
+        boxsize3d = s[fn].configuration.box[0:3]  #z-component not used. assuming x,y.
+        boxsize3d = np.ceil(boxsize3d)
+        viewer.imgshape = np.array([int(boxsize3d[0]),int(boxsize3d[1])])
         viewer.timestep = s[fn].configuration.step
         
         #Get locations of only 'B' particles, or whatever type is specified.
@@ -198,22 +220,74 @@ def load_images_and_locations(viewer):
         #so I need to access it with [0].
         w = np.where(s[fn].particles.typeid == typenum)[0]
         part_locs3d = s[fn].particles.position[w,0:3]
+        part_locs3d += boxsize3d / 2
 
-#This is a kludge, which ONLY looks at z values between +5 and  -5 for
-#this particular input file.  Maybe this should be another user option?
-#        w2 = np.where(np.abs(part_locs3d[:,2]) < 5)[0]
         part_locs = part_locs3d[:,0:2]
 
-        part_locs += boxsize / 2
-        
         #now create an "image" based on the densities of particles at x,y locations
         #use np.histogram2d
         image = np.histogram2d(part_locs[:,1], part_locs[:,0],
                                bins = np.flip(viewer.imgshape))[0]
         image = np.flip(image,axis=0)
         viewer.image = image.copy()
-        viewer.locations = get_locations_from_image(viewer)        
+#        viewer.locations = get_locations_from_image(viewer, method="contiguous")        
+        viewer.locations = get_locations_from_3d(viewer, part_locs3d, boxsize3d)
 
+def get_locations_from_3d(v, part_locs3d, boxsize3d):
+    import skimage.measure as skim
+
+    image3d = np.histogramdd(part_locs3d, bins=boxsize3d)[0]
+
+    #Add periodic wraparound, if required:
+    if v.pmw.periodBound.get():
+        wrap_width = v.pmw.sphereSize[0] * 5
+    else:
+        wrap_width = 0
+    pad_spec = ((wrap_width,wrap_width),(wrap_width,wrap_width),(0,0))
+    image3d = np.pad(image3d, pad_spec, "wrap")
+
+    nonzero = (image3d > 0)
+    labels = skim.label(nonzero, connectivity=3)
+    props = skim.regionprops(labels, intensity_image = image3d, cache=False)
+    locations = np.array([p.weighted_centroid for p in props])
+
+    #remove the effects of the wraparound, and kill any out of bounds.
+    locations -= np.array([wrap_width, wrap_width, 0])
+    locations = locations[:,0:2]
+    w = np.where((0 <= locations[:,0]) &
+                 (locations[:,0] < v.imgshape[0]) &
+                 (0 <= locations[:,1]) &
+                 (locations[:,1] < v.imgshape[1]) )
+
+    locations = locations[w]
+
+    #use props[w] to get masses, moments
+    masses = np.array([p.weighted_moments[0,0,0] for p in props])[w]
+
+    #Set a mass cutoff
+    w_mc = np.where(masses > 6)
+    masses = masses[w_mc]
+
+#    it_eigvals = np.array([p.inertia_tensor_eigvals for p in props])[w][w_mc]
+#    it_eigvals[it_eigvals < 0] = 0
+#    ellipse_axes = 4 * np.sqrt(it_eigvals)
+    
+    it = np.array([p.inertia_tensor for p in props])[w][w_mc]
+    iw, iv = np.linalg.eigh(it)
+    iw = -np.sort(-iw)
+    ellipse_axes = 4 * np.sqrt(iw)
+    
+    rot = np.degrees(np.arctan2(iv[:,1,2],iv[:,0,2]))
+    
+    #min_axis = np.array([p.minor_axis_length for p in props])[w][w_mc]
+    #maj_axis = np.array([p.major_axis_length for p in props])[w][w_mc]
+    #orient = np.array([p.orientation for p in props])[w][w_mc]
+
+    #v.sphere_properties = np.concatenate((masses.T,ellipse_axes),axis=1)
+    v.sphere_properties = np.hstack((masses.reshape(1,-1).T,
+                                     ellipse_axes, rot.reshape(1,-1).T))
+    #print(v.sphere_properties)
+    return(locations[w_mc])
 
 
 def dev_to_data(xy, viewer):
