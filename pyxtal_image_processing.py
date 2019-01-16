@@ -107,11 +107,15 @@ def plot_circles(v):
     #I'll still have to rescale the linewidth manually, however.
     
     try:  #v.sphere_properties may be undefined if the code was run using 2d sphere finding
-        ellipse_array = np.hstack((v.locations, v.sphere_properties[:,[3,2,4]]))
+        ellipse_array = np.hstack((v.locations, 
+                                   v.ellipse_axes[:,[0,2]],
+                                   v.ellipse_axis_rot.reshape(1,-1).T) )
         ellipse_tuple = tuple(map(tuple,ellipse_array))
         patches = [matplotlib.patches.Ellipse((x,y), maj_ax, min_ax, rot) 
-           for x,y, maj_ax, min_ax, rot in ellipse_tuple]
+           for x,y, min_ax, maj_ax, rot in ellipse_tuple]
+        #print("used ellipses")
     except:
+        #print("using circles")
         radius = int(v.pmw.sphereSize[0]*0.7)
         patches = [matplotlib.patches.CirclePolygon(xy, radius) 
                         for xy in v.locations]

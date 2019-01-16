@@ -209,27 +209,18 @@ def get_locations_from_3d(v, part_locs3d, boxsize3d):
 
     #Set a mass cutoff
     w_mc = np.where(masses > 6)
-    masses = masses[w_mc]
+    v.sphere_masses = masses[w_mc]
     locations = locations[w_mc]
 
-#    it_eigvals = np.array([p.inertia_tensor_eigvals for p in props])[w][w_mc]
-#    it_eigvals[it_eigvals < 0] = 0
-#    ellipse_axes = 4 * np.sqrt(it_eigvals)
-    
+    #find eigenvalues and vectors of inertia tensor
     it = np.array([p.inertia_tensor for p in props])[w][w_mc]
     iw, iv = np.linalg.eigh(it)
-    iw = -np.sort(-iw)
-    ellipse_axes = 4 * np.sqrt(iw)
+    v.ellipse_axes = 4 * np.sqrt(iw)
     
-    rot = np.degrees(np.arctan2(iv[:,1,2],iv[:,0,2]))
+    #y and x compoenents of zeroeth eigenvector.
+    #The first eigenvector is the smallest moment of inertia, from eigh()
+    v.ellipse_axis_rot = np.degrees(np.arctan2(iv[:,1,0],iv[:,0,0]))
     
-    #min_axis = np.array([p.minor_axis_length for p in props])[w][w_mc]
-    #maj_axis = np.array([p.major_axis_length for p in props])[w][w_mc]
-    #orient = np.array([p.orientation for p in props])[w][w_mc]
-
-    #v.sphere_properties = np.concatenate((masses.T,ellipse_axes),axis=1)
-    v.sphere_properties = np.hstack((masses.reshape(1,-1).T,
-                                     ellipse_axes, rot.reshape(1,-1).T))
     #print(v.sphere_properties)
     return(locations)
 
