@@ -101,14 +101,14 @@ class Pyxtal_Main_Controls:
         self.imageSizeStr = tk.StringVar()
 
 
-        self.Labelframe2 = tk.LabelFrame(top)
-        self.Labelframe2.place(relx=0.017, rely=0.11, relheight=0.46
+        self.inputFileFrame = tk.LabelFrame(top)
+        self.inputFileFrame.place(relx=0.017, rely=0.11, relheight=0.46
                 , relwidth=0.483)
-        self.Labelframe2.configure(relief='groove')
-        self.Labelframe2.configure(text='''Input Files''')
-        self.Labelframe2.configure(width=290)
+        self.inputFileFrame.configure(relief='groove')
+        self.inputFileFrame.configure(text='''Input Files''')
+        self.inputFileFrame.configure(width=290)
 
-        self.fileListbox = ScrolledListBox(self.Labelframe2)
+        self.fileListbox = ScrolledListBox(self.inputFileFrame)
         self.fileListbox.place(relx=0.034, rely=0.478, relheight=0.507
                 , relwidth=0.952, bordermode='ignore')
         self.fileListbox.configure(background="white")
@@ -117,21 +117,21 @@ class Pyxtal_Main_Controls:
         self.fileListbox.configure(selectbackground="#c4c4c4")
         self.fileListbox.configure(width=10)
 
-        self.AddButton = tk.Button(self.Labelframe2)
-        self.AddButton.place(relx=0.034, rely=0.09, height=33, width=98
+        self.addButton = tk.Button(self.inputFileFrame)
+        self.addButton.place(relx=0.034, rely=0.09, height=33, width=98
                 , bordermode='ignore')
-        self.AddButton.configure(activebackground="#d9d9d9")
-        self.AddButton.configure(command=pyxtal_support.addButtonCommand)
-        self.AddButton.configure(text='''Add Files''')
+        self.addButton.configure(activebackground="#d9d9d9")
+        self.addButton.configure(command=pyxtal_support.addButtonCommand)
+        self.addButton.configure(text='''Add Files''')
 
-        self.ClearButton = tk.Button(self.Labelframe2)
-        self.ClearButton.place(relx=0.586, rely=0.09, height=33, width=108
+        self.clearButton = tk.Button(self.inputFileFrame)
+        self.clearButton.place(relx=0.586, rely=0.09, height=33, width=108
                 , bordermode='ignore')
-        self.ClearButton.configure(activebackground="#d9d9d9")
-        self.ClearButton.configure(command=pyxtal_support.clearButtonCommand)
-        self.ClearButton.configure(text='''Clear Files''')
+        self.clearButton.configure(activebackground="#d9d9d9")
+        self.clearButton.configure(command=pyxtal_support.clearButtonCommand)
+        self.clearButton.configure(text='''Clear Files''')
 
-        self.pathBox = tk.Text(self.Labelframe2)
+        self.pathBox = tk.Text(self.inputFileFrame)
         self.pathBox.place(relx=0.034, rely=0.299, relheight=0.09, relwidth=0.917
                 , bordermode='ignore')
         self.pathBox.configure(background="white")
@@ -140,34 +140,34 @@ class Pyxtal_Main_Controls:
         self.pathBox.configure(width=266)
         self.pathBox.configure(wrap='word')
 
-        self.filesLabel = tk.Label(self.Labelframe2)
+        self.filesLabel = tk.Label(self.inputFileFrame)
         self.filesLabel.place(relx=0.034, rely=0.418, height=17, width=46
                 , bordermode='ignore')
         self.filesLabel.configure(activebackground="#f9f9f9")
         self.filesLabel.configure(font=font9)
         self.filesLabel.configure(text='''Files:''')
 
-        self.pathLabel = tk.Label(self.Labelframe2)
+        self.pathLabel = tk.Label(self.inputFileFrame)
         self.pathLabel.place(relx=0.034, rely=0.239, height=17, width=46
                 , bordermode='ignore')
         self.pathLabel.configure(activebackground="#f9f9f9")
         self.pathLabel.configure(font=font9)
         self.pathLabel.configure(text='''Path:''')
 
-        self.SaveDefButton = tk.Button(top)
-        self.SaveDefButton.place(relx=0.283, rely=0.041, height=33, width=108)
-        self.SaveDefButton.configure(activebackground="#d9d9d9")
-        self.SaveDefButton.configure(command=pyxtal_support.saveButtonCommand)
-        self.SaveDefButton.configure(text='''Save Defaults''')
+        self.saveDefButton = tk.Button(top)
+        self.saveDefButton.place(relx=0.283, rely=0.041, height=33, width=108)
+        self.saveDefButton.configure(activebackground="#d9d9d9")
+        self.saveDefButton.configure(command=pyxtal_support.saveButtonCommand)
+        self.saveDefButton.configure(text='''Save Defaults''')
 
-        self.inputFrame = tk.LabelFrame(top)
-        self.inputFrame.place(relx=0.017, rely=0.591, relheight=0.391
+        self.inputOptionsFrame = tk.LabelFrame(top)
+        self.inputOptionsFrame.place(relx=0.017, rely=0.591, relheight=0.391
                 , relwidth=0.483)
-        self.inputFrame.configure(relief='groove')
-        self.inputFrame.configure(text='''Input File Options''')
-        self.inputFrame.configure(width=290)
+        self.inputOptionsFrame.configure(relief='groove')
+        self.inputOptionsFrame.configure(text='''Input File Options''')
+        self.inputOptionsFrame.configure(width=290)
 
-        self.imageRadio = tk.Radiobutton(self.inputFrame)
+        self.imageRadio = tk.Radiobutton(self.inputOptionsFrame)
         self.imageRadio.place(relx=0.034, rely=0.105, relheight=0.06
                 , relwidth=0.497, bordermode='ignore')
         self.imageRadio.configure(activebackground="#d9d9d9")
@@ -178,7 +178,7 @@ class Pyxtal_Main_Controls:
         self.imageRadio.configure(value="image")
         self.imageRadio.configure(variable=self.inFileType)
 
-        self.gsdAssemRadio = tk.Radiobutton(self.inputFrame)
+        self.gsdAssemRadio = tk.Radiobutton(self.inputOptionsFrame)
         self.gsdAssemRadio.place(relx=0.034, rely=0.316, relheight=0.06
                 , relwidth=0.548, bordermode='ignore')
         self.gsdAssemRadio.configure(activebackground="#d9d9d9")
@@ -189,7 +189,7 @@ class Pyxtal_Main_Controls:
         self.gsdAssemRadio.configure(value="assemblies")
         self.gsdAssemRadio.configure(variable=self.inFileType)
 
-        self.gsdPartRadio = tk.Radiobutton(self.inputFrame)
+        self.gsdPartRadio = tk.Radiobutton(self.inputOptionsFrame)
         self.gsdPartRadio.place(relx=0.034, rely=0.211, relheight=0.06
                 , relwidth=0.455, bordermode='ignore')
         self.gsdPartRadio.configure(activebackground="#d9d9d9")
@@ -200,7 +200,7 @@ class Pyxtal_Main_Controls:
         self.gsdPartRadio.configure(value="particles")
         self.gsdPartRadio.configure(variable=self.inFileType)
 
-        self.sphereEntry = tk.Entry(self.inputFrame)
+        self.sphereEntry = tk.Entry(self.inputOptionsFrame)
         self.sphereEntry.place(relx=0.414, rely=0.754, height=27, relwidth=0.228
                 , bordermode='ignore')
         self.sphereEntry.configure(background="white")
@@ -211,21 +211,21 @@ class Pyxtal_Main_Controls:
                                     self.sphereSizeStr,
                                     self.sphereSize))
 
-        self.SphereSizeLabel = tk.Label(self.inputFrame)
-        self.SphereSizeLabel.place(relx=0.052, rely=0.772, height=15, width=98
+        self.sphereSizeLabel = tk.Label(self.inputOptionsFrame)
+        self.sphereSizeLabel.place(relx=0.052, rely=0.772, height=15, width=98
                 , bordermode='ignore')
-        self.SphereSizeLabel.configure(activebackground="#f9f9f9")
-        self.SphereSizeLabel.configure(anchor='w')
-        self.SphereSizeLabel.configure(text='''Sphere Size:''')
+        self.sphereSizeLabel.configure(activebackground="#f9f9f9")
+        self.sphereSizeLabel.configure(anchor='w')
+        self.sphereSizeLabel.configure(text='''Sphere Size:''')
 
-        self.PartTypeLabel = tk.Label(self.inputFrame)
-        self.PartTypeLabel.place(relx=0.517, rely=0.316, height=17, width=68
+        self.partTypeLabel = tk.Label(self.inputOptionsFrame)
+        self.partTypeLabel.place(relx=0.517, rely=0.316, height=17, width=68
                 , bordermode='ignore')
-        self.PartTypeLabel.configure(activebackground="#f9f9f9")
-        self.PartTypeLabel.configure(anchor='w')
-        self.PartTypeLabel.configure(text='''of type:''')
+        self.partTypeLabel.configure(activebackground="#f9f9f9")
+        self.partTypeLabel.configure(anchor='w')
+        self.partTypeLabel.configure(text='''of type:''')
 
-        self.partTypeEntry = tk.Entry(self.inputFrame)
+        self.partTypeEntry = tk.Entry(self.inputOptionsFrame)
         self.partTypeEntry.place(relx=0.724, rely=0.298, height=27
                 , relwidth=0.228, bordermode='ignore')
         self.partTypeEntry.configure(background="white")
@@ -233,24 +233,24 @@ class Pyxtal_Main_Controls:
         self.partTypeEntry.configure(selectbackground="#c4c4c4")
         self.partTypeEntry.configure(textvariable=self.partTypeStr)
 
-        self.PeriodicCheck = tk.Checkbutton(self.inputFrame)
-        self.PeriodicCheck.place(relx=0.034, rely=0.877, relheight=0.06
+        self.periodicCheck = tk.Checkbutton(self.inputOptionsFrame)
+        self.periodicCheck.place(relx=0.034, rely=0.877, relheight=0.06
                 , relwidth=0.638, bordermode='ignore')
-        self.PeriodicCheck.configure(activebackground="#d9d9d9")
-        self.PeriodicCheck.configure(anchor='w')
-        self.PeriodicCheck.configure(justify='left')
-        self.PeriodicCheck.configure(offrelief="sunken")
-        self.PeriodicCheck.configure(text='''Periodic Boundaries''')
-        self.PeriodicCheck.configure(variable=self.periodBound)
+        self.periodicCheck.configure(activebackground="#d9d9d9")
+        self.periodicCheck.configure(anchor='w')
+        self.periodicCheck.configure(justify='left')
+        self.periodicCheck.configure(offrelief="sunken")
+        self.periodicCheck.configure(text='''Periodic Boundaries''')
+        self.periodicCheck.configure(variable=self.periodBound)
 
-        self.framesframe = tk.LabelFrame(self.inputFrame)
-        self.framesframe.place(relx=0.034, rely=0.421, relheight=0.263
+        self.framesFrame = tk.LabelFrame(self.inputOptionsFrame)
+        self.framesFrame.place(relx=0.034, rely=0.421, relheight=0.263
                 , relwidth=0.931, bordermode='ignore')
-        self.framesframe.configure(relief='groove')
-        self.framesframe.configure(text='''frames''')
-        self.framesframe.configure(width=270)
+        self.framesFrame.configure(relief='groove')
+        self.framesFrame.configure(text='''frames''')
+        self.framesFrame.configure(width=270)
 
-        self.fromEntry = tk.Entry(self.framesframe)
+        self.fromEntry = tk.Entry(self.framesFrame)
         self.fromEntry.place(relx=0.185, rely=0.467, height=27, relwidth=0.133
                 , bordermode='ignore')
         self.fromEntry.configure(background="white")
@@ -261,21 +261,21 @@ class Pyxtal_Main_Controls:
                                     self.fromFrameStr,
                                     self.fromFrame))
 
-        self.fromLabel = tk.Label(self.framesframe)
+        self.fromLabel = tk.Label(self.framesFrame)
         self.fromLabel.place(relx=0.037, rely=0.533, height=15, width=38
                 , bordermode='ignore')
         self.fromLabel.configure(activebackground="#f9f9f9")
         self.fromLabel.configure(anchor='w')
         self.fromLabel.configure(text='''From''')
 
-        self.toLabel = tk.Label(self.framesframe)
+        self.toLabel = tk.Label(self.framesFrame)
         self.toLabel.place(relx=0.37, rely=0.533, height=15, width=38
                 , bordermode='ignore')
         self.toLabel.configure(activebackground="#f9f9f9")
         self.toLabel.configure(anchor='w')
         self.toLabel.configure(text='''to''')
 
-        self.toEntry = tk.Entry(self.framesframe)
+        self.toEntry = tk.Entry(self.framesFrame)
         self.toEntry.place(relx=0.481, rely=0.467, height=27, relwidth=0.133
                 , bordermode='ignore')
         self.toEntry.configure(background="white")
@@ -286,14 +286,14 @@ class Pyxtal_Main_Controls:
                                     self.toFrameStr,
                                     self.toFrame))
 
-        self.byLabel = tk.Label(self.framesframe)
+        self.byLabel = tk.Label(self.framesFrame)
         self.byLabel.place(relx=0.704, rely=0.533, height=15, width=38
                 , bordermode='ignore')
         self.byLabel.configure(activebackground="#f9f9f9")
         self.byLabel.configure(anchor='w')
         self.byLabel.configure(text='''by''')
 
-        self.byEntry = tk.Entry(self.framesframe)
+        self.byEntry = tk.Entry(self.framesFrame)
         self.byEntry.place(relx=0.815, rely=0.467, height=27, relwidth=0.133
                 , bordermode='ignore')
         self.byEntry.configure(background="white")
@@ -304,7 +304,7 @@ class Pyxtal_Main_Controls:
                                     self.byFrameStr,
                                     self.byFrame))
 
-        self.darkSpheresCheck = tk.Checkbutton(self.inputFrame)
+        self.darkSpheresCheck = tk.Checkbutton(self.inputOptionsFrame)
         self.darkSpheresCheck.place(relx=0.517, rely=0.105, relheight=0.06
                 , relwidth=0.466, bordermode='ignore')
         self.darkSpheresCheck.configure(activebackground="#d9d9d9")
@@ -313,11 +313,11 @@ class Pyxtal_Main_Controls:
         self.darkSpheresCheck.configure(text='''Dark Spheres''')
         self.darkSpheresCheck.configure(variable=self.darkSpheres)
 
-        self.LoadDefButton = tk.Button(top)
-        self.LoadDefButton.place(relx=0.05, rely=0.041, height=33, width=108)
-        self.LoadDefButton.configure(activebackground="#d9d9d9")
-        self.LoadDefButton.configure(command=pyxtal_support.loadButtonCommand)
-        self.LoadDefButton.configure(text='''Load Defaults''')
+        self.loadDefButton = tk.Button(top)
+        self.loadDefButton.place(relx=0.05, rely=0.041, height=33, width=108)
+        self.loadDefButton.configure(activebackground="#d9d9d9")
+        self.loadDefButton.configure(command=pyxtal_support.loadButtonCommand)
+        self.loadDefButton.configure(text='''Load Defaults''')
 
         self.outputFrame = tk.LabelFrame(top)
         self.outputFrame.place(relx=0.532, rely=0.027, relheight=0.254
@@ -471,20 +471,20 @@ class Pyxtal_Main_Controls:
         self.retainCheck.configure(text='''Retain Windows''')
         self.retainCheck.configure(variable=self.retainWin)
 
-        self.GoButton = tk.Button(self.windowFrame)
-        self.GoButton.place(relx=0.037, rely=0.621, height=43, width=108
+        self.goButton = tk.Button(self.windowFrame)
+        self.goButton.place(relx=0.037, rely=0.621, height=43, width=108
                 , bordermode='ignore')
-        self.GoButton.configure(activebackground="#d9d9d9")
-        self.GoButton.configure(command=pyxtal_support.GoButtonCommand)
-        self.GoButton.configure(font=font10)
-        self.GoButton.configure(text='''Go''')
+        self.goButton.configure(activebackground="#d9d9d9")
+        self.goButton.configure(command=pyxtal_support.GoButtonCommand)
+        self.goButton.configure(font=font10)
+        self.goButton.configure(text='''Go''')
 
-        self.KillAllButton = tk.Button(self.windowFrame)
-        self.KillAllButton.place(relx=0.556, rely=0.621, height=43, width=108
+        self.killAllButton = tk.Button(self.windowFrame)
+        self.killAllButton.place(relx=0.556, rely=0.621, height=43, width=108
                 , bordermode='ignore')
-        self.KillAllButton.configure(activebackground="#d9d9d9")
-        self.KillAllButton.configure(command=pyxtal_support.killAllButtonCommand)
-        self.KillAllButton.configure(text='''Kill All 
+        self.killAllButton.configure(activebackground="#d9d9d9")
+        self.killAllButton.configure(command=pyxtal_support.killAllButtonCommand)
+        self.killAllButton.configure(text='''Kill All 
 Image Windows''')
 
         self.lockZoomCheck = tk.Checkbutton(self.windowFrame)
@@ -515,32 +515,32 @@ Image Windows''')
         self.batchmodeCheck.configure(variable=self.batchmode)
         self.batchmodeCheck.configure(width=129)
 
-        self.Progressframe = tk.LabelFrame(top)
-        self.Progressframe.place(relx=0.532, rely=0.879, relheight=0.103
+        self.progressFrame = tk.LabelFrame(top)
+        self.progressFrame.place(relx=0.532, rely=0.879, relheight=0.103
                 , relwidth=0.449)
-        self.Progressframe.configure(relief='groove')
-        self.Progressframe.configure(text='''Progress''')
-        self.Progressframe.configure(width=270)
+        self.progressFrame.configure(relief='groove')
+        self.progressFrame.configure(text='''Progress''')
+        self.progressFrame.configure(width=270)
 
-        self.fileProgressbar = ttk.Progressbar(self.Progressframe)
+        self.fileProgressbar = ttk.Progressbar(self.progressFrame)
         self.fileProgressbar.place(relx=0.556, rely=0.267, relwidth=0.407
                 , relheight=0.0, height=19, bordermode='ignore')
 
-        self.fileMessage = tk.Message(self.Progressframe)
+        self.fileMessage = tk.Message(self.progressFrame)
         self.fileMessage.place(relx=0.037, rely=0.267, relheight=0.227
                 , relwidth=0.485, bordermode='ignore')
         self.fileMessage.configure(anchor='w')
         self.fileMessage.configure(text='''Files: ''')
         self.fileMessage.configure(width=131)
 
-        self.frameMessage = tk.Message(self.Progressframe)
+        self.frameMessage = tk.Message(self.progressFrame)
         self.frameMessage.place(relx=0.037, rely=0.667, relheight=0.227
                 , relwidth=0.559, bordermode='ignore')
         self.frameMessage.configure(anchor='w')
         self.frameMessage.configure(text='''Frames: ''')
         self.frameMessage.configure(width=151)
 
-        self.frameProgressbar = ttk.Progressbar(self.Progressframe)
+        self.frameProgressbar = ttk.Progressbar(self.progressFrame)
         self.frameProgressbar.place(relx=0.556, rely=0.667, relwidth=0.407
                 , relheight=0.0, height=19, bordermode='ignore')
 

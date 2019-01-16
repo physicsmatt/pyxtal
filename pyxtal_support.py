@@ -40,15 +40,15 @@ def inFileTypeChange():
     global pmw
     inputtype = pmw.inFileType.get()
     if inputtype=='image':
-        set_widget_state('normal', [pmw.darkSpheresCheck, pmw.SphereSizeLabel, pmw.sphereEntry])
-        set_widget_state('disabled', [pmw.framesframe, pmw.PartTypeLabel, pmw.partTypeEntry])
+        set_widget_state('normal', [pmw.darkSpheresCheck, pmw.sphereSizeLabel, pmw.sphereEntry])
+        set_widget_state('disabled', [pmw.framesFrame, pmw.partTypeLabel, pmw.partTypeEntry])
     if inputtype=='particles':
-        set_widget_state('normal', [pmw.framesframe])
-        set_widget_state('disabled', [pmw.darkSpheresCheck, pmw.SphereSizeLabel, pmw.sphereEntry])
-        set_widget_state('disabled', [pmw.PartTypeLabel, pmw.partTypeEntry])
+        set_widget_state('normal', [pmw.framesFrame])
+        set_widget_state('disabled', [pmw.darkSpheresCheck, pmw.sphereSizeLabel, pmw.sphereEntry])
+        set_widget_state('disabled', [pmw.partTypeLabel, pmw.partTypeEntry])
     if inputtype=='assemblies':
-        set_widget_state('normal', [pmw.framesframe, pmw.SphereSizeLabel, pmw.sphereEntry])
-        set_widget_state('normal', [pmw.PartTypeLabel, pmw.partTypeEntry])
+        set_widget_state('normal', [pmw.framesFrame, pmw.sphereSizeLabel, pmw.sphereEntry])
+        set_widget_state('normal', [pmw.partTypeLabel, pmw.partTypeEntry])
         set_widget_state('disabled', [pmw.darkSpheresCheck])
 
 
@@ -263,7 +263,7 @@ def init(top, gui, *args, **kwargs):
     set_widget_state('normal', pmw.meaningLifeCheck)
     set_widget_state('disabled', [pmw.outMpegCheck, 
                                   pmw.imageSizeLabel, pmw.imageSizeEntry])
-    set_widget_state('disabled', [pmw.SaveDefButton, pmw.LoadDefButton])
+    set_widget_state('disabled', [pmw.saveDefButton, pmw.loadDefButton])
     if pmw.batchmode.get(): set_widget_state('disabled', pmw.retainCheck)
 
     #For debugging and demonstration purposes, it's handy to have a default 
