@@ -83,7 +83,6 @@ class Pyxtal_Main_Controls:
         self.outTriang = tk.BooleanVar()
         self.outAll = tk.BooleanVar()
         self.outMpeg = tk.BooleanVar()
-        self.outLog = tk.BooleanVar()
         self.doOrientHist = tk.BooleanVar()
         self.doOrientCorr = tk.BooleanVar()
         self.doTraject = tk.BooleanVar()

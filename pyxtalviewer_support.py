@@ -550,8 +550,8 @@ def init(top, viewer, *args, **kwargs):
         zoom_linewidths(viewer)
         changeVisibleAnnotations(viewer)
     pimg.do_stats(viewer)
-    if viewer.pmw.outLog.get():
-        pimg.write_logfile_entry(viewer)
+    if viewer.pmw.doOrientHist.get():
+        pimg.write_orientHist_entry(viewer)
     pimg.do_output_files(viewer)
 #    pimg.do_label_points(viewer)
     #print(dir(viewer))

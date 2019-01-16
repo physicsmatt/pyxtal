@@ -85,12 +85,18 @@ def validateInteger(p1, thestring, theinteger):
     #    print("rejected")
         thestring.set(str(theinteger[0]))
 
-def create_logfile(pmw, filename):
+def create_logfiles(pmw, filename):
     import os
     splitpoint = filename.rfind('.')
     base = os.path.join(pmw.path, filename[0:splitpoint])
-    pmw.logfile = open(base + "_log.txt", 'w')
+    if pmw.doOrientHist.get():
+        pmw.orientHistfile = open(base + "_orientHist.txt", 'w')
+    if pmw.doMeaningLife.get():
+        pmw.meaningLifefile = open(base + "_meaningLife.txt", 'w')
+        pmw.meaningLifefile.write("42\n")
+        pmw.meaningLifefile.flush()
 
+        
 def GoButtonCommand():
     #This function actually creates the viewer windows for each file (if image)
     #or each image and snapshot, if input is a gsd file.
@@ -101,7 +107,7 @@ def GoButtonCommand():
     vieweridx = len(pmw.viewers)
     if pmw.inFileType.get() == "image":
         #For image input, only one log file created, for first image
-        if pmw.outLog.get() : create_logfile(pmw, pmw.filelist[0])
+        create_logfiles(pmw, pmw.filelist[0])
         for fileidx in range(0,numFiles):
             pmw.viewers.append(pyxtalviewer.create_Pyxtal_Viewer(root, pmw, 
                     pmw.filelist[fileidx], vieweridx, 0))
@@ -112,7 +118,7 @@ def GoButtonCommand():
                                       +str(fileidx+1) +"/" + str(numFiles))
             filename = pmw.filelist[fileidx]
             #For gsd input, each gsd file gets a separate logfile:
-            if pmw.outLog.get() : create_logfile(pmw, filename) 
+            create_logfiles(pmw, filename) 
             start = pmw.fromFrame[0]
             end = pmw.toFrame[0]
             if end == -1:
@@ -253,6 +259,8 @@ def init(top, gui, *args, **kwargs):
     #as this is a work in progress, I'm disabling controls that are
     #not implemented yet:
     set_widget_state('disabled', pmw.analysisFrame)
+    set_widget_state('normal', pmw.OrientHistCheck)
+    set_widget_state('normal', pmw.MeaningLifeCheck)
     set_widget_state('disabled', [pmw.outMpegCheck, 
                                   pmw.ImageSizeLabel, pmw.imageSizeEntry])
     set_widget_state('disabled', [pmw.SaveDefButton, pmw.LoadDefButton])
@@ -295,9 +303,12 @@ def initialize_parameters(pmw):
     pmw.outTriang.set(False)
     pmw.outAll.set(False)
     pmw.outMpeg.set(False)
-    pmw.outLog.set(True)
+
+    pmw.doOrientHist.set(False)
     pmw.doOrientCorr.set(False)
     pmw.doTraject.set(False)
+    pmw.doMeaningLife.set(False)
+
     pmw.batchmode.set(False)
     pmw.retainWin.set(True)
     pmw.lockViews.set(True)
@@ -327,9 +338,9 @@ def destroy_pyxtalmain(pmw):
 #    global top_level
     #Not sure if I need to do this:
     try:
-        pmw.logfile.close()
+        pmw.orientHistfile.close()
     except:
-        None
+        pass
     killAllButtonCommand()    
     pmw.top.destroy()
     top_level = None
