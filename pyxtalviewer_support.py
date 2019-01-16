@@ -106,17 +106,32 @@ def get_contiguous_regions_from_image(img):
     #This function is similar to trackpy in that it returns locatios of
     #features from an image.  But the "features" here are specifically
     #contiguous areas of non-zero density.
+    #This routine is designed to be called in the same way as trackpy.locate,
+    #in the sense that it doesn't read or write data directly from the
+    #pyxtal viewer object.
+    #Below, there is a similar and generally better routine called
+    #get_locations_from_3d, which finds contiguously connected regions in
+    #three dimensions.  It is to be preferred, in part because it also
+    #records masses and major/minor axes of elliptical particles.
+    #(I started to get data like mass from the spheres here, but I ended up
+    #not doing anything with it, because doing so would require rewriting
+    #this routine as to make calling it very different from calling
+    #trackpy.locate.  I think there's currently no need to make this routine
+    #any fancier; Think of it as an alternative to trackpy.locate.
     import skimage.measure as skim
     
     nonzero = (img > 0)
     labels = skim.label(nonzero, connectivity=2)
     props = skim.regionprops(labels, intensity_image = img, cache=False)
     locations = np.array([p.weighted_centroid for p in props])
+
+    #mass data below is currently not used or stored except as a cutoff.  
+    #See note above.
     masses = np.array([p.weighted_moments[0,0] for p in props])
 
-    #Set a mass cutoff
+    #Set the mass cutoff
     w = np.where(masses > 6)
-    print(np.sort(masses))
+    #print(np.sort(masses))
     return(locations[w])
     
 
@@ -158,6 +173,66 @@ def get_locations_from_image(v, method="trackpy"):
                  (locations[:,1] < v.imgshape[1]) )
 
     return(locations[w])
+
+
+def get_locations_from_3d(v, part_locs3d, boxsize3d):
+    import skimage.measure as skim
+
+    image3d = np.histogramdd(part_locs3d, bins=boxsize3d,
+                    range = np.stack((np.array([0.,0.,0.]),boxsize3d)).T )[0]
+
+    #Add periodic wraparound, if required:
+    if v.pmw.periodBound.get():
+        wrap_width = v.pmw.sphereSize[0] * 5
+    else:
+        wrap_width = 0
+    pad_spec = ((wrap_width,wrap_width),(wrap_width,wrap_width),(0,0))
+    image3d = np.pad(image3d, pad_spec, "wrap")
+
+    nonzero = (image3d > 0)
+    labels = skim.label(nonzero, connectivity=3)
+    props = skim.regionprops(labels, intensity_image = image3d, cache=False)
+    locations = np.array([p.weighted_centroid for p in props])
+
+    #remove the effects of the wraparound, and kill any out of bounds.
+    locations -= np.array([wrap_width, wrap_width, 0])
+    locations = locations[:,0:2]
+    w = np.where((0 <= locations[:,0]) &
+                 (locations[:,0] < v.imgshape[0]) &
+                 (0 <= locations[:,1]) &
+                 (locations[:,1] < v.imgshape[1]) )
+
+    locations = locations[w]
+
+    #use props[w] to get masses, moments
+    masses = np.array([p.weighted_moments[0,0,0] for p in props])[w]
+
+    #Set a mass cutoff
+    w_mc = np.where(masses > 6)
+    masses = masses[w_mc]
+    locations = locations[w_mc]
+
+#    it_eigvals = np.array([p.inertia_tensor_eigvals for p in props])[w][w_mc]
+#    it_eigvals[it_eigvals < 0] = 0
+#    ellipse_axes = 4 * np.sqrt(it_eigvals)
+    
+    it = np.array([p.inertia_tensor for p in props])[w][w_mc]
+    iw, iv = np.linalg.eigh(it)
+    iw = -np.sort(-iw)
+    ellipse_axes = 4 * np.sqrt(iw)
+    
+    rot = np.degrees(np.arctan2(iv[:,1,2],iv[:,0,2]))
+    
+    #min_axis = np.array([p.minor_axis_length for p in props])[w][w_mc]
+    #maj_axis = np.array([p.major_axis_length for p in props])[w][w_mc]
+    #orient = np.array([p.orientation for p in props])[w][w_mc]
+
+    #v.sphere_properties = np.concatenate((masses.T,ellipse_axes),axis=1)
+    v.sphere_properties = np.hstack((masses.reshape(1,-1).T,
+                                     ellipse_axes, rot.reshape(1,-1).T))
+    #print(v.sphere_properties)
+    return(locations)
+
 
 def load_images_and_locations(viewer):
     #Based on the input file type, this function reads the file.
@@ -206,7 +281,7 @@ def load_images_and_locations(viewer):
         #read gsd file
         s = gsd.hoomd.open(name=full_filename, mode='rb')
         fn = viewer.framenum  #this value was passed in from pmw
-        if fn > len(s):
+        if fn >= len(s):
             print("ERROR: frame number out of range")
         boxsize3d = s[fn].configuration.box[0:3]  #z-component not used. assuming x,y.
         boxsize3d = np.ceil(boxsize3d)
@@ -230,65 +305,9 @@ def load_images_and_locations(viewer):
                                bins = np.flip(viewer.imgshape))[0]
         image = np.flip(image,axis=0)
         viewer.image = image.copy()
+#        viewer.locations = get_locations_from_image(viewer, method="trackpy")        
 #        viewer.locations = get_locations_from_image(viewer, method="contiguous")        
         viewer.locations = get_locations_from_3d(viewer, part_locs3d, boxsize3d)
-
-def get_locations_from_3d(v, part_locs3d, boxsize3d):
-    import skimage.measure as skim
-
-    image3d = np.histogramdd(part_locs3d, bins=boxsize3d)[0]
-
-    #Add periodic wraparound, if required:
-    if v.pmw.periodBound.get():
-        wrap_width = v.pmw.sphereSize[0] * 5
-    else:
-        wrap_width = 0
-    pad_spec = ((wrap_width,wrap_width),(wrap_width,wrap_width),(0,0))
-    image3d = np.pad(image3d, pad_spec, "wrap")
-
-    nonzero = (image3d > 0)
-    labels = skim.label(nonzero, connectivity=3)
-    props = skim.regionprops(labels, intensity_image = image3d, cache=False)
-    locations = np.array([p.weighted_centroid for p in props])
-
-    #remove the effects of the wraparound, and kill any out of bounds.
-    locations -= np.array([wrap_width, wrap_width, 0])
-    locations = locations[:,0:2]
-    w = np.where((0 <= locations[:,0]) &
-                 (locations[:,0] < v.imgshape[0]) &
-                 (0 <= locations[:,1]) &
-                 (locations[:,1] < v.imgshape[1]) )
-
-    locations = locations[w]
-
-    #use props[w] to get masses, moments
-    masses = np.array([p.weighted_moments[0,0,0] for p in props])[w]
-
-    #Set a mass cutoff
-    w_mc = np.where(masses > 6)
-    masses = masses[w_mc]
-
-#    it_eigvals = np.array([p.inertia_tensor_eigvals for p in props])[w][w_mc]
-#    it_eigvals[it_eigvals < 0] = 0
-#    ellipse_axes = 4 * np.sqrt(it_eigvals)
-    
-    it = np.array([p.inertia_tensor for p in props])[w][w_mc]
-    iw, iv = np.linalg.eigh(it)
-    iw = -np.sort(-iw)
-    ellipse_axes = 4 * np.sqrt(iw)
-    
-    rot = np.degrees(np.arctan2(iv[:,1,2],iv[:,0,2]))
-    
-    #min_axis = np.array([p.minor_axis_length for p in props])[w][w_mc]
-    #maj_axis = np.array([p.major_axis_length for p in props])[w][w_mc]
-    #orient = np.array([p.orientation for p in props])[w][w_mc]
-
-    #v.sphere_properties = np.concatenate((masses.T,ellipse_axes),axis=1)
-    v.sphere_properties = np.hstack((masses.reshape(1,-1).T,
-                                     ellipse_axes, rot.reshape(1,-1).T))
-    #print(v.sphere_properties)
-    return(locations[w_mc])
-
 
 def dev_to_data(xy, viewer):
     # This routine translates "device" coordinates (in pixels)

@@ -106,21 +106,19 @@ def plot_circles(v):
     #scale with the axes as the figure is zoomed.
     #I'll still have to rescale the linewidth manually, however.
     
-
-    radius = int(v.pmw.sphereSize[0]*0.7)
-#    patches = [matplotlib.patches.CirclePolygon(xy, radius) 
-#                    for xy in v.locations]
-    ellipse_array = np.hstack((v.locations, v.sphere_properties[:,[3,2,4]]))
-    ellipse_tuple = tuple(map(tuple,ellipse_array))
-#    patches = [matplotlib.patches.Ellipse((x,y), maj_ax, min_ax) 
-#       for x,y, maj_ax, min_ax in ellipse_tuple]
-    patches = [matplotlib.patches.Ellipse((x,y), maj_ax, min_ax, rot) 
-       for x,y, maj_ax, min_ax, rot in ellipse_tuple]
-
+    try:  #v.sphere_properties may be undefined if the code was run using 2d sphere finding
+        ellipse_array = np.hstack((v.locations, v.sphere_properties[:,[3,2,4]]))
+        ellipse_tuple = tuple(map(tuple,ellipse_array))
+        patches = [matplotlib.patches.Ellipse((x,y), maj_ax, min_ax, rot) 
+           for x,y, maj_ax, min_ax, rot in ellipse_tuple]
+    except:
+        radius = int(v.pmw.sphereSize[0]*0.7)
+        patches = [matplotlib.patches.CirclePolygon(xy, radius) 
+                        for xy in v.locations]
+        
     coll = matplotlib.collections.PatchCollection(patches, 
                             edgecolor=(colordict["circles"]), facecolor='None', zorder=2)
     v.plt_circles = v.ax.add_collection(coll)
-
     v.imgCanvas.draw()
 
 def plot_outer_vertices(v):
