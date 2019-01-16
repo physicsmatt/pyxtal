@@ -387,55 +387,55 @@ class Pyxtal_Main_Controls:
         self.analysisFrame.configure(text='''Analysis''')
         self.analysisFrame.configure(width=270)
 
-        self.TrajCheck = tk.Checkbutton(self.analysisFrame)
-        self.TrajCheck.place(relx=0.037, rely=0.367, relheight=0.069
+        self.trajCheck = tk.Checkbutton(self.analysisFrame)
+        self.trajCheck.place(relx=0.037, rely=0.367, relheight=0.069
                 , relwidth=0.759, bordermode='ignore')
-        self.TrajCheck.configure(activebackground="#d9d9d9")
-        self.TrajCheck.configure(anchor='w')
-        self.TrajCheck.configure(justify='left')
-        self.TrajCheck.configure(text='''Sphere Trajectories''')
-        self.TrajCheck.configure(variable=self.doTraject)
-        self.TrajCheck.configure(width=205)
+        self.trajCheck.configure(activebackground="#d9d9d9")
+        self.trajCheck.configure(anchor='w')
+        self.trajCheck.configure(justify='left')
+        self.trajCheck.configure(text='''Sphere Trajectories''')
+        self.trajCheck.configure(variable=self.doTraject)
+        self.trajCheck.configure(width=205)
 
-        self.OrientCorrCheck = tk.Checkbutton(self.analysisFrame)
-        self.OrientCorrCheck.place(relx=0.037, rely=0.735, relheight=0.069
+        self.orientCorrCheck = tk.Checkbutton(self.analysisFrame)
+        self.orientCorrCheck.place(relx=0.037, rely=0.735, relheight=0.069
                 , relwidth=0.907, bordermode='ignore')
-        self.OrientCorrCheck.configure(activebackground="#d9d9d9")
-        self.OrientCorrCheck.configure(anchor='w')
-        self.OrientCorrCheck.configure(justify='left')
-        self.OrientCorrCheck.configure(text='''Orientational Correlation func.''')
-        self.OrientCorrCheck.configure(variable=self.doOrientCorr)
-        self.OrientCorrCheck.configure(width=245)
+        self.orientCorrCheck.configure(activebackground="#d9d9d9")
+        self.orientCorrCheck.configure(anchor='w')
+        self.orientCorrCheck.configure(justify='left')
+        self.orientCorrCheck.configure(text='''Orientational Correlation func.''')
+        self.orientCorrCheck.configure(variable=self.doOrientCorr)
+        self.orientCorrCheck.configure(width=245)
 
-        self.OrientHistCheck = tk.Checkbutton(self.analysisFrame)
-        self.OrientHistCheck.place(relx=0.037, rely=0.612, relheight=0.069
+        self.orientHistCheck = tk.Checkbutton(self.analysisFrame)
+        self.orientHistCheck.place(relx=0.037, rely=0.612, relheight=0.069
                 , relwidth=0.833, bordermode='ignore')
-        self.OrientHistCheck.configure(activebackground="#d9d9d9")
-        self.OrientHistCheck.configure(anchor='w')
-        self.OrientHistCheck.configure(justify='left')
-        self.OrientHistCheck.configure(text='''Area Orientation Histogram''')
-        self.OrientHistCheck.configure(variable=self.doOrientHist)
-        self.OrientHistCheck.configure(width=225)
+        self.orientHistCheck.configure(activebackground="#d9d9d9")
+        self.orientHistCheck.configure(anchor='w')
+        self.orientHistCheck.configure(justify='left')
+        self.orientHistCheck.configure(text='''Area Orientation Histogram''')
+        self.orientHistCheck.configure(variable=self.doOrientHist)
+        self.orientHistCheck.configure(width=225)
 
-        self.SphereStatsCheck = tk.Checkbutton(self.analysisFrame)
-        self.SphereStatsCheck.place(relx=0.037, rely=0.245, relheight=0.069
+        self.sphereStatsCheck = tk.Checkbutton(self.analysisFrame)
+        self.sphereStatsCheck.place(relx=0.037, rely=0.245, relheight=0.069
                 , relwidth=0.722, bordermode='ignore')
-        self.SphereStatsCheck.configure(activebackground="#d9d9d9")
-        self.SphereStatsCheck.configure(anchor='w')
-        self.SphereStatsCheck.configure(justify='left')
-        self.SphereStatsCheck.configure(text='''Sphere Statistics''')
-        self.SphereStatsCheck.configure(variable=self.doSphereStats)
-        self.SphereStatsCheck.configure(width=195)
+        self.sphereStatsCheck.configure(activebackground="#d9d9d9")
+        self.sphereStatsCheck.configure(anchor='w')
+        self.sphereStatsCheck.configure(justify='left')
+        self.sphereStatsCheck.configure(text='''Sphere Statistics''')
+        self.sphereStatsCheck.configure(variable=self.doSphereStats)
+        self.sphereStatsCheck.configure(width=195)
 
-        self.DefectStatsCheck = tk.Checkbutton(self.analysisFrame)
-        self.DefectStatsCheck.place(relx=0.037, rely=0.49, relheight=0.069
+        self.defectStatsCheck = tk.Checkbutton(self.analysisFrame)
+        self.defectStatsCheck.place(relx=0.037, rely=0.49, relheight=0.069
                 , relwidth=0.796, bordermode='ignore')
-        self.DefectStatsCheck.configure(activebackground="#d9d9d9")
-        self.DefectStatsCheck.configure(anchor='w')
-        self.DefectStatsCheck.configure(justify='left')
-        self.DefectStatsCheck.configure(text='''Chrystal Defect Statistics''')
-        self.DefectStatsCheck.configure(variable=self.doDefectStats)
-        self.DefectStatsCheck.configure(width=215)
+        self.defectStatsCheck.configure(activebackground="#d9d9d9")
+        self.defectStatsCheck.configure(anchor='w')
+        self.defectStatsCheck.configure(justify='left')
+        self.defectStatsCheck.configure(text='''Chrystal Defect Statistics''')
+        self.defectStatsCheck.configure(variable=self.doDefectStats)
+        self.defectStatsCheck.configure(width=215)
 
         self.zProfileCheck = tk.Checkbutton(self.analysisFrame)
         self.zProfileCheck.place(relx=0.037, rely=0.122, relheight=0.069
@@ -446,14 +446,14 @@ class Pyxtal_Main_Controls:
         self.zProfileCheck.configure(text='''Depth Profile (z axis)''')
         self.zProfileCheck.configure(variable=self.doZProfile)
 
-        self.MeaningLifeCheck = tk.Checkbutton(self.analysisFrame)
-        self.MeaningLifeCheck.place(relx=0.037, rely=0.857, relheight=0.069
+        self.meaningLifeCheck = tk.Checkbutton(self.analysisFrame)
+        self.meaningLifeCheck.place(relx=0.037, rely=0.857, relheight=0.069
                 , relwidth=0.907, bordermode='ignore')
-        self.MeaningLifeCheck.configure(activebackground="#d9d9d9")
-        self.MeaningLifeCheck.configure(anchor='w')
-        self.MeaningLifeCheck.configure(justify='left')
-        self.MeaningLifeCheck.configure(text='''Meaning of Life''')
-        self.MeaningLifeCheck.configure(variable=self.doMeaningLife)
+        self.meaningLifeCheck.configure(activebackground="#d9d9d9")
+        self.meaningLifeCheck.configure(anchor='w')
+        self.meaningLifeCheck.configure(justify='left')
+        self.meaningLifeCheck.configure(text='''Meaning of Life''')
+        self.meaningLifeCheck.configure(variable=self.doMeaningLife)
 
         self.windowFrame = tk.LabelFrame(top)
         self.windowFrame.place(relx=0.532, rely=0.659, relheight=0.199

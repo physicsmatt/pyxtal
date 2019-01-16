@@ -259,8 +259,8 @@ def init(top, gui, *args, **kwargs):
     #as this is a work in progress, I'm disabling controls that are
     #not implemented yet:
     set_widget_state('disabled', pmw.analysisFrame)
-    set_widget_state('normal', pmw.OrientHistCheck)
-    set_widget_state('normal', pmw.MeaningLifeCheck)
+    set_widget_state('normal', pmw.orientHistCheck)
+    set_widget_state('normal', pmw.meaningLifeCheck)
     set_widget_state('disabled', [pmw.outMpegCheck, 
                                   pmw.ImageSizeLabel, pmw.imageSizeEntry])
     set_widget_state('disabled', [pmw.SaveDefButton, pmw.LoadDefButton])
