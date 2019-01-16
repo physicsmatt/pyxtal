@@ -337,39 +337,39 @@ class Pyxtal_Main_Controls:
                                     self.imageSizeStr,
                                     self.imageSize))
 
-        self.ImageSizeLabel = tk.Label(self.outputFrame)
-        self.ImageSizeLabel.place(relx=0.056, rely=0.649, height=15, width=128
+        self.imageSizeLabel = tk.Label(self.outputFrame)
+        self.imageSizeLabel.place(relx=0.056, rely=0.649, height=15, width=128
                 , bordermode='ignore')
-        self.ImageSizeLabel.configure(activebackground="#f9f9f9")
-        self.ImageSizeLabel.configure(anchor='w')
-        self.ImageSizeLabel.configure(text='''Output Image size:''')
+        self.imageSizeLabel.configure(activebackground="#f9f9f9")
+        self.imageSizeLabel.configure(anchor='w')
+        self.imageSizeLabel.configure(text='''Output Image size:''')
 
-        self.OutCirclesCheck = tk.Checkbutton(self.outputFrame)
-        self.OutCirclesCheck.place(relx=0.037, rely=0.162, relheight=0.092
+        self.outTriangCheck = tk.Checkbutton(self.outputFrame)
+        self.outTriangCheck.place(relx=0.037, rely=0.162, relheight=0.092
                 , relwidth=0.648, bordermode='ignore')
-        self.OutCirclesCheck.configure(activebackground="#d9d9d9")
-        self.OutCirclesCheck.configure(anchor='w')
-        self.OutCirclesCheck.configure(justify='left')
-        self.OutCirclesCheck.configure(text='''Image and Circles''')
-        self.OutCirclesCheck.configure(variable=self.outCircles)
+        self.outTriangCheck.configure(activebackground="#d9d9d9")
+        self.outTriangCheck.configure(anchor='w')
+        self.outTriangCheck.configure(justify='left')
+        self.outTriangCheck.configure(text='''Image and Circles''')
+        self.outTriangCheck.configure(variable=self.outCircles)
 
-        self.OutTriangCheck = tk.Checkbutton(self.outputFrame)
-        self.OutTriangCheck.place(relx=0.037, rely=0.324, relheight=0.092
+        self.outTriangCheck = tk.Checkbutton(self.outputFrame)
+        self.outTriangCheck.place(relx=0.037, rely=0.324, relheight=0.092
                 , relwidth=0.648, bordermode='ignore')
-        self.OutTriangCheck.configure(activebackground="#d9d9d9")
-        self.OutTriangCheck.configure(anchor='w')
-        self.OutTriangCheck.configure(justify='left')
-        self.OutTriangCheck.configure(text='''Triangulation''')
-        self.OutTriangCheck.configure(variable=self.outTriang)
+        self.outTriangCheck.configure(activebackground="#d9d9d9")
+        self.outTriangCheck.configure(anchor='w')
+        self.outTriangCheck.configure(justify='left')
+        self.outTriangCheck.configure(text='''Triangulation''')
+        self.outTriangCheck.configure(variable=self.outTriang)
 
-        self.OutAllCheck = tk.Checkbutton(self.outputFrame)
-        self.OutAllCheck.place(relx=0.037, rely=0.486, relheight=0.092
+        self.outAllCheck = tk.Checkbutton(self.outputFrame)
+        self.outAllCheck.place(relx=0.037, rely=0.486, relheight=0.092
                 , relwidth=0.759, bordermode='ignore')
-        self.OutAllCheck.configure(activebackground="#d9d9d9")
-        self.OutAllCheck.configure(anchor='w')
-        self.OutAllCheck.configure(justify='left')
-        self.OutAllCheck.configure(text='''Image + angle + defects''')
-        self.OutAllCheck.configure(variable=self.outAll)
+        self.outAllCheck.configure(activebackground="#d9d9d9")
+        self.outAllCheck.configure(anchor='w')
+        self.outAllCheck.configure(justify='left')
+        self.outAllCheck.configure(text='''Image + angle + defects''')
+        self.outAllCheck.configure(variable=self.outAll)
 
         self.outMpegCheck = tk.Checkbutton(self.outputFrame)
         self.outMpegCheck.place(relx=0.037, rely=0.811, relheight=0.092
@@ -462,14 +462,14 @@ class Pyxtal_Main_Controls:
         self.windowFrame.configure(text='''Window Control''')
         self.windowFrame.configure(width=270)
 
-        self.RetainCheck = tk.Checkbutton(self.windowFrame)
-        self.RetainCheck.place(relx=0.037, rely=0.414, relheight=0.117
+        self.retainCheck = tk.Checkbutton(self.windowFrame)
+        self.retainCheck.place(relx=0.037, rely=0.414, relheight=0.117
                 , relwidth=0.441, bordermode='ignore')
-        self.RetainCheck.configure(activebackground="#d9d9d9")
-        self.RetainCheck.configure(anchor='w')
-        self.RetainCheck.configure(justify='left')
-        self.RetainCheck.configure(text='''Retain Windows''')
-        self.RetainCheck.configure(variable=self.retainWin)
+        self.retainCheck.configure(activebackground="#d9d9d9")
+        self.retainCheck.configure(anchor='w')
+        self.retainCheck.configure(justify='left')
+        self.retainCheck.configure(text='''Retain Windows''')
+        self.retainCheck.configure(variable=self.retainWin)
 
         self.GoButton = tk.Button(self.windowFrame)
         self.GoButton.place(relx=0.037, rely=0.621, height=43, width=108
@@ -505,15 +505,15 @@ Image Windows''')
         self.lockViewsCheck.configure(text='''Lock views''')
         self.lockViewsCheck.configure(variable=self.lockViews)
 
-        self.BatchmodeCheck = tk.Checkbutton(self.windowFrame)
-        self.BatchmodeCheck.place(relx=0.037, rely=0.207, relheight=0.117
+        self.batchmodeCheck = tk.Checkbutton(self.windowFrame)
+        self.batchmodeCheck.place(relx=0.037, rely=0.207, relheight=0.117
                 , relwidth=0.478, bordermode='ignore')
-        self.BatchmodeCheck.configure(activebackground="#d9d9d9")
-        self.BatchmodeCheck.configure(anchor='w')
-        self.BatchmodeCheck.configure(justify='left')
-        self.BatchmodeCheck.configure(text='''Quiet Batchmode''')
-        self.BatchmodeCheck.configure(variable=self.batchmode)
-        self.BatchmodeCheck.configure(width=129)
+        self.batchmodeCheck.configure(activebackground="#d9d9d9")
+        self.batchmodeCheck.configure(anchor='w')
+        self.batchmodeCheck.configure(justify='left')
+        self.batchmodeCheck.configure(text='''Quiet Batchmode''')
+        self.batchmodeCheck.configure(variable=self.batchmode)
+        self.batchmodeCheck.configure(width=129)
 
         self.Progressframe = tk.LabelFrame(top)
         self.Progressframe.place(relx=0.532, rely=0.879, relheight=0.103

@@ -56,9 +56,9 @@ def batchmodeChange():
     global pmw
     if pmw.batchmode.get():
         pmw.retainWin.set(False)
-        set_widget_state('disabled', [pmw.RetainCheck])
+        set_widget_state('disabled', [pmw.retainCheck])
     else:
-        set_widget_state('normal', [pmw.RetainCheck])
+        set_widget_state('normal', [pmw.retainCheck])
 
 
 def validateInteger(p1, thestring, theinteger):
@@ -262,9 +262,9 @@ def init(top, gui, *args, **kwargs):
     set_widget_state('normal', pmw.orientHistCheck)
     set_widget_state('normal', pmw.meaningLifeCheck)
     set_widget_state('disabled', [pmw.outMpegCheck, 
-                                  pmw.ImageSizeLabel, pmw.imageSizeEntry])
+                                  pmw.imageSizeLabel, pmw.imageSizeEntry])
     set_widget_state('disabled', [pmw.SaveDefButton, pmw.LoadDefButton])
-    if pmw.batchmode.get(): set_widget_state('disabled', pmw.RetainCheck)
+    if pmw.batchmode.get(): set_widget_state('disabled', pmw.retainCheck)
 
     #For debugging and demonstration purposes, it's handy to have a default 
     #filename already loaded up.
