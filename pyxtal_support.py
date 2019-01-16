@@ -304,9 +304,12 @@ def initialize_parameters(pmw):
     pmw.outAll.set(False)
     pmw.outMpeg.set(False)
 
+    pmw.doZProfile.set(False)
+    pmw.doSphereStats.set(False)
+    pmw.doTraject.set(False)
+    pmw.doDefectStats.set(False)
     pmw.doOrientHist.set(False)
     pmw.doOrientCorr.set(False)
-    pmw.doTraject.set(False)
     pmw.doMeaningLife.set(False)
 
     pmw.batchmode.set(False)
