@@ -433,7 +433,7 @@ class Pyxtal_Main_Controls:
         self.defectStatsCheck.configure(activebackground="#d9d9d9")
         self.defectStatsCheck.configure(anchor='w')
         self.defectStatsCheck.configure(justify='left')
-        self.defectStatsCheck.configure(text='''Chrystal Defect Statistics''')
+        self.defectStatsCheck.configure(text='''Crystal Defect Statistics''')
         self.defectStatsCheck.configure(variable=self.doDefectStats)
         self.defectStatsCheck.configure(width=215)
 
