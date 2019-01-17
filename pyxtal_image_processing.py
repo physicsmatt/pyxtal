@@ -319,8 +319,6 @@ def plot_unbound_discs(v):
     v.imgCanvas.draw()
   
 
-
-
 def calculate_angle_field(v):
     #This function ultimately produces a color image representing the local
     #orientation of the crystal.
@@ -364,13 +362,6 @@ def plot_angle_field(v):
     v.imgCanvas.draw()
 
 
-def write_orientHist_entry(v):
-    #print("writing log file")
-    v.pmw.orientHistfile.write(str(v.timestep) + ', ')
-    v.pmw.orientHistfile.write(np.array2string(v.angle_histogram, 
-                    max_line_width=1000, separator=',')[1:-2] + "\n")
-    v.pmw.orientHistfile.flush()
-    
 def do_stats(v):
      v.pmw.stats.viewer=v
      st =  v.pmw.statsText
@@ -455,6 +446,29 @@ def do_output_files(v):
 #    ax2.imshow(X)
 #    plt.show()
 #    plt.imsave("testout.tif", X)
+
+
+def write_orientHist_entry(v):
+    #print("writing log file")
+    v.pmw.orientHistfile.write(str(v.timestep) + ', ')
+    v.pmw.orientHistfile.write(np.array2string(v.angle_histogram, 
+                    max_line_width=1000, separator=',')[1:-2] + "\n")
+    v.pmw.orientHistfile.flush()
+
+    
+def do_zProfile(v, z_coords, box):
+    pass
+    bin_width = 0.1
+
+    v.pmw.zProfilefile.write(str(v.timestep) + ', ')
+    distribution = np.histogram(z_coords, bins = int(np.ceil(box[2] / bin_width)),
+                                range = (-box[2]/2, box[2]/2))[0]
+    volume = bin_width * box[0] * box[1]
+    distribution = distribution.astype(float) / volume
+    v.pmw.zProfilefile.write(np.array2string(distribution, 
+                    max_line_width=1000, separator=',',
+                    formatter={'float_kind':lambda x: "%.3f " % x})[1:-2] + "\n")
+    v.pmw.zProfilefile.flush()
 
 
 if __name__ == '__main__':

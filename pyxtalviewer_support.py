@@ -286,9 +286,13 @@ def load_images_and_locations(viewer):
         #so I need to access it with [0].
         w = np.where(s[fn].particles.typeid == typenum)[0]
         part_locs3d = s[fn].particles.position[w,0:3]
-        part_locs3d += boxsize3d / 2
+        
+        if viewer.pmw.doZProfile.get():
+            #pimg.do_zProfile(viewer, s[fn].particles.position[:,2], boxsize3d)
+            pimg.do_zProfile(viewer, part_locs3d[:,2], boxsize3d)
         
         #now create an "image" based on the densities of particles at x,y locations
+        part_locs3d += boxsize3d / 2
         part_locs = part_locs3d[:,0:2]
         image = np.histogram2d(part_locs[:,1], part_locs[:,0],
                                bins = np.flip(viewer.imgshape))[0]

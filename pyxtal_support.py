@@ -97,6 +97,8 @@ def create_logfiles(pmw, filename):
         pmw.meaningLifefile = open(base + "_meaningLife.txt", 'w')
         pmw.meaningLifefile.write("42\n")
         pmw.meaningLifefile.flush()
+    if pmw.doZProfile.get():
+        pmw.zProfilefile = open(base + "_zProfile.txt", 'w')
 
         
 def GoButtonCommand():
@@ -263,6 +265,7 @@ def init(top, gui, *args, **kwargs):
     set_widget_state('disabled', pmw.analysisFrame)
     set_widget_state('normal', pmw.orientHistCheck)
     set_widget_state('normal', pmw.meaningLifeCheck)
+    set_widget_state('normal', pmw.zProfileCheck)
     set_widget_state('disabled', [pmw.outMpegCheck, 
                                   pmw.imageSizeLabel, pmw.imageSizeEntry])
     set_widget_state('disabled', [pmw.saveDefButton, pmw.loadDefButton])
@@ -306,7 +309,7 @@ def initialize_parameters(pmw):
     pmw.outAll.set(False)
     pmw.outMpeg.set(False)
 
-    pmw.doZProfile.set(False)
+    pmw.doZProfile.set(True)
     pmw.doSphereStats.set(False)
     pmw.doTraject.set(False)
     pmw.doDefectStats.set(False)
@@ -321,8 +324,8 @@ def initialize_parameters(pmw):
 
     #These numeric values function as a way to save previous values
     #if the associated strings are changed to non-integer values.
-    pmw.fromFrame = [0]
-    pmw.toFrame = [-1]
+    pmw.fromFrame = [50]
+    pmw.toFrame = [52]
     pmw.byFrame = [50]
     pmw.sphereSize = [7]
     pmw.imageSize = [-1]
