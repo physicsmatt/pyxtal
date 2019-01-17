@@ -91,6 +91,8 @@ def create_logfiles(pmw, filename):
     base = os.path.join(pmw.path, filename[0:splitpoint])
     if pmw.doOrientHist.get():
         pmw.orientHistfile = open(base + "_orientHist.txt", 'w')
+        pmw.orientHistfile.write("# First column is time step\n")
+        pmw.orientHistfile.write("# Next columns are area bins, 0 to 60 degrees, by 2 degrees\n")
     if pmw.doMeaningLife.get():
         pmw.meaningLifefile = open(base + "_meaningLife.txt", 'w')
         pmw.meaningLifefile.write("42\n")

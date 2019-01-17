@@ -287,17 +287,17 @@ def load_images_and_locations(viewer):
         w = np.where(s[fn].particles.typeid == typenum)[0]
         part_locs3d = s[fn].particles.position[w,0:3]
         part_locs3d += boxsize3d / 2
-
-        part_locs = part_locs3d[:,0:2]
-
+        
         #now create an "image" based on the densities of particles at x,y locations
-        #use np.histogram2d
+        part_locs = part_locs3d[:,0:2]
         image = np.histogram2d(part_locs[:,1], part_locs[:,0],
                                bins = np.flip(viewer.imgshape))[0]
         image = np.flip(image,axis=0)
         viewer.image = image.copy()
-#        viewer.locations = get_locations_from_image(viewer, method="trackpy")        
-#        viewer.locations = get_locations_from_image(viewer, method="contiguous")        
+        
+        #Below are three possible methods to extract the location of spheres:
+        #viewer.locations = get_locations_from_image(viewer, method="trackpy")        
+        #viewer.locations = get_locations_from_image(viewer, method="contiguous")        
         viewer.locations = get_locations_from_3d(viewer, part_locs3d, boxsize3d)
 
 def dev_to_data(xy, viewer):
