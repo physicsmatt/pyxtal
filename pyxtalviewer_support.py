@@ -222,7 +222,7 @@ def get_locations_from_3d(v, part_locs3d, boxsize3d):
     v.ellipse_axis_rot = np.degrees(np.arctan2(iv[:,1,0],iv[:,0,0]))
     
     if v.pmw.doSphereStats.get():
-        pimg.do_Sphere_Stats(v, masses, iw)
+        pimg.do_Sphere_Stats(v, masses, v.ellipse_axes)
 
     return(locations)
 

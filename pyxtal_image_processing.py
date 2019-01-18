@@ -452,7 +452,7 @@ def write_orientHist_entry(v):
     #print("writing log file")
     v.pmw.orientHistfile.write(str(v.timestep) + ', ')
     v.pmw.orientHistfile.write(np.array2string(v.angle_histogram, 
-                    max_line_width=1000, separator=',')[1:-2] + "\n")
+                    max_line_width=1000, separator=',')[1:-1] + "\n")
     v.pmw.orientHistfile.flush()
 
     
@@ -466,18 +466,29 @@ def do_zProfile(v, z_coords, box):
     distribution = distribution.astype(float) / volume
     v.pmw.zProfilefile.write(np.array2string(distribution, 
                     max_line_width=1000, separator=',',
-                    formatter={'float_kind':lambda x: " %.3f" % x})[1:-2] + "\n")
+                    formatter={'float_kind':lambda x: " %.3f" % x})[1:-1] + "\n")
     v.pmw.zProfilefile.flush()
 
-def do_Sphere_Stats(v, m, I):
+def do_Sphere_Stats(v, m, ellipse_axes):
+    #This function writes distribution information about both the mass and the
+    #aspect ratio of the spheres
+    
+    v.pmw.sphereStatsfile.write(str(v.timestep) + ', ')
+
+    #first, the aspect ratio
+    aspects = ellipse_axes[:,2] / ellipse_axes[:,0]
+    aspect_distrib = np.histogram(aspects, bins = (0.5, 1.5, 2.5, 3.5, 4.5, 1000))[0]
+    v.pmw.sphereStatsfile.write(np.array2string(aspect_distrib, 
+                    max_line_width=1000, separator=', ')[1:-1]+ ", ")
+
+    #now the masses
     bin_width = 10
     m_max = np.max(m)
     num_bins = int(np.ceil(m_max / bin_width))
-    v.pmw.sphereStatsfile.write(str(v.timestep) + ', ')
     distribution = np.histogram(m, bins = num_bins, 
                                 range = (0, num_bins * bin_width))[0]
     v.pmw.sphereStatsfile.write(np.array2string(distribution, 
-                    max_line_width=1000, separator=', ')[1:-2] + "\n")
+                    max_line_width=1000, separator=', ')[1:-1] + "\n")
     v.pmw.sphereStatsfile.flush()
     
 
