@@ -512,6 +512,7 @@ Image Windows''')
         self.batchmodeCheck.configure(anchor='w')
         self.batchmodeCheck.configure(justify='left')
         self.batchmodeCheck.configure(text='''Quiet Batchmode''')
+        self.batchmodeCheck.configure(command=pyxtal_support.batchmodeChange)
         self.batchmodeCheck.configure(variable=self.batchmode)
         self.batchmodeCheck.configure(width=129)
 
