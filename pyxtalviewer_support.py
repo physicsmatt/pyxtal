@@ -440,7 +440,7 @@ def key_event(event,viewer):
 
 def focus_in_event(event,viewer):
     #print("Viewer number ", viewer.idx," Gained focus.")
-    pimg.do_stats(viewer)
+    pimg.display_defect_stats(viewer)
     if viewer.pmw.lockViews.get():
         read_views_from_globals(viewer)
         changeVisibleAnnotations(viewer)
@@ -556,7 +556,10 @@ def init(top, viewer, *args, **kwargs):
         pimg.plot_angle_field(viewer)
         zoom_linewidths(viewer)
         changeVisibleAnnotations(viewer)
-    pimg.do_stats(viewer)
+    #pimg.plot_outermost_vertices(viewer)
+    #pimg.plot_outofbounds_vertices(viewer)
+    pimg.calculate_defect_stats(viewer)
+    pimg.display_defect_stats(viewer)
     if viewer.pmw.doOrientHist.get():
         pimg.write_orientHist_entry(viewer)
     pimg.do_output_files(viewer)

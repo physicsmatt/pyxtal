@@ -125,11 +125,19 @@ def plot_circles(v):
     v.plt_circles = v.ax.add_collection(coll)
     v.imgCanvas.draw()
 
-def plot_outer_vertices(v):
+def plot_outermost_vertices(v):
 #For debugging purposes, these lines plot the vertices on the perimeter:
     v.outermost = v.ax.scatter(v.locations[v.tri.outer_vertices,0], 
                                v.locations[v.tri.outer_vertices,1], 
                          color='red', zorder=5)
+#    print(v.locations[v.tri.outer_vertices])
+
+def plot_outofbounds_vertices(v):
+#For debugging purposes, these lines plot the vertices that are not inbounds:
+    outofbounds = np.where(v.tri.inbounds == False)[0]
+    v.outofbounds = v.ax.scatter(v.locations[outofbounds,0], 
+                               v.locations[outofbounds,1], 
+                         color='black', zorder=4.9)
 #    print(v.locations[v.tri.outer_vertices])
 
 
@@ -362,46 +370,89 @@ def plot_angle_field(v):
     v.imgCanvas.draw()
 
 
-def do_stats(v):
-     v.pmw.stats.viewer=v
-     st =  v.pmw.statsText
-     st.delete(1.0, "end")
-     formstr = "{:28}{:10}{:10}\n"
-     st.insert("end", formstr.format(" ","     Total","     Inbounds"))
-     st.insert("end", formstr.format(
-             "Number of spheres found:",
-               len(v.locations), np.sum(v.tri.inbounds,dtype=int) ))
-     st.insert("end", formstr.format(
-             "    with <= 4 neighbors:",
-               len(np.where(v.tri.cnum <= 4)[0]), 
-               len(np.where((v.tri.cnum <= 4) * v.tri.inbounds)[0]) ))
-     st.insert("end", formstr.format(
-             "    with 5 neighbors:",
-               len(np.where(v.tri.cnum == 5)[0]), 
-               len(np.where(v.tri.cnum * v.tri.inbounds == 5)[0]) ))
-     st.insert("end", formstr.format(
-             "    with 6 neighbors:",
-               len(np.where(v.tri.cnum == 6)[0]), 
-               len(np.where(v.tri.cnum * v.tri.inbounds == 6)[0]) ))
-     st.insert("end", formstr.format(
-             "    with 7 neighbors:",
-               len(np.where(v.tri.cnum == 7)[0]), 
-               len(np.where(v.tri.cnum * v.tri.inbounds == 7)[0]) ))
-     st.insert("end", formstr.format(
-             "    with >= 8 neighbors:",
-               len(np.where(v.tri.cnum >= 8)[0]), 
-               len(np.where((v.tri.cnum >= 8) * v.tri.inbounds)[0]) ))
-     st.insert("end", formstr.format(
-             "    Total <> 6 neighbors:",
-               len(np.where(v.tri.cnum != 6)[0]), 
-               len(np.where((v.tri.cnum != 6) * v.tri.inbounds)[0]) ))
-     
-     st.insert("end","\n")
-     st.insert("end","Number of dislocations: "  + 
-                   str(int(len(np.where(v.tri.is_dislocation != 0)[0]) / 2)) + "\n")
-     st.insert("end","Number of unbound disclinations (inbounds only): "  + 
-                   str(len(np.where((v.tri.unboundness != 0) & v.tri.inbounds)[0])) + "\n" )
-     st.insert("end","Median bond length: {:.2f}\n".format(v.median_bondlength) )
+def calculate_defect_stats(v):
+    #This function builds a 2d array that holds the counts of various defects.
+    #[:,0] holds the number that are "inbounds" (not on the edge).
+    #[:,1] holds the total number.
+    defects = np.zeros((9,2),dtype=int)
+
+    #total number of spheres
+    defects[0,0] = np.sum(v.tri.inbounds,dtype=int)
+    defects[0,1] = len(v.locations)
+
+    # <=4 nearest neighbors
+    defects[1,0] = len(np.where((v.tri.cnum <= 4) * v.tri.inbounds)[0])
+    defects[1,1] = len(np.where(v.tri.cnum <= 4)[0])
+
+    # =5 nearest neighbors
+    defects[2,0] = len(np.where((v.tri.cnum == 5) * v.tri.inbounds)[0])
+    defects[2,1] = len(np.where(v.tri.cnum == 5)[0])
+
+    # =6 nearest neighbors
+    defects[3,0] = len(np.where((v.tri.cnum == 6) * v.tri.inbounds)[0])
+    defects[3,1] = len(np.where(v.tri.cnum == 6)[0])
+
+    # =7 nearest neighbors
+    defects[4,0] = len(np.where((v.tri.cnum == 7) * v.tri.inbounds)[0])
+    defects[4,1] = len(np.where(v.tri.cnum == 7)[0])
+
+    # >=8 nearest neighbors
+    defects[5,0] = len(np.where((v.tri.cnum >= 8) * v.tri.inbounds)[0])
+    defects[5,1] = len(np.where(v.tri.cnum >= 8)[0])
+
+    # total <> 6 nearest neighbors
+    defects[6,0] = len(np.where((v.tri.cnum != 6) * v.tri.inbounds)[0])
+    defects[6,1] = len(np.where(v.tri.cnum != 6)[0])
+
+    # unbound disclinations
+    defects[7,0] = len(np.where((v.tri.unboundness != 0) & v.tri.inbounds)[0])
+    defects[7,1] = len(np.where(v.tri.unboundness != 0)[0])
+
+    # dislocations (ALL of them have at least one vertex inbounds)
+    defects[8,0] = int(len(np.where(v.tri.is_dislocation != 0)[0]) / 2)
+
+    # which dislocations have at least ONE end inbounds:
+#    right_index_inbounds = v.tri.inbounds[v.tri.indices]
+#    is_first_neighbor = np.zeros(len(v.tri.indices), dtype=int)
+#    is_first_neighbor[v.tri.indptr[0:-2]] = 1
+#    left_index = np.cumsum(is_first_neighbor)
+#    left_index_inbounds = v.tri.inbounds[left_index]
+#    inbounds_dislocation = ((v.tri.is_dislocation != 0) & 
+#                            (left_index_inbounds | right_index_inbounds))
+    
+    v.defect_stats = defects
+    
+def display_defect_stats(v):
+    v.pmw.stats.viewer=v
+    st =  v.pmw.statsText
+    st.delete(1.0, "end")
+
+    defects = v.defect_stats
+    formstr = "{:32}{:8}{:10}\n"
+    st.insert("end", formstr.format(" ","  Inbounds","   Total"))
+    st.insert("end", formstr.format(
+            "Number of spheres found:", defects[0,0], defects[0,1]))
+    st.insert("end", formstr.format(
+            "    with <= 4 neighbors:", defects[1,0], defects[1,1]))
+    st.insert("end", formstr.format(
+            "    with 5 neighbors:", defects[2,0], defects[2,1]))
+    st.insert("end", formstr.format(
+            "    with 6 neighbors:", defects[3,0], defects[3,1]))
+    st.insert("end", formstr.format(
+            "    with 7 neighbors:", defects[4,0], defects[4,1]))
+    st.insert("end", formstr.format(
+            "    with >= 8 neighbors:", defects[5,0], defects[5,1]))
+    st.insert("end", formstr.format(
+            "    Total <> 6 neighbors:", defects[6,0], defects[6,1]))
+    st.insert("end","\n")
+
+    st.insert("end", formstr.format(
+            "Number of unbound disclinations:", defects[7,0], defects[7,1]))
+    st.insert("end", formstr.format(
+            "Number of dislocations:", defects[8,0], defects[8,1]))
+    st.insert("end","\n")
+
+    st.insert("end","Median bond length: {:.2f}\n".format(v.median_bondlength) )
 
 
 def do_output_files(v):

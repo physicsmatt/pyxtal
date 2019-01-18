@@ -30,7 +30,7 @@ def create_inbounds_list(v):
     numpoints = len(v.tri.points)
     #numverts = len(bverts)
     v.tri.inbounds = np.zeros(numpoints, dtype=bool)
-    threshhold = v.median_bondlength * 0.7
+    threshhold = v.median_bondlength * 1.0
     p1 = bverts
     p2 = np.roll(bverts, 1, axis = 0)
     denom = 1/ np.linalg.norm(p2-p1, axis=1)
@@ -39,12 +39,6 @@ def create_inbounds_list(v):
         ds = np.abs(np.cross(p2-p1,p3-p1, axis = 1) * denom)
         min_d = np.min(ds)
         v.tri.inbounds[i] = (min_d > threshhold)
-
-    #For debugging purposes, these lines plot the vertices on the perimeter:
-#    w = np.where(v.tri.inbounds)
-#    v.plt_inbounds = v.ax.scatter(v.locations[w,0], 
-#                               v.locations[w,1], 
-#                         color='red', zorder=5)
 
 def neighbor_inds(p,v):
     return(np.array(range(v.tri.indptr[p], v.tri.indptr[p+1])))
