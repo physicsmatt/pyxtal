@@ -217,11 +217,13 @@ def get_locations_from_3d(v, part_locs3d, boxsize3d):
     iw, iv = np.linalg.eigh(it)
     v.ellipse_axes = 4 * np.sqrt(iw)
     
-    #y and x compoenents of zeroeth eigenvector.
+    #y and x components of zeroeth eigenvector.
     #The first eigenvector is the smallest moment of inertia, from eigh()
     v.ellipse_axis_rot = np.degrees(np.arctan2(iv[:,1,0],iv[:,0,0]))
     
-    #print(v.sphere_properties)
+    if v.pmw.doSphereStats.get():
+        pimg.do_Sphere_Stats(v, masses, iw)
+
     return(locations)
 
 
@@ -295,7 +297,8 @@ def load_images_and_locations(viewer):
         part_locs3d += boxsize3d / 2
         part_locs = part_locs3d[:,0:2]
         image = np.histogram2d(part_locs[:,1], part_locs[:,0],
-                               bins = np.flip(viewer.imgshape))[0]
+                               bins = np.flip(viewer.imgshape),
+                               range = ((0,boxsize3d[0]),(0,boxsize3d[1])))[0]
         image = np.flip(image,axis=0)
         viewer.image = image.copy()
         

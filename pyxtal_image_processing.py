@@ -457,20 +457,32 @@ def write_orientHist_entry(v):
 
     
 def do_zProfile(v, z_coords, box):
-    pass
     bin_width = 0.1
-
     v.pmw.zProfilefile.write(str(v.timestep) + ', ')
     distribution = np.histogram(z_coords, bins = int(np.ceil(box[2] / bin_width)),
                                 range = (-box[2]/2, box[2]/2))[0]
+
     volume = bin_width * box[0] * box[1]
     distribution = distribution.astype(float) / volume
     v.pmw.zProfilefile.write(np.array2string(distribution, 
                     max_line_width=1000, separator=',',
-                    formatter={'float_kind':lambda x: "%.3f " % x})[1:-2] + "\n")
+                    formatter={'float_kind':lambda x: " %.3f" % x})[1:-2] + "\n")
     v.pmw.zProfilefile.flush()
 
+def do_Sphere_Stats(v, m, I):
+    bin_width = 10
+    m_max = np.max(m)
+    num_bins = int(np.ceil(m_max / bin_width))
+    v.pmw.sphereStatsfile.write(str(v.timestep) + ', ')
+    distribution = np.histogram(m, bins = num_bins, 
+                                range = (0, num_bins * bin_width))[0]
+    v.pmw.sphereStatsfile.write(np.array2string(distribution, 
+                    max_line_width=1000, separator=', ')[1:-2] + "\n")
+    v.pmw.sphereStatsfile.flush()
+    
 
+    
+    
 if __name__ == '__main__':
     #print("This file is not runnable as main.  Run Pyxtalmain.py instead.")
     import pyxtal

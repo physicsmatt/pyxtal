@@ -99,6 +99,8 @@ def create_logfiles(pmw, filename):
         pmw.meaningLifefile.flush()
     if pmw.doZProfile.get():
         pmw.zProfilefile = open(base + "_zProfile.txt", 'w')
+    if pmw.doSphereStats.get():
+        pmw.sphereStatsfile = open(base + "_sphereStats.txt", 'w')
 
         
 def GoButtonCommand():
@@ -262,13 +264,12 @@ def init(top, gui, *args, **kwargs):
 
     #as this is a work in progress, I'm disabling controls that are
     #not implemented yet:
-    set_widget_state('disabled', pmw.analysisFrame)
-    set_widget_state('normal', pmw.orientHistCheck)
-    set_widget_state('normal', pmw.meaningLifeCheck)
-    set_widget_state('normal', pmw.zProfileCheck)
+    set_widget_state('disabled', [pmw.saveDefButton, pmw.loadDefButton])
     set_widget_state('disabled', [pmw.outMpegCheck, 
                                   pmw.imageSizeLabel, pmw.imageSizeEntry])
-    set_widget_state('disabled', [pmw.saveDefButton, pmw.loadDefButton])
+    set_widget_state('disabled', pmw.trajCheck)
+    set_widget_state('disabled', pmw.orientCorrCheck)
+    set_widget_state('disabled', pmw.defectStatsCheck)
     if pmw.batchmode.get(): set_widget_state('disabled', pmw.retainCheck)
 
     #For debugging and demonstration purposes, it's handy to have a default 
@@ -310,7 +311,7 @@ def initialize_parameters(pmw):
     pmw.outMpeg.set(False)
 
     pmw.doZProfile.set(True)
-    pmw.doSphereStats.set(False)
+    pmw.doSphereStats.set(True)
     pmw.doTraject.set(False)
     pmw.doDefectStats.set(False)
     pmw.doOrientHist.set(False)
