@@ -562,6 +562,8 @@ def init(top, viewer, *args, **kwargs):
     pimg.display_defect_stats(viewer)
     if viewer.pmw.doOrientHist.get():
         pimg.write_orientHist_entry(viewer)
+    if viewer.pmw.doDefectStats.get():
+        pimg.write_defect_stats(viewer)
     pimg.do_output_files(viewer)
 #    pimg.do_label_points(viewer)
     #print(dir(viewer))

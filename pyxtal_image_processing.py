@@ -410,6 +410,8 @@ def calculate_defect_stats(v):
 
     # dislocations (ALL of them have at least one vertex inbounds)
     defects[8,0] = int(len(np.where(v.tri.is_dislocation != 0)[0]) / 2)
+    defects[8,1] = defects[8,0]
+
 
     # which dislocations have at least ONE end inbounds:
 #    right_index_inbounds = v.tri.inbounds[v.tri.indices]
@@ -520,6 +522,7 @@ def do_zProfile(v, z_coords, box):
                     formatter={'float_kind':lambda x: " %.3f" % x})[1:-1] + "\n")
     v.pmw.zProfilefile.flush()
 
+
 def do_Sphere_Stats(v, m, ellipse_axes):
     #This function writes distribution information about both the mass and the
     #aspect ratio of the spheres
@@ -542,6 +545,14 @@ def do_Sphere_Stats(v, m, ellipse_axes):
                     max_line_width=1000, separator=', ')[1:-1] + "\n")
     v.pmw.sphereStatsfile.flush()
     
+
+def write_defect_stats(v):
+    output_array = v.defect_stats.flatten()
+    v.pmw.defectStatsFile.write(str(v.timestep) + ', ')
+    v.pmw.defectStatsFile.write(np.array2string(output_array, 
+                    max_line_width=1000, separator=',')[1:-1])
+    v.pmw.defectStatsFile.write(', %.2f\n' % v.median_bondlength)
+    v.pmw.defectStatsFile.flush()
 
     
     

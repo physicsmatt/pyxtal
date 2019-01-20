@@ -106,6 +106,12 @@ def create_logfiles(pmw, filename):
         pmw.sphereStatsfile.write("# (longest/shortest) <=1.5, <=2.5, <=3.5, <=4.5, and >4.5.\n")
         pmw.sphereStatsfile.write("# All remaining  columns are mass bins, by every 10 units.\n")
                                  
+    if pmw.doDefectStats.get():
+        pmw.defectStatsFile = open(base + "_defectStats.txt", 'w')
+        pmw.defectStatsFile.write("# First column is time step\n")
+        pmw.defectStatsFile.write("# Next columns are complicated; see calculate_defect_stats().\n")
+        pmw.defectStatsFile.write("# Last column is median bond distance.\n")
+        
 
         
 def GoButtonCommand():
@@ -274,7 +280,6 @@ def init(top, gui, *args, **kwargs):
                                   pmw.imageSizeLabel, pmw.imageSizeEntry])
     set_widget_state('disabled', pmw.trajCheck)
     set_widget_state('disabled', pmw.orientCorrCheck)
-    set_widget_state('disabled', pmw.defectStatsCheck)
     if pmw.batchmode.get(): set_widget_state('disabled', pmw.retainCheck)
 
     #For debugging and demonstration purposes, it's handy to have a default 
@@ -318,7 +323,7 @@ def initialize_parameters(pmw):
     pmw.doZProfile.set(True)
     pmw.doSphereStats.set(True)
     pmw.doTraject.set(False)
-    pmw.doDefectStats.set(False)
+    pmw.doDefectStats.set(True)
     pmw.doOrientHist.set(False)
     pmw.doOrientCorr.set(False)
     pmw.doMeaningLife.set(False)
