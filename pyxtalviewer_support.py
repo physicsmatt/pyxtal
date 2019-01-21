@@ -298,7 +298,7 @@ def load_images_and_locations(viewer):
         part_locs = part_locs3d[:,0:2]
         image = np.histogram2d(part_locs[:,1], part_locs[:,0],
                                bins = np.flip(viewer.imgshape),
-                               range = ((0,boxsize3d[0]),(0,boxsize3d[1])))[0]
+                               range = ((0,boxsize3d[1]),(0,boxsize3d[0])))[0]
         image = np.flip(image,axis=0)
         viewer.image = image.copy()
         
