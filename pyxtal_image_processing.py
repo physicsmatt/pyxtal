@@ -12,7 +12,6 @@ import scipy.interpolate
 import matplotlib.pyplot as plt
 import matplotlib
 
-
 colordict =	{
     "particles": "0.7",
     "background": "0.3",
@@ -172,36 +171,21 @@ def calculate_triangulation(v):
     v.tri.indptr = v.tri.vertex_neighbor_vertices[0]
     v.tri.indices = v.tri.vertex_neighbor_vertices[1]
 
-    #figure out number of bonds.  For period boundaries, num_bonds is too big,
-    #and the array v.tri.bond_ind will be truncated later.
-    num_tri = len(v.tri.simplices)
-    num_outer = len(v.tri.outer_vertices)
-    num_bonds = int((num_tri * 3 + num_outer ) / 2)  
-    v.tri.bond_ind = np.zeros((num_bonds,2), dtype=int)
-
-    #Now step through and get vertices of the ends for each bond.
-    #There's probably a cute way to do the next part using np.where, but since 
-    #there's only order N of these to go through, I'll just iterate instead.
-    bondi = 0
-    #edge_bond_count = 0  #This was used for debugging purposes
-    v.tri.cnum = np.zeros(len(v.locations)) #coordination number of each vertex
-    for v1i in range(0,len(v.locations)): #with these limits, v1 is NOT in padding.
-        v.tri.cnum[v1i] = v.tri.indptr[v1i+1] - v.tri.indptr[v1i]
-        for v2i in v.tri.indices[v.tri.indptr[v1i]:v.tri.indptr[v1i + 1]] :
-            if v2i > v1i:
-                v.tri.bond_ind[bondi]=[v1i,v2i]
-                bondi += 1
-                #if v2i >= len(v.locations):
-                #    edge_bond_count +=1
-    v.tri.bond_ind = v.tri.bond_ind[0:bondi]
+    v.tri.cnum = v.tri.indptr[1:len(v.locations)+1] - v.tri.indptr[0:len(v.locations)]
+    right_indices = v.tri.indices[0:v.tri.indptr[len(v.locations)]]
+    is_first_neighbor = np.zeros(len(right_indices), dtype=int)
+    is_first_neighbor[v.tri.indptr[0:len(v.locations)]] = 1
+    v.tri.left_indices = np.cumsum(is_first_neighbor) - 1
+    w = np.where(right_indices > v.tri.left_indices)
+    bond_ind = np.vstack((v.tri.left_indices[w], right_indices[w])).T.copy()
     #Note that the bonds included here may include some bonds that extend from
     #inside the box ("real" vertices) to virtual points outside the box,
     #due to periodic boundary conditions.  As a result, some physical bonds
     #are included twice, once on each side of the image.
                 
     #Now Calculate information for all of the bonds
-    xy0 = v.tri.points[v.tri.bond_ind[:,0]]
-    xy1 = v.tri.points[v.tri.bond_ind[:,1]]
+    xy0 = v.tri.points[bond_ind[:,0]]
+    xy1 = v.tri.points[bond_ind[:,1]]
     v.tri.segs = np.stack([xy0,xy1],axis=1)  #Coords for plotting each line segment
     v.tri.bondsxy = (xy0 + xy1) / 2 #xy center of each bond.  
     diffs = xy1 - xy0
@@ -289,23 +273,15 @@ def do_label_points(v):
         v.ax.annotate(label,v.tri.points[i],zorder=10,color="#FFFFFF",size=20)
     
 def plot_dislocations(v):
-    #Now, step through the lists as we did in do_disclinations to compile
-    #list of line segments to plot:
-    num_dislocs = int(np.sum(v.tri.is_dislocation))
-    segs = np.zeros((num_dislocs,2,2))
-    disloci = 0
-    for v1 in range(0,len(v.locations)):
-        for index in range(v.tri.indptr[v1], v.tri.indptr[v1 + 1]):
-            v2 = v.tri.indices_notwrapped[index]
-            if v.tri.is_dislocation[index] > 0 and v2 > v1:
-                x1 = v.tri.points[v1,0]
-                x2 = v.tri.points[v2,0]
-                y1 = v.tri.points[v1,1]
-                y2 = v.tri.points[v2,1]
-                #print(disloci,v1,v2)
-                segs[disloci] = np.array([[x1,y1],[x2,y2]])
-                disloci += 1
-    segs = segs[0:disloci]
+    right_indices = v.tri.indices_notwrapped[0:v.tri.indptr[len(v.locations)]]
+    w = np.where((right_indices > v.tri.left_indices) &
+                 (v.tri.is_dislocation[0:len(right_indices)] > 0))
+    disloc_ind = np.vstack((v.tri.left_indices[w], right_indices[w])).T.copy()
+
+    xy0 = v.tri.points[disloc_ind[:,0]]
+    xy1 = v.tri.points[disloc_ind[:,1]]
+    segs = np.stack([xy0,xy1],axis=1)  #Coords for plotting each line segment
+
     line_coll = matplotlib.collections.LineCollection(segs, 
                                   color=colordict["dislocations"], zorder=6)
     v.plt_disloc = v.ax.add_collection(line_coll)

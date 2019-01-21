@@ -310,8 +310,8 @@ def initialize_parameters(pmw):
     pmw.global_corners_set = False
 
     #initialize all of the Tk variables declared during creation: 
-#    pmw.inFileType.set("particles") 
-    pmw.inFileType.set("assemblies") 
+    pmw.inFileType.set("particles") 
+#    pmw.inFileType.set("assemblies") 
     pmw.darkSpheres.set(False)
     pmw.partTypeStr.set("B")
     pmw.periodBound.set(True)
@@ -335,9 +335,9 @@ def initialize_parameters(pmw):
 
     #These numeric values function as a way to save previous values
     #if the associated strings are changed to non-integer values.
-    pmw.fromFrame = [50]
-    pmw.toFrame = [52]
-    pmw.byFrame = [50]
+    pmw.fromFrame = [0]
+    pmw.toFrame = [-1]
+    pmw.byFrame = [5]
     pmw.sphereSize = [7]
     pmw.imageSize = [-1]
 
