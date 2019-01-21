@@ -299,7 +299,7 @@ def initialize_parameters(pmw):
     #set default views for viewers:
     pmw.whichImage = "raw"
     pmw.invertImage = False
-    pmw.showCircles = False
+    pmw.showCircles = True
     pmw.showTriang = True
     pmw.showDefects = True
     pmw.showOrientation = True
@@ -310,8 +310,8 @@ def initialize_parameters(pmw):
     pmw.global_corners_set = False
 
     #initialize all of the Tk variables declared during creation: 
-    pmw.inFileType.set("particles") 
-#    pmw.inFileType.set("assemblies") 
+#    pmw.inFileType.set("particles") 
+    pmw.inFileType.set("assemblies") 
     pmw.darkSpheres.set(False)
     pmw.partTypeStr.set("B")
     pmw.periodBound.set(True)
@@ -337,7 +337,7 @@ def initialize_parameters(pmw):
     #if the associated strings are changed to non-integer values.
     pmw.fromFrame = [0]
     pmw.toFrame = [-1]
-    pmw.byFrame = [5]
+    pmw.byFrame = [100]
     pmw.sphereSize = [7]
     pmw.imageSize = [-1]
 
