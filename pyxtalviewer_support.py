@@ -175,6 +175,65 @@ def get_locations_from_image(v, method="trackpy"):
     return(locations[w])
 
 
+def inertia_tensor(vert):
+    #What this actually calculates is the moment of inertia tensor for a set
+    #of points about its COM, normalized by the number of points.
+    #(This seems to be what skimage.measure.regionprops does, and I'm
+    #aiming for this output to behave similarly.)
+    com = np.average(vert,axis=0)
+    vertcom = vert - com
+    i00 = np.sum(vertcom[:,1]**2 + vertcom[:,2]**2)
+    i11 = np.sum(vertcom[:,0]**2 + vertcom[:,2]**2)
+    i22 = np.sum(vertcom[:,0]**2 + vertcom[:,1]**2)
+    i01 = -np.sum(vertcom[:,0]*vertcom[:,1])
+    i12 = -np.sum(vertcom[:,1]*vertcom[:,2])
+    i02 = -np.sum(vertcom[:,0]*vertcom[:,2])
+    it = np.array([[i00,i01,i02],[i01,i11,i12],[i02,i12,i22]])
+    #normalize by mass:
+    it /= len(vert)
+    return(it)
+
+
+def get_locations_from_dbscan(v, part_locs3d, boxsize3d):
+    import sklearn
+
+    #Add periodic wraparound, if required:
+    if v.pmw.periodBound.get():
+        dat = pimg.pad_locations(part_locs3d, v.pmw.sphereSize[0] * 5, boxsize3d)
+    else:
+        dat = part_locs3d
+
+    labs = sklearn.cluster.dbscan(dat,eps = 2.0, min_samples = 7)[1]
+    
+    clusters = np.arange(np.max(labs) + 1)
+    locations = np.array([np.average(dat[np.where(labs==c)], axis=0) 
+                                for c in clusters])
+
+    #kill any out of bounds.
+    w = np.where((0 <= locations[:,0]) &
+                 (locations[:,0] < v.imgshape[0]) &
+                 (0 <= locations[:,1]) &
+                 (locations[:,1] < v.imgshape[1]) )
+    locations = locations[w]
+    clusters = clusters[w]
+
+    masses = np.array([len(labs[np.where(labs==c)]) for c in clusters])
+    it = np.array([inertia_tensor(dat[np.where(labs==c)]) for c in clusters])
+
+    #find eigenvalues and vectors of inertia tensor
+    iw, iv = np.linalg.eigh(it)
+    v.ellipse_axes = 4 * np.sqrt(iw)
+    
+    #y and x components of zeroeth eigenvector.
+    #The first eigenvector is the smallest moment of inertia, from eigh()
+    v.ellipse_axis_rot = np.degrees(np.arctan2(iv[:,1,0],iv[:,0,0]))
+    
+    if v.pmw.doSphereStats.get():
+        pimg.do_Sphere_Stats(v, masses, v.ellipse_axes)
+
+    return(locations[:,0:2])
+
+
 def get_locations_from_3d(v, part_locs3d, boxsize3d):
     import skimage.measure as skim
 
@@ -302,10 +361,12 @@ def load_images_and_locations(viewer):
         image = np.flip(image,axis=0)
         viewer.image = image.copy()
         
-        #Below are three possible methods to extract the location of spheres:
+        #Below are four possible methods to extract the location of spheres:
         #viewer.locations = get_locations_from_image(viewer, method="trackpy")        
         #viewer.locations = get_locations_from_image(viewer, method="contiguous")        
-        viewer.locations = get_locations_from_3d(viewer, part_locs3d, boxsize3d)
+        #viewer.locations = get_locations_from_3d(viewer, part_locs3d, boxsize3d)
+        viewer.locations = get_locations_from_dbscan(viewer, part_locs3d, boxsize3d)
+
 
 def dev_to_data(xy, viewer):
     # This routine translates "device" coordinates (in pixels)

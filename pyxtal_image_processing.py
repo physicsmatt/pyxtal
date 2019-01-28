@@ -25,7 +25,7 @@ colordict =	{
     "border": '#FF00FF', #magenta
 }
 
-def pad_locations(locs, width, size, with_indices=False):
+def pad_locations_old(locs, width, size, with_indices=False):
     #This function is analogous to the numpy.pad function in "wrap" mode.
     #The input locs is an array of (x,y) coordinates.
     #This function makes additional coordinates of the points just outside
@@ -50,6 +50,38 @@ def pad_locations(locs, width, size, with_indices=False):
         return(locs)
     else:
         return(locs[:,0:2])
+    
+
+def pad_locations(locs, width, size, with_indices=False):
+    #This function is analogous to the numpy.pad function in "wrap" mode.
+    #The input locs is an array of (x,y) or (x,y,z) coordinates.
+    #This function makes additional coordinates of the points just outside
+    #the range (only in x and y), mimicking periodic boundaries.
+    #If with_indices==True, then the function also appends
+    #an additional column, which is a reference back to the index of
+    #the original vertex.
+    
+    #First, create the additional column
+    indices = np.arange(0,len(locs))
+    locs = np.concatenate((locs, indices[np.newaxis].T), axis=1)
+
+    #Now make copies of vertices within range of the edges
+    #use them to make new points for padding
+    offset = np.zeros(locs.shape[1])
+    offset[0] = size[0]
+    x1 = locs[np.where(locs[:,0] < width)] + offset
+    x2 = locs[np.where(locs[:,0] > size[0] - width)] - offset
+    locs = np.concatenate((locs, x1, x2))
+
+    offset = np.zeros(locs.shape[1])
+    offset[1] = size[1]
+    y1 = locs[np.where(locs[:,1] < width)] + offset
+    y2 = locs[np.where(locs[:,1] > size[1] - width)] - offset
+    locs = np.concatenate((locs, y1, y2))
+    if with_indices:
+        return(locs)
+    else:
+        return(locs[:,0:-1])
     
 
 def plot_raw_image(v):
