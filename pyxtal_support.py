@@ -286,9 +286,10 @@ def init(top, gui, *args, **kwargs):
     #filename already loaded up.
 #    filename = "double.tif"
 #    filename = "hex1short.gsd"
-    filename = "small_2d_test.gsd"
+#    filename = "small_2d_test.gsd"
 #    filename = "test_diblock1.gsd"
 #    filename = "HLsph_uh6_uw10_se41_kT1.0_ts5000000.gsd"
+    filename = "fene_Nab20_epab0.3_epwa3.5_ts100000000_th10.gsd"
     pmw.filelist.append(filename)
     pmw.fileListbox.insert("end", os.path.basename(filename))
 
@@ -314,7 +315,7 @@ def initialize_parameters(pmw):
     pmw.inFileType.set("assemblies") 
     pmw.darkSpheres.set(False)
     pmw.partTypeStr.set("B")
-    pmw.periodBound.set(True)
+    pmw.periodBound.set(False)
     pmw.outCircles.set(False)
     pmw.outTriang.set(False)
     pmw.outAll.set(False)

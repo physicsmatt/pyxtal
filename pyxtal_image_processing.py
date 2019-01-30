@@ -7,9 +7,7 @@ Created on Sat Oct 20 21:35:41 2018
 """
 
 import numpy as np
-import scipy.spatial as spat
-import scipy.interpolate
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import matplotlib
 
 colordict =	{
@@ -186,6 +184,7 @@ def find_outer_vertices(v):
     return(np.unique(outer_tri[np.where(outer_neighbors != -1)]))
 
 def calculate_triangulation(v):
+    import scipy.spatial
     #Performs Delaunay triangulation.
     #Also finds outermost vertices, which we'll want later.
     #Also gets orientation of each bond, which we'll use later for angle field.
@@ -195,7 +194,7 @@ def calculate_triangulation(v):
     pad_width = int(v.pmw.periodBound.get()) * v.pmw.sphereSize[0] * 5
     locations = pad_locations(locations, pad_width, 
                               v.imgshape, with_indices=True)
-    v.tri = spat.Delaunay(locations[:,0:2], qhull_options="QJ")
+    v.tri = scipy.spatial.Delaunay(locations[:,0:2], qhull_options="QJ")
     v.tri.outer_vertices = find_outer_vertices(v)
 
     #See https://docs.scipy.org/doc/scipy/reference/generated
@@ -336,6 +335,8 @@ def plot_unbound_discs(v):
   
 
 def calculate_angle_field(v):
+    import scipy.interpolate
+
     #This function ultimately produces a color image representing the local
     #orientation of the crystal.
 
@@ -354,10 +355,20 @@ def calculate_angle_field(v):
     #Note below that I have switched grid_x and grid_y, contrary to the example
     #shown in the numpy reference manual.  I did so because x and y were clearly
     #reversed in the resulting rgb image.
-    cosarr = scipy.interpolate.griddata((v.tri.bondsxy[:,0], v.tri.bondsxy[:,1]), 
-                                          cosangle, (grid_y, grid_x),method='linear')
-    sinarr = scipy.interpolate.griddata((v.tri.bondsxy[:,0], v.tri.bondsxy[:,1]), 
-                                          sinangle, (grid_y, grid_x),method='linear')
+    try:
+        #The issue here is that when doing linear interpolation, the griddata routine calls
+        #qhull, which throws an exception in the case of all input points being colinear.
+        #This problem would be easily fixable using the "QJ" (joggle) option, but I don't
+        #see a way to include that here.
+        cosarr = scipy.interpolate.griddata((v.tri.bondsxy[:,0], v.tri.bondsxy[:,1]), 
+                                              cosangle, (grid_y, grid_x),method='linear')
+        sinarr = scipy.interpolate.griddata((v.tri.bondsxy[:,0], v.tri.bondsxy[:,1]), 
+                                              sinangle, (grid_y, grid_x),method='linear')
+    except:
+        cosarr = scipy.interpolate.griddata((v.tri.bondsxy[:,0], v.tri.bondsxy[:,1]), 
+                                              cosangle, (grid_y, grid_x),method='nearest')
+        sinarr = scipy.interpolate.griddata((v.tri.bondsxy[:,0], v.tri.bondsxy[:,1]), 
+                                              sinangle, (grid_y, grid_x),method='nearest')
     v.anglearr = (np.arctan2(sinarr,cosarr) + np.pi ) / (2 * np.pi)
 
     v.angle_histogram = np.histogram(v.anglearr[np.where(np.isfinite(v.anglearr))], 

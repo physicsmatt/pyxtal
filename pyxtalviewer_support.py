@@ -196,6 +196,7 @@ def inertia_tensor(vert):
 
 def get_locations_from_dbscan(v, part_locs3d, boxsize3d):
     import sklearn
+    import sklearn.cluster
 
     #Add periodic wraparound, if required:
     if v.pmw.periodBound.get():
@@ -205,6 +206,12 @@ def get_locations_from_dbscan(v, part_locs3d, boxsize3d):
 
     labs = sklearn.cluster.dbscan(dat,eps = 2.0, min_samples = 7)[1]
     
+    if np.max(labs) == -1: #No clusters found!
+        v.masses = np.array([])
+        v.ellipse_axes = np.array([]).reshape(0,3)
+        v.ellipse_axis_rot = np.array([])
+        return(np.array([]).reshape(0,2))
+        
     clusters = np.arange(np.max(labs) + 1)
     locations = np.array([np.average(dat[np.where(labs==c)], axis=0) 
                                 for c in clusters])
@@ -286,6 +293,32 @@ def get_locations_from_3d(v, part_locs3d, boxsize3d):
     return(locations)
 
 
+def pad_with_bullshit_points(v):
+    #The Delauney triangulation requires at least 4 points to function, 
+    #and other parts of the code presumably also have a minimum.  This
+    #function ensures that there are always at least 4 points, creating
+    #up to four completely bullshit points out of thin air as necessary.
+    
+    if len(v.locations) >=4: return()
+
+    print("Warning: Number of points found is less than 4.")
+    print("Filling in with extra completely bogus points.")
+    x1 = v.imgshape[0] * 0.1
+    x2 = v.imgshape[0] * 0.9
+    y1 = v.imgshape[1] * 0.1
+    y2 = v.imgshape[1] * 0.9
+    bs_locations = np.array([[x1,y1],[x2,y1],[x1,y2],[x2,y2]])
+#    bs_masses = [1.0, 1, 1, 1]
+    bs_ellipse_axes = [[1.0,1, 1], [1,1,1], [1,1,1], [1,1,1]]
+    bs_ellipse_axis_rot = [0,0,0,0]
+
+    last_bs_index = 4 - len(v.locations)
+    v.locations = np.append(v.locations, bs_locations[0:last_bs_index], axis=0)
+#    np.append(v.sphere_masses, bs_masses[0:last_bs_index])
+    v.ellipse_axes = np.append(v.ellipse_axes, bs_ellipse_axes[0:last_bs_index], axis=0)
+    v.ellipse_axis_rot = np.append(v.ellipse_axis_rot, bs_ellipse_axis_rot[0:last_bs_index])
+    
+
 def load_images_and_locations(viewer):
     #Based on the input file type, this function reads the file.
     #If File is an image, it adds the location data.
@@ -366,6 +399,9 @@ def load_images_and_locations(viewer):
         #viewer.locations = get_locations_from_image(viewer, method="contiguous")        
         #viewer.locations = get_locations_from_3d(viewer, part_locs3d, boxsize3d)
         viewer.locations = get_locations_from_dbscan(viewer, part_locs3d, boxsize3d)
+
+
+        pad_with_bullshit_points(viewer)
 
 
 def dev_to_data(xy, viewer):
