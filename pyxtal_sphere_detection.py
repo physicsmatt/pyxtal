@@ -289,8 +289,10 @@ def load_images_and_locations(viewer):
         part_locs3d = s[fn].particles.position[w,0:3]
         
         if viewer.pmw.doZProfile.get():
-            #pimg.do_zProfile(viewer, s[fn].particles.position[:,2], boxsize3d)
-            pimg.do_zProfile(viewer, part_locs3d[:,2], boxsize3d)
+            #for all particles:
+            pimg.do_zProfile(viewer, s[fn].particles.position[:,2], boxsize3d)
+            #for particles of only selected type ("B" or whatever):
+            #pimg.do_zProfile(viewer, part_locs3d[:,2], boxsize3d)
         
         #now create an "image" based on the densities of particles at x,y locations
         part_locs3d += boxsize3d / 2

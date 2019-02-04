@@ -7,6 +7,7 @@ Created on Sat Oct 20 21:35:41 2018
 """
 
 import numpy as np
+import pandas as pd
 #import matplotlib.pyplot as plt
 import matplotlib
 
@@ -530,15 +531,20 @@ def write_orientHist_entry(v):
     
 def do_zProfile(v, z_coords, box):
     bin_width = 0.1
-    v.pmw.zProfilefile.write(str(v.timestep) + ', ')
-    distribution = np.histogram(z_coords, bins = int(np.ceil(box[2] / bin_width)),
-                                range = (-box[2]/2, box[2]/2))[0]
+    distribution, bin_edges = np.histogram(z_coords, 
+                                bins = int(np.ceil(box[2] / bin_width)),
+                                range = (-box[2]/2, box[2]/2))
 
     volume = bin_width * box[0] * box[1]
     distribution = distribution.astype(float) / volume
-    v.pmw.zProfilefile.write(np.array2string(distribution, 
-                    max_line_width=1000, separator=',',
-                    formatter={'float_kind':lambda x: " %.3f" % x})[1:-1] + "\n")
+#    v.pmw.zProfilefile.write(str(v.timestep) + ', ')
+#    v.pmw.zProfilefile.write(np.array2string(distribution, 
+#                    max_line_width=1000, separator=',',
+#                    formatter={'float_kind':lambda x: " %.3f" % x})[1:-1] + "\n")
+    zdf = pd.DataFrame({"timestep": v.timestep,
+                        "z-depth": bin_edges[0:-1],
+                        "density": distribution})
+    zdf.to_csv(v.pmw.zProfilefile, sep='\t', float_format='%.3f')
     v.pmw.zProfilefile.flush()
 
 
