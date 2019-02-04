@@ -101,10 +101,10 @@ def create_logfiles(pmw, filename):
         pmw.zProfilefile = open(base + "_zProfile.txt", 'w')
     if pmw.doSphereStats.get():
         pmw.sphereStatsfile = open(base + "_sphereStats.txt", 'w')
-        pmw.sphereStatsfile.write("# First column is time step\n")
-        pmw.sphereStatsfile.write("# Next 5 columns are bins of aspect ratios of ellipsoid axes\n")
-        pmw.sphereStatsfile.write("# (longest/shortest) <=1.5, <=2.5, <=3.5, <=4.5, and >4.5.\n")
-        pmw.sphereStatsfile.write("# All remaining  columns are mass bins, by every 10 units.\n")
+        #pmw.sphereStatsfile.write("# First column is time step\n")
+        #pmw.sphereStatsfile.write("# Next 5 columns are bins of aspect ratios of ellipsoid axes\n")
+        #pmw.sphereStatsfile.write("# (longest/shortest) <=1.5, <=2.5, <=3.5, <=4.5, and >4.5.\n")
+        #pmw.sphereStatsfile.write("# All remaining  columns are mass bins, by every 10 units.\n")
                                  
     if pmw.doDefectStats.get():
         pmw.defectStatsFile = open(base + "_defectStats.txt", 'w')
