@@ -544,7 +544,8 @@ def do_zProfile(v, z_coords, box):
     zdf = pd.DataFrame({"timestep": v.timestep,
                         "z-depth": bin_edges[0:-1],
                         "density": distribution})
-    zdf.to_csv(v.pmw.zProfilefile, sep='\t', float_format='%.3f')
+    zdf.to_csv(v.pmw.zProfilefile, sep='\t', float_format='%.3f',
+               index_label="#index")
     v.pmw.zProfilefile.flush()
 
 
@@ -563,7 +564,8 @@ def do_Sphere_Stats(v, m, ellipse_axes):
     asp_df = pd.DataFrame({"timestep": v.timestep,
                         "aspect_ratio": aspect_bins[0:-1],
                         "count": aspect_distrib})
-    asp_df.to_csv(v.pmw.sphereStatsfile, sep='\t', float_format='%.3f')
+    asp_df.to_csv(v.pmw.sphereStatsfile, sep='\t', float_format='%.3f',
+                  index_label="#index")
 
 
     #now the masses
