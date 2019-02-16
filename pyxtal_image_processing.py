@@ -24,33 +24,6 @@ colordict =	{
     "border": '#FF00FF', #magenta
 }
 
-def pad_locations_old(locs, width, size, with_indices=False):
-    #This function is analogous to the numpy.pad function in "wrap" mode.
-    #The input locs is an array of (x,y) coordinates.
-    #This function makes additional coordinates of the points just outside
-    #the range, mimicking periodic boundaries.
-    #If with_indices==True, then it
-    #also adds a third column, which is a reference back to the index of
-    #the original vertex.
-    
-    #First, create the third column
-    indices = np.arange(0,len(locs))
-    locs = np.stack((locs[:,0], locs[:,1], indices), axis=1)
-
-    #Now make copies of vertices within range of the edges
-    #use them to make new points for padding
-    x1 = locs[np.where(locs[:,0] < width)] + [size[0],0,0]
-    x2 = locs[np.where(locs[:,0] > size[0] - width)] - [size[0],0,0]
-    locs = np.concatenate((locs, x1, x2))
-    y1 = locs[np.where(locs[:,1] < width)] + [0,size[1],0]
-    y2 = locs[np.where(locs[:,1] > size[1] - width)] - [0,size[1],0]
-    locs = np.concatenate((locs, y1, y2))
-    if with_indices:
-        return(locs)
-    else:
-        return(locs[:,0:2])
-    
-
 def pad_locations(locs, width, size, with_indices=False):
     #This function is analogous to the numpy.pad function in "wrap" mode.
     #The input locs is an array of (x,y) or (x,y,z) coordinates.
