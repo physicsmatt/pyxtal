@@ -450,6 +450,34 @@ def display_defect_stats(v):
     st.insert("end","Median bond length: {:.2f}\n".format(v.median_bondlength) )
 
 
+def plot_trajectories(v):
+    dummy_segments = ()
+    dummy_trajectories = matplotlib.collections.LineCollection(dummy_segments)
+    v.plt_trajectories = v.ax.add_collection(dummy_trajectories)
+
+
+def redo_trajectories(pmw):
+    import copy
+    import trackpy as tp
+    
+    
+    search_range = pmw.sphereSize
+    tracks = tp.link_df(pmw.feature_df, search_range)
+    seglist = [np.array(tracks[["x","y"]].loc[tracks["particle"]==p])
+               for p in range(tracks["particle"].max() + 1)]
+
+    #These lines about colors I don't understand at all.  Copied from example.
+    colors = [matplotlib.colors.to_rgba(c)
+          for c in matplotlib.rcParams['axes.prop_cycle'].by_key()['color']]
+
+    trajectories = matplotlib.collections.LineCollection(seglist, colors=colors)
+    for v in pmw.viewers:
+        cp_traj = copy.copy(trajectories)
+        v.plt_trajectories.remove()
+        v.plt_trajectories = v.ax.add_collection(cp_traj)
+        v.imgCanvas.draw()
+    
+
 def do_output_files(v):
     import os
     splitpoint = v.filename.rfind('.')

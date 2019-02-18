@@ -10,6 +10,7 @@
 import sys
 import pyxtalviewer
 import pyxtalviewer_support
+import pyxtal_image_processing as pimg
 #import gc
 import tkinter.filedialog as fd
 #import tkfilebrowser as fd  Maybe this is better?
@@ -155,6 +156,7 @@ def GoButtonCommand():
                 if not pmw.retainWin.get():
                     pyxtalviewer_support.destroy_viewer(newv)
                 vieweridx += 1
+    if pmw.doTraject.get(): pimg.redo_trajectories(pmw)
                 
 
 def killAllButtonCommand():
@@ -253,6 +255,8 @@ def init(top, gui, *args, **kwargs):
     top.protocol("WM_DELETE_WINDOW", lambda: destroy_pyxtalmain(pmw))
 
     import os
+    import pandas as pd
+    
     os.getcwd()
     pmw.path = os.getcwd()
 #    pmw.path = "/home/mtrawick/Documents/simulations/2d_diblock/half-loop"
@@ -278,7 +282,6 @@ def init(top, gui, *args, **kwargs):
     set_widget_state('disabled', [pmw.saveDefButton, pmw.loadDefButton])
     set_widget_state('disabled', [pmw.outMpegCheck, 
                                   pmw.imageSizeLabel, pmw.imageSizeEntry])
-    set_widget_state('disabled', pmw.trajCheck)
     set_widget_state('disabled', pmw.orientCorrCheck)
     if pmw.batchmode.get(): set_widget_state('disabled', pmw.retainCheck)
 
@@ -292,6 +295,7 @@ def init(top, gui, *args, **kwargs):
     filename = "fene_Nab20_epab0.3_epwa3.5_ts100000000_th10.gsd"
     pmw.filelist.append(filename)
     pmw.fileListbox.insert("end", os.path.basename(filename))
+    pmw.feature_df = pd.DataFrame()
 
     pmw.top.bind("<Key>", lambda e:pmw_key_event(e, pmw))
 
@@ -300,11 +304,11 @@ def initialize_parameters(pmw):
     #set default views for viewers:
     pmw.whichImage = "raw"
     pmw.invertImage = False
-    pmw.showCircles = True
-    pmw.showTriang = True
-    pmw.showDefects = True
-    pmw.showOrientation = True
-    pmw.showTraject = False
+    pmw.showCircles = False
+    pmw.showTriang = False
+    pmw.showDefects = False
+    pmw.showOrientation = False
+    pmw.showTraject = True
     pmw.showStats = False
     pmw.global_zoom = 1.00
     pmw.global_corners = None
@@ -323,7 +327,7 @@ def initialize_parameters(pmw):
 
     pmw.doZProfile.set(True)
     pmw.doSphereStats.set(True)
-    pmw.doTraject.set(False)
+    pmw.doTraject.set(True)
     pmw.doDefectStats.set(True)
     pmw.doOrientHist.set(False)
     pmw.doOrientCorr.set(False)
@@ -336,9 +340,9 @@ def initialize_parameters(pmw):
 
     #These numeric values function as a way to save previous values
     #if the associated strings are changed to non-integer values.
-    pmw.fromFrame = [0]
-    pmw.toFrame = [-1]
-    pmw.byFrame = [100]
+    pmw.fromFrame = [200]
+    pmw.toFrame = [205]
+    pmw.byFrame = [1]
     pmw.sphereSize = [7]
     pmw.imageSize = [-1]
 

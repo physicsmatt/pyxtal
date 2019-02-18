@@ -7,6 +7,7 @@ Created on Wed Jan 30 08:58:49 2019
 """
 import numpy as np
 import pyxtal_image_processing as pimg
+import pandas as pd
 
 
 def get_contiguous_regions_from_image(img):
@@ -310,6 +311,13 @@ def load_images_and_locations(viewer):
         viewer.locations = get_locations_from_dbscan(viewer, part_locs3d, boxsize3d)
 
         pad_with_bullshit_points(viewer)
+
+
+    feature_df = pd.DataFrame({"x": viewer.locations[:,0],
+                               "y": viewer.locations[:,1],
+                               "frame": viewer.idx})
+    viewer.pmw.feature_df = viewer.pmw.feature_df.append(feature_df, ignore_index=True)
+
 
 if __name__ == '__main__':
     #print("This file is not runnable as main.  Run Pyxtalmain.py instead.")

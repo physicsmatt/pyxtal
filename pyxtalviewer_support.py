@@ -49,6 +49,7 @@ def write_views_to_globals(viewer):
     viewer.pmw.showTriang = viewer.showTriang.get()
     viewer.pmw.showDefects = viewer.showDefects.get()
     viewer.pmw.showOrientation = viewer.showOrientation.get()
+    viewer.pmw.showTraject = viewer.showTraject.get()
     viewer.pmw.showStats = viewer.showStats.get()
     
 def read_views_from_globals(viewer):
@@ -58,6 +59,7 @@ def read_views_from_globals(viewer):
     viewer.showTriang.set(viewer.pmw.showTriang)
     viewer.showDefects.set(viewer.pmw.showDefects)
     viewer.showOrientation.set(viewer.pmw.showOrientation)
+    viewer.showTraject.set(viewer.pmw.showTraject)
     viewer.showStats.set(viewer.pmw.showStats)
 
 def changeVisibleImage(viewer):
@@ -86,6 +88,7 @@ def changeVisibleAnnotations(viewer):
     viewer.plt_disc.set_visible(viewer.showDefects.get())
     viewer.plt_disloc.set_visible(viewer.showDefects.get())
     viewer.plt_unbound.set_visible(viewer.showDefects.get())
+    viewer.plt_trajectories.set_visible(viewer.showTraject.get())
     viewer.imgCanvas.draw()
 #The variables below still need to be implemented and eventually included
 #in the list above:
@@ -322,7 +325,7 @@ def init(top, viewer, *args, **kwargs):
 
     #as this is a work in progress, I'm disabling controls that are
     #not implemented yet:
-    pyxtal_support.set_widget_state('disabled', viewer.trajectCheck)
+#    pyxtal_support.set_widget_state('disabled', viewer.trajectCheck)
 #    pyxtal_support.set_widget_state('disabled', viewer.statsCheck)
 
     viewer.top.update()
@@ -351,6 +354,7 @@ def init(top, viewer, *args, **kwargs):
         pimg.plot_dislocations(viewer)
         pimg.plot_unbound_discs(viewer)
         pimg.plot_angle_field(viewer)
+        pimg.plot_trajectories(viewer)
         zoom_linewidths(viewer)
         changeVisibleAnnotations(viewer)
     #pimg.plot_outermost_vertices(viewer)
