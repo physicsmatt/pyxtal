@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 #import matplotlib.pyplot as plt
 import matplotlib
+import matplotlib.collections as m_coll
 
 colordict =	{
     "particles": "0.7",
@@ -22,6 +23,11 @@ colordict =	{
     "disc8": '#00FFFF', #cyan
     "dislocations": '#FFFF00', #yellow
     "border": '#FF00FF', #magenta
+#    "merge": '#00FFFF', #cyan
+#    "split": '#FF00FF', #magenta
+    "merge": np.array((1.0, 0.0, 1.0)), #magenta
+    "split": np.array((0.0, 1.0, 1.0)), #cyan
+    "spontaneous": np.array((1.0, 0.66, 0.0)), #orange
 }
 
 def pad_locations(locs, width, size, with_indices=False):
@@ -80,7 +86,7 @@ def plot_raw_image(v):
                         height=v.imgshape[1] + 2 * pad,
                         facecolor=colordict["background"])
         patches.insert(0, background)
-        coll = matplotlib.collections.PatchCollection(patches, 
+        coll = m_coll.PatchCollection(patches, 
                                 zorder=0,match_original=True)
         v.plt_image = v.ax.add_collection(coll)
 
@@ -123,7 +129,7 @@ def plot_circles(v):
         patches = [matplotlib.patches.CirclePolygon(xy, radius) 
                         for xy in v.locations]
         
-    coll = matplotlib.collections.PatchCollection(patches, 
+    coll = m_coll.PatchCollection(patches, 
                             edgecolor=(colordict["circles"]), facecolor='None', zorder=2)
     v.plt_circles = v.ax.add_collection(coll)
     v.imgCanvas.draw()
@@ -237,7 +243,7 @@ def calculate_triangulation(v):
 
 
 def plot_triangulation(v):
-    line_coll = matplotlib.collections.LineCollection(v.tri.segs, 
+    line_coll = m_coll.LineCollection(v.tri.segs, 
                                   color=colordict["triangulation"], zorder=4)
     v.plt_triang = v.ax.add_collection(line_coll)
     v.imgCanvas.draw()
@@ -267,7 +273,7 @@ def plot_disclinations(v):
                                          facecolor=disc_color(v.tri.cnum[i])) 
                                     for i in disc]
 
-    coll = matplotlib.collections.PatchCollection(patches, match_original=True, zorder=5)
+    coll = m_coll.PatchCollection(patches, match_original=True, zorder=5)
     v.plt_disc = v.ax.add_collection(coll)
     v.imgCanvas.draw()
 
@@ -287,7 +293,7 @@ def plot_dislocations(v):
     xy1 = v.tri.points[disloc_ind[:,1]]
     segs = np.stack([xy0,xy1],axis=1)  #Coords for plotting each line segment
 
-    line_coll = matplotlib.collections.LineCollection(segs, 
+    line_coll = m_coll.LineCollection(segs, 
                                   color=colordict["dislocations"], zorder=6)
     v.plt_disloc = v.ax.add_collection(line_coll)
     v.imgCanvas.draw()
@@ -303,7 +309,7 @@ def plot_unbound_discs(v):
                          facecolor='None') 
                                     for i in unbound_discs]
 
-    coll = matplotlib.collections.PatchCollection(patches, match_original=True, zorder=5)
+    coll = m_coll.PatchCollection(patches, match_original=True, zorder=5)
     v.plt_unbound = v.ax.add_collection(coll)
     v.imgCanvas.draw()
   
@@ -452,29 +458,121 @@ def display_defect_stats(v):
 
 def plot_trajectories(v):
     dummy_segments = ()
-    dummy_trajectories = matplotlib.collections.LineCollection(dummy_segments)
+    dummy_trajectories = m_coll.LineCollection(dummy_segments)
     v.plt_trajectories = v.ax.add_collection(dummy_trajectories)
 
+
+def find_merge_events(pmw, tracks):
+    #This function returns arrays that mark the beginning and ending
+    #of each particle's trajectory.  The beginnings and ends are coded
+    #according to whether it appears that a new particle was created as
+    #part of a MERGE with another particle, or two partles were created
+    #as part of a SPLIT of one particle into two.
+    #Incidentally, this is a pretty nasty, low-level routine.  I tried to
+    #do it with dataframes instead of numpy arrays, but I just couldn't
+    #figure out how to get past the problems of "chain assignment".
+
+    tr = tracks.values #convert dataframe to ndarray.
+        #column 0: x
+        #column 1: y
+        #column 2: frame
+        #column 3: particle number
+        #column 4: (added later) color code for merge/split
+        
+    num_parts = int(np.max(tr[:,3])) + 1
+    num_frames = int(np.max(tr[:,2])) + 1
+    
+    #compile lists of beginnings and endings of each trajectory.
+    beglist = []
+    endlist = []
+    for p in range(0,num_parts):
+        wp = np.where(tr[:,3]==p)
+        thistrack = tr[wp]
+        beginning = thistrack[0].copy()
+        ending = thistrack[-1].copy()
+        ending[2] +=1
+        beglist.append(beginning)
+        endlist.append(ending)
+
+    #Convert lists to arrays, remove entries of trajectories that start on 
+    #first frame or end of last frame, and add additional "column" for
+    #code to denote merge/split/spontaneous.
+    begarr = np.array(beglist)
+    endarr = np.array(endlist)
+    begarr = begarr[np.where(begarr[:,2] != 0)]
+    endarr = endarr[np.where(endarr[:,2] != num_frames)]
+    begarr = np.hstack((begarr, np.zeros((len(begarr),1))))
+    endarr = np.hstack((endarr, np.zeros((len(endarr),1))))
+    
+    cutoff_dist = pmw.sphereSize[0] * 1.5 
+    #min distance for events to be considered part of merge or split.
+    #should really be related to sphere spacing, not size, but spacing
+    #is technically different for every frame.  Note that this doesn't
+    #account well for merges between a sphere and an already very long
+    #ellipse.  If I really wanted to do it well, I'd use data on the
+    #apparent aspect ratio and angle of each microdomain.
+
+    #for each frame, look for new trajectories near two ending ones,
+    #or old trajectories near two beginning ones.
+    for f in range(0,num_frames):
+        wfb = np.where(begarr[:,2]==f)
+        begs = begarr[wfb]
+        wfe = np.where(endarr[:,2]==f)
+        ends = endarr[wfe]
+        for b in range (0,len(begs)):
+            dist = np.linalg.norm(ends[:,0:2] - begs[b,0:2], axis=1)
+            w = np.where(dist <= cutoff_dist)
+            if len(w[0]) == 2:
+                endarr[wfe[0][w],4] = 1 #code for merge
+                begarr[wfb[0][b],4] = 1 #code for merge
+        for e in range (0,len(ends)):
+            dist = np.linalg.norm(begs[:,0:2] - ends[e,0:2], axis=1)
+            w = np.where(dist <= cutoff_dist)
+            if len(w[0]) == 2:
+                begarr[wfb[0][w],4] = 2 #code for split
+                endarr[wfe[0][e],4] = 2 #code for split
+
+    return(begarr, endarr)
+        
 
 def redo_trajectories(pmw):
     import copy
     import trackpy as tp
     
-    
-    search_range = pmw.sphereSize
+    search_range = pmw.sphereSize[0] / 2
     tracks = tp.link_df(pmw.feature_df, search_range)
+
     seglist = [np.array(tracks[["x","y"]].loc[tracks["particle"]==p])
                for p in range(tracks["particle"].max() + 1)]
-
-    #These lines about colors I don't understand at all.  Copied from example.
-    colors = [matplotlib.colors.to_rgba(c)
+    #I don't understand the line about traj_colors at all. Copied from example.
+    traj_colors = [matplotlib.colors.to_rgba(c)
           for c in matplotlib.rcParams['axes.prop_cycle'].by_key()['color']]
+    trajectories = m_coll.LineCollection(seglist, colors=traj_colors)
 
-    trajectories = matplotlib.collections.LineCollection(seglist, colors=colors)
+    beginnings, endings = find_merge_events(pmw, tracks)
+    beg_colors = np.zeros((len(beginnings),3),dtype = float)
+    beg_colors[np.where(beginnings[:,4]==1)] = colordict["merge"]
+    beg_colors[np.where(beginnings[:,4]==2)] = colordict["split"]
+    beg_colors[np.where(beginnings[:,4]==0)] = colordict["spontaneous"]
+
+    end_colors = np.zeros((len(endings),3),dtype = float)
+    end_colors[np.where(endings[:,4]==1)] = colordict["merge"]
+    end_colors[np.where(endings[:,4]==2)] = colordict["split"]
+    end_colors[np.where(endings[:,4]==0)] = colordict["spontaneous"]
+
     for v in pmw.viewers:
         cp_traj = copy.copy(trajectories)
         v.plt_trajectories.remove()
         v.plt_trajectories = v.ax.add_collection(cp_traj)
+        
+        w = np.where(beginnings[:,2]==v.idx)
+        v.ax.scatter(beginnings[w,0], beginnings[w,1], marker="P", s=150,
+                  c = beg_colors[w])
+
+        w = np.where(endings[:,2]==v.idx)
+        v.ax.scatter(endings[w,0], endings[w,1], marker="$*$", s=150,
+                  c = end_colors[w])
+
         v.imgCanvas.draw()
     
 
