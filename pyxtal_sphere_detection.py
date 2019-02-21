@@ -312,10 +312,10 @@ def load_images_and_locations(viewer):
 
         pad_with_bullshit_points(viewer)
 
-
     feature_df = pd.DataFrame({"x": viewer.locations[:,0],
                                "y": viewer.locations[:,1],
                                "frame": viewer.idx})
+    
     viewer.pmw.feature_df = viewer.pmw.feature_df.append(feature_df, ignore_index=True)
 
 

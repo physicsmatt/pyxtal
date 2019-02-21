@@ -460,6 +460,8 @@ def plot_trajectories(v):
     dummy_segments = ()
     dummy_trajectories = m_coll.LineCollection(dummy_segments)
     v.plt_trajectories = v.ax.add_collection(dummy_trajectories)
+    v.plt_traj_beg = v.ax.scatter((),())
+    v.plt_traj_end = v.ax.scatter((),())
 
 
 def find_merge_events(pmw, tracks):
@@ -540,14 +542,25 @@ def redo_trajectories(pmw):
     import trackpy as tp
     
     search_range = pmw.sphereSize[0] / 2
-    tracks = tp.link_df(pmw.feature_df, search_range)
+
+    if pmw.inFileType.get() in ("image", "assemblies"):
+        tracks = tp.link_df(pmw.feature_df, search_range)
+    else:  #must be gsd particles
+        #in this case, don't need trackpy.
+        #Particles should already be in order, from original gsd file.
+        #Assume same # of particles in each frame.
+        tracks = pmw.feature_df
+        num_particles = len(pmw.viewers[0].locations)
+        num_frames = len(pmw.viewers)
+        tracks["particle"] = np.tile(np.arange(num_particles), num_frames)
+
 
     seglist = [np.array(tracks[["x","y"]].loc[tracks["particle"]==p])
                for p in range(tracks["particle"].max() + 1)]
     #I don't understand the line about traj_colors at all. Copied from example.
     traj_colors = [matplotlib.colors.to_rgba(c)
           for c in matplotlib.rcParams['axes.prop_cycle'].by_key()['color']]
-    trajectories = m_coll.LineCollection(seglist, colors=traj_colors)
+    trajectories = m_coll.LineCollection(seglist, colors=traj_colors, zorder=10)
 
     beginnings, endings = find_merge_events(pmw, tracks)
     beg_colors = np.zeros((len(beginnings),3),dtype = float)
@@ -565,13 +578,15 @@ def redo_trajectories(pmw):
         v.plt_trajectories.remove()
         v.plt_trajectories = v.ax.add_collection(cp_traj)
         
+        v.plt_traj_beg.remove()
         w = np.where(beginnings[:,2]==v.idx)
-        v.ax.scatter(beginnings[w,0], beginnings[w,1], marker="P", s=150,
-                  c = beg_colors[w])
+        v.plt_traj_beg = v.ax.scatter(beginnings[w,0], beginnings[w,1], 
+                         marker="P", s=15, c = beg_colors[w], zorder=11)
 
+        v.plt_traj_end.remove()
         w = np.where(endings[:,2]==v.idx)
-        v.ax.scatter(endings[w,0], endings[w,1], marker="$*$", s=150,
-                  c = end_colors[w])
+        v.plt_traj_end = v.ax.scatter(endings[w,0], endings[w,1], 
+                         marker="$*$", c = end_colors[w], zorder=11)
 
         v.imgCanvas.draw()
     

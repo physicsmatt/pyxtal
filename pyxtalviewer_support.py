@@ -89,10 +89,9 @@ def changeVisibleAnnotations(viewer):
     viewer.plt_disloc.set_visible(viewer.showDefects.get())
     viewer.plt_unbound.set_visible(viewer.showDefects.get())
     viewer.plt_trajectories.set_visible(viewer.showTraject.get())
+    viewer.plt_traj_beg.set_visible(viewer.showTraject.get())
+    viewer.plt_traj_end.set_visible(viewer.showTraject.get())
     viewer.imgCanvas.draw()
-#The variables below still need to be implemented and eventually included
-#in the list above:
-#        self.showTraject = BooleanVar()
     
 #def changeStatsVisibility
     if viewer.showStats.get():
@@ -158,18 +157,21 @@ def zoom(event, viewer):
 
     
 def zoom_linewidths(v): 
-    #I'll suppose for now I want the thickness to be one image pixel
-    #For now, I'm just going to make a starting guess and scale it.
-    #On second thought that fails for small images with big spheres.
-    lw = 1 * int(np.ceil(v.zoom))
+    #This function scales the linewidths AND markersizes, with zooming.
 
-    #Instead, let's make it always be sphereSize/10.  But how do I get
-    #a sphere size in points?
+    #For starters, let's make it always be sphereSize/10.
+    #And of course I need to convert from data coordinates to "points".
     lw = convert_data_to_points(v.pmw.sphereSize[0]/10, v)
     v.plt_circles.set_linewidth(lw)
     v.plt_triang.set_linewidth(lw)
     v.plt_unbound.set_linewidth(lw)
     v.plt_disloc.set_linewidth(2*lw)
+    v.plt_trajectories.set_linewidth(lw)
+    
+    markerwidth = convert_data_to_points(v.pmw.sphereSize[0]/2, v) * 0.7
+    markersize = markerwidth ** 2
+    v.plt_traj_beg.set_sizes(markersize)
+    v.plt_traj_end.set_sizes(markersize * 2.5)
     #v.imgCanvas.draw()
    
     
