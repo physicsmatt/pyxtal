@@ -642,7 +642,18 @@ def write_orientHist_entry(v):
                     max_line_width=1000, separator=',')[1:-1] + "\n")
     v.pmw.orientHistfile.flush()
 
-    
+
+def sphere_density_profile(D=1, zstep=0.1):
+    R = 0.5 * D
+    z1vals = np.arange(-R -0.5*zstep, +R + 0.5*zstep, zstep)
+    z2vals = z1vals + zstep
+    z1vals[0] = -R
+    z2vals[-1] = R
+    density_profile = np.pi * ((R**2 * z2vals - (1/3)*z2vals**3) - 
+                               (R**2 * z1vals - (1/3)*z1vals**3))
+    return(density_profile)
+
+
 def do_zProfile(v, z_coords, box):
     bin_width = 0.1
     distribution, bin_edges = np.histogram(z_coords, 
@@ -651,6 +662,9 @@ def do_zProfile(v, z_coords, box):
 
     volume = bin_width * box[0] * box[1]
     distribution = distribution.astype(float) / volume
+    sphere_density = sphere_density_profile(D=1,zstep=bin_width)
+    distribution = np.convolve(distribution, sphere_density, mode="same")
+    distribution /= (4/3) * np.pi * (0.5)**3
 #    v.pmw.zProfilefile.write(str(v.timestep) + ', ')
 #    v.pmw.zProfilefile.write(np.array2string(distribution, 
 #                    max_line_width=1000, separator=',',
