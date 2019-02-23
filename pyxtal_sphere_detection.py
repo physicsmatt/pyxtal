@@ -107,10 +107,7 @@ def get_locations_from_dbscan(v, part_locs3d, boxsize3d):
     import sklearn.cluster
 
     #Add periodic wraparound, if required:
-    if v.pmw.periodBound.get():
-        dat = pimg.pad_locations(part_locs3d, v.pmw.sphereSize[0] * 5, boxsize3d)
-    else:
-        dat = part_locs3d
+    dat = pimg.pad_locations(part_locs3d, v)
 
     labs = sklearn.cluster.dbscan(dat,eps = 2.0, min_samples = 7)[1]
     
@@ -312,8 +309,9 @@ def load_images_and_locations(viewer):
 
         pad_with_bullshit_points(viewer)
 
-    feature_df = pd.DataFrame({"x": viewer.locations[:,0],
-                               "y": viewer.locations[:,1],
+    wrapped_locations = pimg.pad_locations(viewer.locations, viewer)
+    feature_df = pd.DataFrame({"x": wrapped_locations[:,0],
+                               "y": wrapped_locations[:,1],
                                "frame": viewer.idx})
     
     viewer.pmw.feature_df = viewer.pmw.feature_df.append(feature_df, ignore_index=True)

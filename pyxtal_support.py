@@ -121,6 +121,7 @@ def GoButtonCommand():
     #The info passed to create the viewer is the full filename (with path),
     #the index number of the viewer (0 to whatever) and the frame number.
     import gsd.hoomd
+    pmw.pad_width = int(pmw.periodBound.get()) * pmw.sphereSize[0] * 5
     numFiles = len(pmw.filelist)
     vieweridx = len(pmw.viewers)
     if pmw.inFileType.get() == "image":

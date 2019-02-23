@@ -30,7 +30,7 @@ colordict =	{
     "spontaneous": np.array((1.0, 0.66, 0.0)), #orange
 }
 
-def pad_locations(locs, width, size, with_indices=False):
+def pad_locations(locs, v, with_indices=False):
     #This function is analogous to the numpy.pad function in "wrap" mode.
     #The input locs is an array of (x,y) or (x,y,z) coordinates.
     #This function makes additional coordinates of the points just outside
@@ -38,6 +38,9 @@ def pad_locations(locs, width, size, with_indices=False):
     #If with_indices==True, then the function also appends
     #an additional column, which is a reference back to the index of
     #the original vertex.
+    
+    width = v.pmw.pad_width
+    size = v.imgshape
     
     #First, create the additional column
     indices = np.arange(0,len(locs))
@@ -60,14 +63,10 @@ def pad_locations(locs, width, size, with_indices=False):
         return(locs)
     else:
         return(locs[:,0:-1])
-    
+
 
 def plot_raw_image(v):
-    if v.pmw.periodBound.get():
-        pad = v.pmw.sphereSize[0] * 5
-    else:
-        pad = 0
-
+    pad = v.pmw.pad_width
     if v.pmw.inFileType.get() in ["image", "assemblies"]:
         xsize, ysize = v.imgshape[0], v.imgshape[1]
         v.image = np.pad(v.image, pad, "wrap")
@@ -77,7 +76,7 @@ def plot_raw_image(v):
                                   cmap="gist_gray")
     elif v.pmw.inFileType.get() == "particles":
         radius = v.pmw.sphereSize[0] / 2
-        locations = pad_locations(v.locations, pad, v.imgshape)
+        locations = pad_locations(v.locations, v)
         patches = [matplotlib.patches.CirclePolygon(xy, radius,
                         facecolor=colordict["particles"]) 
                                         for xy in locations]
@@ -170,10 +169,7 @@ def calculate_triangulation(v):
     #Also gets orientation of each bond, which we'll use later for angle field.
 
     locations = v.locations.copy()
-    #pad_width should be 0 for non-periodic boundaries, so location not changed.
-    pad_width = int(v.pmw.periodBound.get()) * v.pmw.sphereSize[0] * 5
-    locations = pad_locations(locations, pad_width, 
-                              v.imgshape, with_indices=True)
+    locations = pad_locations(locations, v, with_indices=True)
     v.tri = scipy.spatial.Delaunay(locations[:,0:2], qhull_options="QJ")
     v.tri.outer_vertices = find_outer_vertices(v)
 
@@ -464,6 +460,16 @@ def plot_trajectories(v):
     v.plt_traj_end = v.ax.scatter((),())
 
 
+def in_orig_box(coords, v):
+    #returns a boolean array according to whether x,y coords are inside
+    #original dimensions of imgshape (as opposed to part of the wraparound, say)
+    return((0 <= coords[:,0]) &
+                 (coords[:,0] < v.imgshape[0]) &
+                 (0 <= coords[:,1]) &
+                 (coords[:,1] < v.imgshape[1]) )
+    
+
+
 def find_merge_events(pmw, tracks):
     #This function returns arrays that mark the beginning and ending
     #of each particle's trajectory.  The beginnings and ends are coded
@@ -485,30 +491,26 @@ def find_merge_events(pmw, tracks):
     num_frames = int(np.max(tr[:,2])) + 1
     
     #compile lists of beginnings and endings of each trajectory.
-    beglist = []
-    endlist = []
+    begarr = np.zeros((num_parts,4))
+    endarr = np.zeros((num_parts,4))
     for p in range(0,num_parts):
         wp = np.where(tr[:,3]==p)
         thistrack = tr[wp]
-        beginning = thistrack[0].copy()
-        ending = thistrack[-1].copy()
-        ending[2] +=1
-        beglist.append(beginning)
-        endlist.append(ending)
+        begarr[p] = thistrack[0].copy()
+        endarr[p] = thistrack[-1].copy()
+        endarr[p,2] +=1
 
-    #Convert lists to arrays, remove entries of trajectories that start on 
+    #Remove entries of trajectories that start on 
     #first frame or end of last frame, and add additional "column" for
     #code to denote merge/split/spontaneous.
-    begarr = np.array(beglist)
-    endarr = np.array(endlist)
-    begarr = begarr[np.where(begarr[:,2] != 0)]
+#    begarr = begarr[np.where(begarr[:,2] != 0)]
     endarr = endarr[np.where(endarr[:,2] != num_frames)]
     begarr = np.hstack((begarr, np.zeros((len(begarr),1))))
     endarr = np.hstack((endarr, np.zeros((len(endarr),1))))
     
     cutoff_dist = pmw.sphereSize[0] * 1.5 
     #min distance for events to be considered part of merge or split.
-    #should really be related to sphere spacing, not size, but spacing
+    #This should really be related to sphere spacing, not size, but spacing
     #is technically different for every frame.  Note that this doesn't
     #account well for merges between a sphere and an already very long
     #ellipse.  If I really wanted to do it well, I'd use data on the
@@ -516,7 +518,7 @@ def find_merge_events(pmw, tracks):
 
     #for each frame, look for new trajectories near two ending ones,
     #or old trajectories near two beginning ones.
-    for f in range(0,num_frames):
+    for f in range(1, num_frames):
         wfb = np.where(begarr[:,2]==f)
         begs = begarr[wfb]
         wfe = np.where(endarr[:,2]==f)
@@ -534,6 +536,16 @@ def find_merge_events(pmw, tracks):
                 begarr[wfb[0][w],4] = 2 #code for split
                 endarr[wfe[0][e],4] = 2 #code for split
 
+    #Remove entries for particles that originate outside the box,
+    #(Virtual particles from periodic boundaries)
+    real_w = np.where(in_orig_box(begarr[:,0:2], pmw.viewers[0]))
+    real_part_num = begarr[real_w[0],3]
+    begarr = begarr[real_w]
+#    endarr = endarr[np.where(endarr[:,3] in real_part_num)]
+    endarr = endarr[np.where(np.isin(endarr[:,3], real_part_num))]
+
+    begarr = begarr[np.where(begarr[:,2] != 0)]
+    
     return(begarr, endarr)
         
 
@@ -548,15 +560,22 @@ def redo_trajectories(pmw):
     else:  #must be gsd particles
         #in this case, don't need trackpy.
         #Particles should already be in order, from original gsd file.
-        #Assume same # of particles in each frame.
+        #Assume same # of particles in each ve Irwin got up close and personal with wildlife (at the risk of his own safety) to show us, the sheltered masses, the beauty, majesty, and amazing things to be found in nature. You, PETA, are just a bunch of sharks who feed on controversy while doing nothing useful.frame.
         tracks = pmw.feature_df
         num_particles = len(pmw.viewers[0].locations)
         num_frames = len(pmw.viewers)
         tracks["particle"] = np.tile(np.arange(num_particles), num_frames)
 
+#    tracksar = tracks.values
+#    #find merge events here
+#    find which particles are in_box
+#    w = np.where(in_orig_box(tracksar[0:2]),v)
+#    tracksar = tracksar[w]
 
-    seglist = [np.array(tracks[["x","y"]].loc[tracks["particle"]==p])
-               for p in range(tracks["particle"].max() + 1)]
+    #Seglist is a compilation of all particle trajectories, for plotting.
+    #It includes virtual (wrap-around) particles that originate outside the box.
+    seglist = (np.array(tracks[["x","y"]].loc[tracks["particle"]==p])
+               for p in range(tracks["particle"].max() + 1))
     #I don't understand the line about traj_colors at all. Copied from example.
     traj_colors = [matplotlib.colors.to_rgba(c)
           for c in matplotlib.rcParams['axes.prop_cycle'].by_key()['color']]
