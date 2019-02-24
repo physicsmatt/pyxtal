@@ -168,11 +168,7 @@ def get_locations_from_3d(v, part_locs3d, boxsize3d):
     #remove the effects of the wraparound, and kill any out of bounds.
     locations -= np.array([wrap_width, wrap_width, 0])
     locations = locations[:,0:2]
-    w = np.where((0 <= locations[:,0]) &
-                 (locations[:,0] < v.imgshape[0]) &
-                 (0 <= locations[:,1]) &
-                 (locations[:,1] < v.imgshape[1]) )
-
+    w = np.where(pimg.in_orig_box(locations, v))
     locations = locations[w]
 
     #use props[w] to get masses, moments
