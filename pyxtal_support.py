@@ -112,6 +112,8 @@ def create_logfiles(pmw, filename):
         pmw.defectStatsFile.write("# First column is time step\n")
         pmw.defectStatsFile.write("# Next columns are complicated; see calculate_defect_stats().\n")
         pmw.defectStatsFile.write("# Last column is median bond distance.\n")
+    if pmw.doTraject.get():
+        pmw.trajectFile = open(base + "_traj.txt", 'w')
         
 
         

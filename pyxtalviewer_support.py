@@ -368,6 +368,7 @@ def init(top, viewer, *args, **kwargs):
     if viewer.pmw.doDefectStats.get():
         pimg.write_defect_stats(viewer)
     pimg.do_output_files(viewer)
+    if viewer.idx==0: viewer.pmw.imgshape = viewer.imgshape 
 #    pimg.do_label_points(viewer)
     #print(dir(viewer))
     #print(dir(viewer.tri))

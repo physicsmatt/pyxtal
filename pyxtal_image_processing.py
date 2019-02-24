@@ -460,13 +460,14 @@ def plot_trajectories(v):
     v.plt_traj_end = v.ax.scatter((),())
 
 
-def in_orig_box(coords, v):
+def in_orig_box(coords, v_or_pmw):
     #returns a boolean array according to whether x,y coords are inside
     #original dimensions of imgshape (as opposed to part of the wraparound, say)
+    imgshape = v_or_pmw.imgshape
     return((0 <= coords[:,0]) &
-                 (coords[:,0] < v.imgshape[0]) &
+                 (coords[:,0] < imgshape[0]) &
                  (0 <= coords[:,1]) &
-                 (coords[:,1] < v.imgshape[1]) )
+                 (coords[:,1] < imgshape[1]) )
     
 
 
@@ -538,10 +539,9 @@ def find_merge_events(pmw, tracks):
 
     #Remove entries for particles that originate outside the box,
     #(Virtual particles from periodic boundaries)
-    real_w = np.where(in_orig_box(begarr[:,0:2], pmw.viewers[0]))
+    real_w = np.where(in_orig_box(begarr[:,0:2], pmw))
     real_part_num = begarr[real_w[0],3]
     begarr = begarr[real_w]
-#    endarr = endarr[np.where(endarr[:,3] in real_part_num)]
     endarr = endarr[np.where(np.isin(endarr[:,3], real_part_num))]
 
     begarr = begarr[np.where(begarr[:,2] != 0)]
@@ -556,21 +556,16 @@ def redo_trajectories(pmw):
     search_range = pmw.sphereSize[0] / 2
 
     if pmw.inFileType.get() in ("image", "assemblies"):
+        tp.ignore_logging()
         tracks = tp.link_df(pmw.feature_df, search_range)
     else:  #must be gsd particles
         #in this case, don't need trackpy.
         #Particles should already be in order, from original gsd file.
-        #Assume same # of particles in each ve Irwin got up close and personal with wildlife (at the risk of his own safety) to show us, the sheltered masses, the beauty, majesty, and amazing things to be found in nature. You, PETA, are just a bunch of sharks who feed on controversy while doing nothing useful.frame.
+        #Assume same number of particles in each frame.
         tracks = pmw.feature_df
         num_particles = len(pmw.viewers[0].locations)
         num_frames = len(pmw.viewers)
         tracks["particle"] = np.tile(np.arange(num_particles), num_frames)
-
-#    tracksar = tracks.values
-#    #find merge events here
-#    find which particles are in_box
-#    w = np.where(in_orig_box(tracksar[0:2]),v)
-#    tracksar = tracksar[w]
 
     #Seglist is a compilation of all particle trajectories, for plotting.
     #It includes virtual (wrap-around) particles that originate outside the box.
@@ -582,32 +577,50 @@ def redo_trajectories(pmw):
     trajectories = m_coll.LineCollection(seglist, colors=traj_colors, zorder=10)
 
     beginnings, endings = find_merge_events(pmw, tracks)
-    beg_colors = np.zeros((len(beginnings),3),dtype = float)
-    beg_colors[np.where(beginnings[:,4]==1)] = colordict["merge"]
-    beg_colors[np.where(beginnings[:,4]==2)] = colordict["split"]
-    beg_colors[np.where(beginnings[:,4]==0)] = colordict["spontaneous"]
+    write_trajectory_output(pmw, beginnings, endings)
 
-    end_colors = np.zeros((len(endings),3),dtype = float)
-    end_colors[np.where(endings[:,4]==1)] = colordict["merge"]
-    end_colors[np.where(endings[:,4]==2)] = colordict["split"]
-    end_colors[np.where(endings[:,4]==0)] = colordict["spontaneous"]
+    if pmw.retainWin.get() and not pmw.batchmode.get():
+        beg_colors = np.zeros((len(beginnings),3),dtype = float)
+        beg_colors[np.where(beginnings[:,4]==1)] = colordict["merge"]
+        beg_colors[np.where(beginnings[:,4]==2)] = colordict["split"]
+        beg_colors[np.where(beginnings[:,4]==0)] = colordict["spontaneous"]
+    
+        end_colors = np.zeros((len(endings),3),dtype = float)
+        end_colors[np.where(endings[:,4]==1)] = colordict["merge"]
+        end_colors[np.where(endings[:,4]==2)] = colordict["split"]
+        end_colors[np.where(endings[:,4]==0)] = colordict["spontaneous"]
+    
+        for v in pmw.viewers:
+            cp_traj = copy.copy(trajectories)
+            v.plt_trajectories.remove()
+            v.plt_trajectories = v.ax.add_collection(cp_traj)
+            
+            v.plt_traj_beg.remove()
+            w = np.where(beginnings[:,2]==v.idx)
+            v.plt_traj_beg = v.ax.scatter(beginnings[w,0], beginnings[w,1], 
+                             marker="P", s=15, c = beg_colors[w], zorder=11)
+    
+            v.plt_traj_end.remove()
+            w = np.where(endings[:,2]==v.idx)
+            v.plt_traj_end = v.ax.scatter(endings[w,0], endings[w,1], 
+                             marker="$*$", c = end_colors[w], zorder=11)
+    
+            v.imgCanvas.draw()
 
-    for v in pmw.viewers:
-        cp_traj = copy.copy(trajectories)
-        v.plt_trajectories.remove()
-        v.plt_trajectories = v.ax.add_collection(cp_traj)
-        
-        v.plt_traj_beg.remove()
-        w = np.where(beginnings[:,2]==v.idx)
-        v.plt_traj_beg = v.ax.scatter(beginnings[w,0], beginnings[w,1], 
-                         marker="P", s=15, c = beg_colors[w], zorder=11)
 
-        v.plt_traj_end.remove()
-        w = np.where(endings[:,2]==v.idx)
-        v.plt_traj_end = v.ax.scatter(endings[w,0], endings[w,1], 
-                         marker="$*$", c = end_colors[w], zorder=11)
-
-        v.imgCanvas.draw()
+def write_trajectory_output(pmw, beginnings, endings):
+    pmw.trajectFile.write("total number of new spherical assemblies: " +
+                            str(len(beginnings)) + "\n")
+    pmw.trajectFile.write("By merge: " +
+                            str(len(np.where(beginnings[:,4]==1)[0])) + "\n")
+    pmw.trajectFile.write("By split: " +
+                            str(len(np.where(beginnings[:,4]==2)[0])) + "\n")
+    pmw.trajectFile.write("spontaneous creation: " +
+                            str(len(np.where(beginnings[:,4]==0)[0])) + "\n")
+    pmw.trajectFile.write("spontaneous disappearance: " +
+                            str(len(np.where(endings[:,4]==0)[0])) + "\n")
+    pmw.trajectFile.flush()
+    
     
 
 def do_output_files(v):
