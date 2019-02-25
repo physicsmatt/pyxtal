@@ -307,7 +307,7 @@ def initialize_parameters(pmw):
     #set default views for viewers:
     pmw.whichImage = "raw"
     pmw.invertImage = False
-    pmw.showCircles = False
+    pmw.showCircles = True
     pmw.showTriang = False
     pmw.showDefects = False
     pmw.showOrientation = False
