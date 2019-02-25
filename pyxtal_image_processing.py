@@ -547,6 +547,14 @@ def find_merge_events(pmw, tracks):
     begarr = begarr[np.where(begarr[:,2] != 0)]
     
     return(begarr, endarr)
+
+
+def make_color_cycle(hdivs):
+    hue = np.arange(0,1,1/hdivs, dtype=float)
+    sat = [0.5,1]
+    val = [0.5,1]
+    hsv = np.array(np.meshgrid(hue,sat,val)).T.reshape(-1,3)
+    return(matplotlib.colors.hsv_to_rgb(hsv))
         
 
 def redo_trajectories(pmw):
@@ -571,9 +579,7 @@ def redo_trajectories(pmw):
     #It includes virtual (wrap-around) particles that originate outside the box.
     seglist = (np.array(tracks[["x","y"]].loc[tracks["particle"]==p])
                for p in range(tracks["particle"].max() + 1))
-    #I don't understand the line about traj_colors at all. Copied from example.
-    traj_colors = [matplotlib.colors.to_rgba(c)
-          for c in matplotlib.rcParams['axes.prop_cycle'].by_key()['color']]
+    traj_colors = make_color_cycle(10)
     trajectories = m_coll.LineCollection(seglist, colors=traj_colors, zorder=10)
 
     beginnings, endings = find_merge_events(pmw, tracks)
