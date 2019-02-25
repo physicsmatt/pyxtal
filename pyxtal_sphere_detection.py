@@ -305,9 +305,12 @@ def load_images_and_locations(viewer):
 
         pad_with_bullshit_points(viewer)
 
-    wrapped_locations = pimg.pad_locations(viewer.locations, viewer)
-    feature_df = pd.DataFrame({"x": wrapped_locations[:,0],
-                               "y": wrapped_locations[:,1],
+    if not viewer.pmw.inFileType.get() == "particles":
+        locations = pimg.pad_locations(viewer.locations, viewer)
+    else:
+        locations = viewer.locations
+    feature_df = pd.DataFrame({"x": locations[:,0],
+                               "y": locations[:,1],
                                "frame": viewer.idx})
     
     viewer.pmw.feature_df = viewer.pmw.feature_df.append(feature_df, ignore_index=True)

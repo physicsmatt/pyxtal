@@ -468,7 +468,22 @@ def in_orig_box(coords, v_or_pmw):
                  (coords[:,0] < imgshape[0]) &
                  (0 <= coords[:,1]) &
                  (coords[:,1] < imgshape[1]) )
+   
     
+def fix_wraparound_jumps(tracks, num_frames, num_particles, box):
+    #In the tracks array, particles that appear to jump from one edge
+    #to another edge have actually only moved slightly, due to periodic
+    #boundary conditions.
+    tracks = tracks.reshape((num_frames,num_particles,4))
+    for f in range(1, num_frames):
+        w1 = np.where(tracks[f,:,0] - tracks[f-1,:,0]  > box[0]/2)
+        tracks[f:,w1,0] -= box[0]
+        w2 = np.where(tracks[f,:,0] - tracks[f-1,:,0]  < -box[0]/2)
+        tracks[f:,w2,0] += box[0]
+        w3 = np.where(tracks[f,:,1] - tracks[f-1,:,1]  > box[1]/2)
+        tracks[f:,w3,1] -= box[1]
+        w4 = np.where(tracks[f,:,1] - tracks[f-1,:,1]  < -box[1]/2)
+        tracks[f:,w4,1] += box[1]
 
 
 def find_merge_events(pmw, tracks):
@@ -481,30 +496,29 @@ def find_merge_events(pmw, tracks):
     #do it with dataframes instead of numpy arrays, but I just couldn't
     #figure out how to get past the problems of "chain assignment".
 
-    tr = tracks.values #convert dataframe to ndarray.
+#    tr = tracks_df.values #convert dataframe to ndarray.
         #column 0: x
         #column 1: y
         #column 2: frame
         #column 3: particle number
         #column 4: (added later) color code for merge/split
         
-    num_parts = int(np.max(tr[:,3])) + 1
-    num_frames = int(np.max(tr[:,2])) + 1
+    num_parts = int(np.max(tracks[:,3])) + 1
+    num_frames = int(np.max(tracks[:,2])) + 1
     
     #compile lists of beginnings and endings of each trajectory.
     begarr = np.zeros((num_parts,4))
     endarr = np.zeros((num_parts,4))
     for p in range(0,num_parts):
-        wp = np.where(tr[:,3]==p)
-        thistrack = tr[wp]
+        wp = np.where(tracks[:,3]==p)
+        thistrack = tracks[wp]
         begarr[p] = thistrack[0].copy()
         endarr[p] = thistrack[-1].copy()
         endarr[p,2] +=1
 
-    #Remove entries of trajectories that start on 
-    #first frame or end of last frame, and add additional "column" for
+    #Remove entries of trajectories that 
+    #end on last frame, and add additional "column" for
     #code to denote merge/split/spontaneous.
-#    begarr = begarr[np.where(begarr[:,2] != 0)]
     endarr = endarr[np.where(endarr[:,2] != num_frames)]
     begarr = np.hstack((begarr, np.zeros((len(begarr),1))))
     endarr = np.hstack((endarr, np.zeros((len(endarr),1))))
@@ -544,6 +558,7 @@ def find_merge_events(pmw, tracks):
     begarr = begarr[real_w]
     endarr = endarr[np.where(np.isin(endarr[:,3], real_part_num))]
 
+    #Remove trajectories that "start" on first frame.
     begarr = begarr[np.where(begarr[:,2] != 0)]
     
     return(begarr, endarr)
@@ -565,20 +580,31 @@ def redo_trajectories(pmw):
 
     if pmw.inFileType.get() in ("image", "assemblies"):
         tp.ignore_logging()
-        tracks = tp.link_df(pmw.feature_df, search_range)
+        tracks_df = tp.link_df(pmw.feature_df, search_range)
+        tracks = tracks_df.values
     else:  #must be gsd particles
         #in this case, don't need trackpy.
         #Particles should already be in order, from original gsd file.
         #Assume same number of particles in each frame.
-        tracks = pmw.feature_df
-        num_particles = len(pmw.viewers[0].locations)
-        num_frames = len(pmw.viewers)
-        tracks["particle"] = np.tile(np.arange(num_particles), num_frames)
+        tracks_df = pmw.feature_df
+        num_frames = tracks_df["frame"].max() + 1
+        num_particles = int(len(tracks_df.index) / num_frames)
+        tracks_df["particle"] = np.tile(np.arange(num_particles), num_frames)
+        tracks = tracks_df.values
+        fix_wraparound_jumps(tracks, num_frames, num_particles, pmw.imgshape)        
+
+    #tracks is now converted from track_df dataframe to ndarray.
+        #column 0: x
+        #column 1: y
+        #column 2: frame
+        #column 3: particle number
+        #column 4: (added later) color code for merge/split
 
     #Seglist is a compilation of all particle trajectories, for plotting.
     #It includes virtual (wrap-around) particles that originate outside the box.
-    seglist = (np.array(tracks[["x","y"]].loc[tracks["particle"]==p])
-               for p in range(tracks["particle"].max() + 1))
+    num_particles = int(np.max(tracks[:,3]))
+    seglist = (np.array(tracks[np.where(tracks[:,3]==p)[0],0:2])
+               for p in np.arange(num_particles))
     traj_colors = make_color_cycle(10)
     trajectories = m_coll.LineCollection(seglist, colors=traj_colors, zorder=10)
 
